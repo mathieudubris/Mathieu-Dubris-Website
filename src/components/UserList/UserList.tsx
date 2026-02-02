@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { X, User, Check, Search, Users, Mail } from 'lucide-react'; // Ajout de Mail
+import { X, User, Check, Search, Users, Mail } from 'lucide-react';
 import { getAllUsers, addMemberToProject, removeMemberFromProject, getProject } from '@/utils/firebase-api';
 import styles from './UserList.module.css';
 
@@ -53,13 +53,14 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
       setLoading(true);
       setError('');
       
-      // Charger tous les utilisateurs
-      const allUsers = await getAllUsers();
+      const [allUsers, project] = await Promise.all([
+        getAllUsers(),
+        getProject(projectId)
+      ]);
+      
       setUsers(allUsers);
       setFilteredUsers(allUsers);
       
-      // Charger les membres du projet
-      const project = await getProject(projectId);
       if (project) {
         setProjectMembers(project.teamMembers || []);
       }
@@ -77,16 +78,13 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
     setProcessingUser(userId);
     try {
       if (projectMembers.includes(userId)) {
-        // Retirer l'utilisateur
         await removeMemberFromProject(projectId, userId);
         setProjectMembers(prev => prev.filter(id => id !== userId));
       } else {
-        // Ajouter l'utilisateur
         await addMemberToProject(projectId, userId);
         setProjectMembers(prev => [...prev, userId]);
       }
       
-      // Notifier le parent
       onUserAdded();
     } catch (error) {
       console.error('Erreur lors de la modification:', error);
@@ -96,27 +94,33 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
     }
   };
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     const allUserIds = users.map(user => user.uid);
     setProjectMembers([...new Set([...projectMembers, ...allUserIds])]);
-  };
+  }, [users, projectMembers]);
 
-  const handleDeselectAll = () => {
+  const handleDeselectAll = useCallback(() => {
     setProjectMembers([]);
-  };
+  }, []);
 
-  const handleSave = () => {
-    // Ici, normalement on enregistrerait les changements, mais c'est déjà fait en temps réel
+  const handleSave = useCallback(() => {
     onClose();
-  };
+  }, [onClose]);
+
+  const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }, [onClose]);
 
   if (loading) {
     return (
-      <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.overlay} onClick={handleOverlayClick}>
         <motion.div 
           className={styles.modal}
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 25 }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className={styles.loadingState}>
@@ -129,57 +133,73 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
   }
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={handleOverlayClick}>
       <motion.div 
         className={styles.modal}
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 100, opacity: 0 }}
+        transition={{ type: "spring", damping: 25 }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
           <div className={styles.headerContent}>
             <h2 className={styles.title}>
-              <Users size={24} />
+              <Users size={20} />
               <span>Gérer l'équipe du projet</span>
             </h2>
             <p className={styles.subtitle}>
               Ajoutez ou retirez des membres de l'équipe
             </p>
           </div>
-          <button onClick={onClose} className={styles.closeButton}>
-            <X size={24} />
+          <button 
+            onClick={onClose} 
+            className={styles.closeButton}
+            aria-label="Fermer"
+          >
+            <X size={18} />
           </button>
         </div>
         
         <div className={styles.searchSection}>
           <div className={styles.searchContainer}>
-            <Search size={18} className={styles.searchIcon} />
+            <Search size={16} className={styles.searchIcon} />
             <input
               type="text"
               placeholder="Rechercher un utilisateur..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
+              aria-label="Rechercher un utilisateur"
             />
             {searchQuery && (
               <button 
                 className={styles.clearSearch}
                 onClick={() => setSearchQuery('')}
+                aria-label="Effacer la recherche"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             )}
           </div>
           
           <div className={styles.selectionInfo}>
             <div className={styles.selectionCount}>
-              {projectMembers.length} membre{projectMembers.length > 1 ? 's' : ''} sélectionné{projectMembers.length > 1 ? 's' : ''}
+              {projectMembers.length} membre{projectMembers.length > 1 ? 's' : ''}
             </div>
             <div className={styles.selectionActions}>
-              <button onClick={handleSelectAll} className={styles.selectAllButton}>
+              <button 
+                onClick={handleSelectAll} 
+                className={styles.selectAllButton}
+                disabled={processingUser !== null}
+              >
                 Tout sélectionner
               </button>
-              <button onClick={handleDeselectAll} className={styles.deselectAllButton}>
+              <button 
+                onClick={handleDeselectAll} 
+                className={styles.deselectAllButton}
+                disabled={processingUser !== null}
+              >
                 Tout désélectionner
               </button>
             </div>
@@ -196,7 +216,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className={styles.emptyState}>
-              <Users size={48} className={styles.emptyIcon} />
+              <Users size={40} className={styles.emptyIcon} />
               <h3>Aucun utilisateur trouvé</h3>
               <p className={styles.emptyText}>
                 {searchQuery ? 'Essayez avec d\'autres termes de recherche' : 'Aucun utilisateur inscrit'}
@@ -221,11 +241,25 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
                     key={user.uid} 
                     className={`${styles.userCard} ${isMember ? styles.selected : ''}`}
                     onClick={() => toggleUserInProject(user.uid)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleUserInProject(user.uid);
+                      }
+                    }}
+                    aria-label={`${isMember ? 'Retirer' : 'Ajouter'} ${user.displayName || 'utilisateur'}`}
                   >
                     <div className={styles.userInfo}>
                       <div className={styles.avatarContainer}>
                         {user.photoURL ? (
-                          <img src={user.photoURL} alt={user.displayName || 'User'} className={styles.avatar} />
+                          <img 
+                            src={user.photoURL} 
+                            alt={user.displayName || 'User'} 
+                            className={styles.avatar}
+                            loading="lazy"
+                          />
                         ) : (
                           <div className={styles.avatarPlaceholder}>
                             {user.displayName?.[0]?.toUpperCase() || '?'}
@@ -238,26 +272,30 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
                           {user.displayName || 'Utilisateur sans nom'}
                         </h3>
                         <div className={styles.userEmail}>
-                          <Mail size={12} />
-                          <span>{user.email}</span>
+                          <Mail size={10} />
+                          <span title={user.email || ''}>
+                            {user.email}
+                          </span>
                         </div>
                         <div className={styles.userMeta}>
-                          <span className={styles.metaItem}>Dernière connexion: {new Date(user.lastLogin).toLocaleDateString('fr-FR')}</span>
+                          <span className={styles.metaItem} title={`Dernière connexion: ${new Date(user.lastLogin).toLocaleDateString('fr-FR')}`}>
+                            Dern. connexion: {new Date(user.lastLogin).toLocaleDateString('fr-FR')}
+                          </span>
                         </div>
                       </div>
                     </div>
                     
                     <div className={styles.selectionIndicator}>
                       {isProcessing ? (
-                        <div className={styles.savingSpinner}></div>
+                        <div className={styles.savingSpinner} aria-label="Chargement"></div>
                       ) : isMember ? (
                         <div className={styles.selectedIndicator}>
-                          <Check size={14} />
+                          <Check size={12} />
                           <span>Ajouté</span>
                         </div>
                       ) : (
                         <div className={styles.notSelectedIndicator}>
-                          Cliquer pour ajouter
+                          Ajouter
                         </div>
                       )}
                     </div>
@@ -270,22 +308,37 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
         
         <div className={styles.footer}>
           {error && (
-            <div className={styles.errorMessage}>
+            <div className={styles.errorMessage} role="alert">
               {error}
             </div>
           )}
           
           <div className={styles.footerActions}>
-            <button onClick={onClose} className={styles.cancelButton}>
+            <button 
+              onClick={onClose} 
+              className={styles.cancelButton}
+              disabled={processingUser !== null}
+            >
               Annuler
             </button>
-            <button onClick={handleSave} className={styles.saveButton}>
-              Enregistrer les modifications
+            <button 
+              onClick={handleSave} 
+              className={styles.saveButton}
+              disabled={processingUser !== null}
+            >
+              {processingUser ? (
+                <>
+                  <div className={styles.savingSpinner}></div>
+                  Enregistrement...
+                </>
+              ) : (
+                'Enregistrer'
+              )}
             </button>
           </div>
           
           <p className={styles.footerInfo}>
-            Les modifications sont appliquées immédiatement. Les membres ajoutés auront accès au projet.
+            Les modifications sont appliquées immédiatement
           </p>
         </div>
       </motion.div>

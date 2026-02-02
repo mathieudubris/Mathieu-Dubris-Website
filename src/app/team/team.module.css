@@ -1,4 +1,22 @@
-/* team.module.css - Version simplifiée */
+/* team.module.css - Version responsive mobile */
+:root {
+  --primary: #c7ff44;
+  --dark: #121212;
+  --bg-main: #0a0a0a;
+  --text-main: #ffffff;
+  --border-color: #333333;
+  --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Suppression du sélecteur * problématique et remplacement par un reset spécifique */
+html, body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -6,12 +24,14 @@
   background-color: var(--bg-main);
   color: var(--text-main);
   font-family: var(--font-main);
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .content {
   flex: 1;
-  padding-top: 80px;
-  min-height: calc(100svh - 80px);
+  padding-top: 60px;
+  min-height: calc(100svh - 60px);
   width: 100%;
   background-color: var(--bg-main);
 }
@@ -19,10 +39,11 @@
 .pageContainer {
   display: flex;
   flex-direction: column;
-  height: calc(100svh - 80px);
+  height: calc(100svh - 60px);
   width: 100%;
   margin: 0 auto;
   background-color: var(--bg-main);
+  position: relative;
 }
 
 /* Login Center */
@@ -30,23 +51,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100svh - 80px);
+  height: calc(100svh - 60px);
   width: 100%;
+  padding: 1rem;
 }
 
 .loginCenterButton {
   background-color: var(--primary);
   color: var(--dark);
   font-weight: 600;
-  padding: 1rem 2rem;
-  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   transition: all 0.3s ease;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
 }
 
 .loginCenterButton:hover {
@@ -60,22 +86,33 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
   position: sticky;
-  top: 80px;
+  top: 60px;
   z-index: 90;
-  background: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
+  background: var(--bg-main) !important;
+  border-bottom: 1px solid var(--border-color) !important;
   flex-shrink: 0;
+  gap: 0.5rem;
+}
+
+.mobileMenuToggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 100;
 }
 
 .navButtons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   overflow-x: auto;
   flex: 1;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .navButtons::-webkit-scrollbar {
@@ -85,19 +122,21 @@
 .navButton {
   background: rgba(30, 30, 30, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
   color: var(--text-main);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.4rem;
   flex-shrink: 0;
-  height: 40px;
+  height: 36px;
+  min-width: 60px;
 }
 
 .navButton:hover {
@@ -112,10 +151,24 @@
   font-weight: 700;
 }
 
+.navLabel {
+  display: inline;
+}
+
+.navShortLabel {
+  display: none;
+}
+
 .headerActions {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   align-items: center;
+  flex-shrink: 0;
+}
+
+.desktopActions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .viewTeamButton {
@@ -123,12 +176,16 @@
   color: var(--text-main);
   border: 1px solid var(--border-color);
   font-weight: 600;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.8rem;
-  height: 40px;
+  font-size: 0.75rem;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
 }
 
 .viewTeamButton:hover {
@@ -140,18 +197,19 @@
   background-color: var(--primary);
   color: var(--dark);
   font-weight: 800;
-  padding: 0.6rem 1.5rem;
-  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.4rem;
   transition: all 0.2s ease;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   white-space: nowrap;
-  height: 40px;
-  text-transform: uppercase;
+  height: 36px;
+  min-width: 36px;
 }
 
 .saveButton:hover {
@@ -164,45 +222,69 @@
   cursor: not-allowed;
 }
 
+.saveIcon {
+  display: inline;
+}
+
+.saveText {
+  display: inline;
+}
+
+.saveShortText {
+  display: none;
+}
+
+.mobileSaveButton {
+  display: none;
+}
+
 /* Main Content */
 .mainContent {
   flex: 1;
   overflow-y: auto;
-  padding: 2rem;
+  overflow-x: hidden;
+  padding: 1rem;
   width: 100%;
   background-color: var(--bg-main);
+  -webkit-overflow-scrolling: touch;
+}
+
+.mainContent > div {
+  width: 100%;
 }
 
 /* Footer */
 .footer {
-  height: 70px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
   position: sticky;
   bottom: 0;
   z-index: 90;
-  background: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
+  background: var(--bg-main) !important;
+  border-top: 1px solid var(--border-color) !important;
   flex-shrink: 0;
+  gap: 0.5rem;
 }
 
 .navArrow {
   background: rgba(40, 40, 40, 0.3);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
   color: var(--text-main);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.4rem;
   transition: all 0.2s ease;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  height: 40px;
+  height: 36px;
+  min-width: 60px;
 }
 
 .navArrow:hover:not(:disabled) {
@@ -216,15 +298,29 @@
   cursor: not-allowed;
 }
 
+.navArrowText {
+  display: inline;
+}
+
+.navArrowShortText {
+  display: none;
+}
+
 .navIndicator {
   color: var(--text-main);
   opacity: 0.9;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   background: rgba(30, 30, 30, 0.3);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
   border: 1px solid var(--border-color);
+  min-width: 60px;
+  text-align: center;
+}
+
+.navIndicatorText {
+  display: block;
 }
 
 /* Loading */
@@ -236,11 +332,12 @@
   justify-content: center;
   background-color: var(--bg-main);
   gap: 1.5rem;
+  padding: 1rem;
 }
 
 .loadingSpinner {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border: 3px solid rgba(199, 255, 68, 0.1);
   border-top-color: var(--primary);
   border-radius: 50%;
@@ -253,56 +350,210 @@
 
 .loadingText {
   color: var(--primary);
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 500;
+  text-align: center;
 }
 
-/* Responsive */
+/* ==================== RESPONSIVE MOBILE ==================== */
 @media (max-width: 768px) {
+  .content {
+    padding-top: 56px;
+  }
+  
+  .pageContainer {
+    height: calc(100svh - 56px);
+  }
+  
   .header {
-    padding: 0 0.75rem;
+    top: 56px;
+    height: 56px;
+    padding: 0 0.5rem;
+  }
+  
+  .mobileMenuToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .navButtons {
+    position: fixed;
+    top: 116px;
+    left: 0;
+    right: 0;
+    background: var(--bg-main);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem;
+    flex-direction: column;
+    height: auto;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    z-index: 80;
+  }
+  
+  .navButtons.mobileMenuOpen {
+    max-height: 300px;
+    padding: 0.75rem;
   }
   
   .navButton {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
-    height: 36px;
+    width: 100%;
+    height: 44px;
+    justify-content: flex-start;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.25rem;
   }
   
-  .navButton span:not(:first-child) {
+  .navLabel {
     display: none;
   }
   
-  .viewTeamButton, .saveButton {
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
+  .navShortLabel {
+    display: inline;
+    font-size: 0.85rem;
+  }
+  
+  .desktopActions {
+    display: none;
+  }
+  
+  .mobileSaveButton {
+    display: flex;
+    padding: 0.5rem;
+    min-width: 44px;
     height: 36px;
   }
   
-  .saveButton span:last-child {
+  .saveIcon {
+    display: inline;
+  }
+  
+  .saveText {
+    display: none;
+  }
+  
+  .saveShortText {
+    display: inline;
+    font-size: 0.75rem;
+  }
+  
+  .viewTeamButton {
+    padding: 0.5rem;
+    min-width: 44px;
+  }
+  
+  .viewTeamButton span:not(:first-child) {
     display: none;
   }
   
   .mainContent {
-    padding: 1rem;
+    padding: 0.75rem;
+    height: calc(100% - 116px);
   }
   
   .footer {
-    padding: 0 0.75rem;
+    height: 60px;
+    padding: 0 0.5rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
   }
   
   .navArrow {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    height: 36px;
+    padding: 0.5rem;
+    min-width: 44px;
+    justify-content: center;
   }
   
-  .navArrow span:first-child {
+  .navArrowText {
     display: none;
   }
   
+  .navArrowShortText {
+    display: inline;
+    font-size: 0.75rem;
+  }
+  
+  .navIndicator {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    min-width: 50px;
+  }
+  
   .loginCenterButton {
-    padding: 0.75rem 1.5rem;
+    padding: 0.85rem 1.25rem;
     font-size: 0.9rem;
+    max-width: 280px;
+  }
+}
+
+/* Petits mobiles */
+@media (max-width: 360px) {
+  .header {
+    padding: 0 0.25rem;
+  }
+  
+  .footer {
+    padding: 0 0.25rem;
+  }
+  
+  .navButton {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.7rem;
+  }
+  
+  .viewTeamButton, .saveButton {
+    padding: 0.4rem;
+    min-width: 40px;
+  }
+  
+  .mainContent {
+    padding: 0.5rem;
+  }
+  
+  .navIndicator {
+    font-size: 0.75rem;
+    min-width: 45px;
+  }
+}
+
+/* Orientation paysage */
+@media (max-height: 500px) and (orientation: landscape) {
+  .header {
+    height: 50px;
+    top: 50px;
+  }
+  
+  .footer {
+    height: 50px;
+  }
+  
+  .navButtons.mobileMenuOpen {
+    max-height: 200px;
+  }
+  
+  .mainContent {
+    height: calc(100% - 100px);
+  }
+}
+
+/* Tablettes */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .navButton {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+  
+  .viewTeamButton, .saveButton {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+  
+  .mainContent {
+    padding: 1.25rem;
   }
 }

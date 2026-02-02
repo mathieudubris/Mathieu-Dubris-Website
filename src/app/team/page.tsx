@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { FolderKanban, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { FolderKanban, ArrowLeft, Menu, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, setupAuthListener, canEditTeamMember } from '@/utils/firebase-api';
@@ -59,11 +59,11 @@ interface TeamMember {
 }
 
 const sections = [
-  { id: 'profile', label: 'Profil', icon: User },
-  { id: 'info', label: 'Infos', icon: Info },
-  { id: 'contacts', label: 'Contacts', icon: Phone },
-  { id: 'role', label: 'Rôle', icon: Monitor },
-  { id: 'equipment', label: 'Matériel', icon: Laptop },
+  { id: 'profile', label: 'Profil', icon: User, shortLabel: 'Profil' },
+  { id: 'info', label: 'Infos', icon: Info, shortLabel: 'Infos' },
+  { id: 'contacts', label: 'Contacts', icon: Phone, shortLabel: 'Contacts' },
+  { id: 'role', label: 'Rôle', icon: Monitor, shortLabel: 'Rôle' },
+  { id: 'equipment', label: 'Matériel', icon: Laptop, shortLabel: 'Matériel' },
 ];
 
 const convertFirestoreDate = (date: any): Date => {
@@ -88,7 +88,7 @@ const convertFirestoreDate = (date: any): Date => {
   return new Date();
 };
 
-export default function EquipePage() {
+function EquipePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('project');
@@ -98,6 +98,7 @@ export default function EquipePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState('profile');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const [teamMember, setTeamMember] = useState<TeamMember>({
     userId: '',
@@ -158,7 +159,6 @@ export default function EquipePage() {
         const canEdit = await canEditTeamMember(userId, auth.currentUser);
         if (!canEdit) {
           console.warn("L'utilisateur n'a pas la permission de modifier cette fiche");
-          // Si l'utilisateur ne peut pas éditer, on le redirige vers la vue
           router.push('/team/view');
           return;
         }
@@ -200,7 +200,6 @@ export default function EquipePage() {
           updatedAt
         });
       } else {
-        // Nouvel utilisateur - initialiser avec les données de base
         setTeamMember(prev => ({
           ...prev,
           userId,
@@ -316,7 +315,6 @@ export default function EquipePage() {
         roles: teamMember.roles || []
       };
       
-      // Nettoyer les données undefined
       Object.keys(teamData).forEach(key => {
         if (teamData[key as keyof typeof teamData] === undefined) {
           delete teamData[key as keyof typeof teamData];
@@ -327,7 +325,6 @@ export default function EquipePage() {
 
       alert('✅ Profil enregistré avec succès!');
       
-      // Rediriger vers le projet ou la vue équipe
       if (projectId) {
         setTimeout(() => {
           router.push(`/projet-en-cours?project=${projectId}`);
@@ -483,64 +480,82 @@ export default function EquipePage() {
       <main className={styles.content}>
         <div className={styles.pageContainer}>
           <header className={styles.header}>
-            <div className={styles.navButtons}>
+            {/* Mobile Menu Toggle */}
+            <button
+              className={styles.mobileMenuToggle}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+            
+            <div className={`${styles.navButtons} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
               {sections.map((section) => {
                 const Icon = section.icon;
                 return (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => {
+                      setActiveSection(section.id);
+                      setIsMobileMenuOpen(false);
+                    }}
                     className={`${styles.navButton} ${
                       activeSection === section.id ? styles.active : ''
                     }`}
                   >
-                    <Icon size={14} />
-                    {section.label}
+                    <Icon size={16} />
+                    <span className={styles.navLabel}>{section.label}</span>
+                    <span className={styles.navShortLabel}>{section.shortLabel}</span>
                   </button>
                 );
               })}
             </div>
             
             <div className={styles.headerActions}>
-              {/* Bouton pour retourner au projet */}
-              {projectId && (
+              {/* Actions Desktop */}
+              <div className={styles.desktopActions}>
+                {projectId && (
+                  <button
+                    onClick={() => router.push(`/projet-en-cours?project=${projectId}`)}
+                    className={styles.viewTeamButton}
+                  >
+                    <ArrowLeft size={16} />
+                    <span>Retour</span>
+                  </button>
+                )}
+                
                 <button
-                  onClick={() => router.push(`/projet-en-cours?project=${projectId}`)}
-                  className={styles.viewTeamButton}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                >
-                  <ArrowLeft size={16} />
-                  <span>Retour au projet</span>
-                </button>
-              )}
-              
-              {/* Bouton pour aller aux projets */}
-              <button
-                onClick={() => router.push('/projet-en-cours')}
-                className={styles.viewTeamButton}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-              >
-                <FolderKanban size={16} />
-                <span>Projets en cours</span>
-              </button>
-              
-              {/* Bouton pour voir l'équipe (seulement si pas de projectId) */}
-              {!projectId && (
-                <button
-                  onClick={() => router.push('/team/view')}
+                  onClick={() => router.push('/projet-en-cours')}
                   className={styles.viewTeamButton}
                 >
-                  Voir l'équipe
+                  <FolderKanban size={16} />
+                  <span>Projets</span>
                 </button>
-              )}
+                
+                {!projectId && (
+                  <button
+                    onClick={() => router.push('/team/view')}
+                    className={styles.viewTeamButton}
+                  >
+                    <span>Équipe</span>
+                  </button>
+                )}
+              </div>
               
+              {/* Mobile Save Button */}
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className={styles.saveButton}
+                className={`${styles.saveButton} ${styles.mobileSaveButton}`}
               >
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+                {isSaving ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    <Save size={16} className={styles.saveIcon} />
+                    <span className={styles.saveText}>Enregistrer</span>
+                    <span className={styles.saveShortText}>Save</span>
+                  </>
+                )}
               </button>
             </div>
           </header>
@@ -563,11 +578,14 @@ export default function EquipePage() {
               className={styles.navArrow}
             >
               <ChevronLeft size={18} />
-              Précédent
+              <span className={styles.navArrowText}>Précédent</span>
+              <span className={styles.navArrowShortText}>Préc.</span>
             </button>
             
             <div className={styles.navIndicator}>
-              {sections.findIndex(s => s.id === activeSection) + 1} / {sections.length}
+              <span className={styles.navIndicatorText}>
+                {sections.findIndex(s => s.id === activeSection) + 1} / {sections.length}
+              </span>
             </div>
             
             <button
@@ -575,7 +593,8 @@ export default function EquipePage() {
               disabled={activeSection === sections[sections.length - 1].id}
               className={styles.navArrow}
             >
-              Suivant
+              <span className={styles.navArrowText}>Suivant</span>
+              <span className={styles.navArrowShortText}>Suiv.</span>
               <ChevronRight size={18} />
             </button>
           </footer>
@@ -584,5 +603,18 @@ export default function EquipePage() {
 
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>
+  );
+}
+
+export default function EquipePage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <div className={styles.loadingText}>Chargement...</div>
+      </div>
+    }>
+      <EquipePageContent />
+    </Suspense>
   );
 }
