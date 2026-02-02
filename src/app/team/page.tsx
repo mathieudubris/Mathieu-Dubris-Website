@@ -56,6 +56,12 @@ interface TeamMember {
   updatedAt: Date;
 }
 
+// Type pour les données brutes de Firestore
+interface FirestoreTeamMember extends Omit<TeamMember, 'createdAt' | 'updatedAt'> {
+  createdAt?: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
+}
+
 const sections = [
   { id: 'profile', label: 'Profil', icon: User },
   { id: 'info', label: 'Infos', icon: Info },
@@ -63,6 +69,29 @@ const sections = [
   { id: 'role', label: 'Rôle', icon: Monitor },
   { id: 'equipment', label: 'Matériel', icon: Laptop },
 ];
+
+// Fonction utilitaire pour convertir les dates Firestore
+const convertFirestoreDate = (date: any): Date => {
+  if (!date) return new Date();
+  
+  if (date instanceof Date) {
+    return date;
+  }
+  
+  if (typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function') {
+    return date.toDate();
+  }
+  
+  if (typeof date === 'string') {
+    return new Date(date);
+  }
+  
+  if (typeof date === 'number') {
+    return new Date(date);
+  }
+  
+  return new Date();
+};
 
 export default function EquipePage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -125,20 +154,11 @@ export default function EquipePage() {
       const teamSnap = await getDoc(teamRef);
       
       if (teamSnap.exists()) {
-        const data = teamSnap.data() as TeamMember;
+        const data = teamSnap.data() as FirestoreTeamMember;
         
         // Conversion sécurisée des dates
-        const createdAt = data.createdAt instanceof Date 
-          ? data.createdAt 
-          : data.createdAt?.toDate 
-            ? data.createdAt.toDate() 
-            : new Date();
-        
-        const updatedAt = data.updatedAt instanceof Date 
-          ? data.updatedAt 
-          : data.updatedAt?.toDate 
-            ? data.updatedAt.toDate() 
-            : new Date();
+        const createdAt = convertFirestoreDate(data.createdAt);
+        const updatedAt = convertFirestoreDate(data.updatedAt);
         
         setTeamMember({
           ...data,

@@ -164,7 +164,7 @@ const ContactPage: React.FC = () => {
     }
   ];
 
-  // Animations minimales
+  // Animations minimales - CORRECTION ICI
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -183,7 +183,7 @@ const ContactPage: React.FC = () => {
       opacity: 1,
       transition: {
         duration: 0.3,
-        ease: "easeOut"
+        ease: "easeOut" as const // Correction : ajouter "as const"
       }
     }
   };
@@ -198,7 +198,11 @@ const ContactPage: React.FC = () => {
       >
         {/* En-tête */}
         <motion.div className={styles.header} variants={itemVariants}>
-
+          <h1 className={styles.title}>Contactez-nous</h1>
+          <p className={styles.subtitle}>
+            Une question, un projet ou simplement envie de discuter ? 
+            N'hésitez pas à nous contacter, nous vous répondrons dans les plus brefs délais.
+          </p>
         </motion.div>
 
         {/* Contenu principal - Grille responsive */}

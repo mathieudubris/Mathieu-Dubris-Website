@@ -16,7 +16,12 @@ const PendingPage = () => {
     window.location.href = 'mailto:mathieudubris@gmail.com';
   };
 
-  const containerVariants = {
+  // Solution 1: Définir des types explicites pour les variants
+  interface Variants {
+    [key: string]: any;
+  }
+
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -27,7 +32,7 @@ const PendingPage = () => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { y: 10, opacity: 0 },
     visible: {
       y: 0,
@@ -39,7 +44,7 @@ const PendingPage = () => {
     },
   };
 
-  const closeButtonVariants = {
+  const closeButtonVariants: Variants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { 
       opacity: 1, 
@@ -53,11 +58,6 @@ const PendingPage = () => {
     hover: { 
       scale: 1.1,
       backgroundColor: 'rgba(199, 255, 68, 0.1)',
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 10
-      }
     }
   };
 
@@ -69,26 +69,32 @@ const PendingPage = () => {
         <div className={styles.gradientOrb} />
       </div>
 
-      {/* Close Button */}
+      {/* Close Button - Solution 2: Sans variants */}
       <motion.button
         className={styles.closeButton}
         onClick={handleClose}
-        variants={closeButtonVariants}
-        initial="hidden"
-        animate="visible"
-        whileHover="hover"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ 
+          scale: 1.1,
+          backgroundColor: 'rgba(199, 255, 68, 0.1)',
+        }}
         whileTap={{ scale: 0.9 }}
+        transition={{
+          default: { type: "spring", stiffness: 200, damping: 15 },
+          opacity: { duration: 0.3 }
+        }}
         aria-label="Fermer et retourner à la page précédente"
       >
         <X size={20} />
       </motion.button>
 
-      {/* Main Content - No visible container */}
+      {/* Main Content */}
       <motion.div 
         className={styles.content}
-        variants={containerVariants}
         initial="hidden"
         animate="visible"
+        variants={containerVariants}
       >
         <motion.div 
           className={styles.iconSection}
