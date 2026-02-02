@@ -2,15 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { 
   auth, 
   setupAuthListener, 
   getProjects, 
-  getUserProjects, 
   deleteProject,
   isAdmin,
-  getTeamMembers
+  getTeamMembers,
+  hasAccessToProject,
+  isUserInProject,
+  getUserTeamProfile,
+  Project as FirebaseProject,
+  TeamMember as FirebaseTeamMember
 } from '@/utils/firebase-api';
 import { 
   Plus, 
@@ -22,46 +26,30 @@ import {
   Search,
   Filter,
   ArrowLeft,
-  ExternalLink,
-  FolderKanban,
-  X
+  X,
+  User,
+  Eye
 } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
-import ProjetEditor from '@/components/app/projet-en-cours/ProjetEditor';
-import UserList from '@/components/app/UserList/UserList';
+import ProjetEditor from '@/components/projet-en-cours/ProjetEditor';
+import ProjetDetail from '@/components/projet-en-cours/ProjetDetail';
+import UserList from '@/components/UserList/UserList';
 import styles from './projet-en-cours.module.css';
 
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  createdBy: string;
-  createdAt: any;
-  updatedAt: any;
-  teamMembers: string[];
-}
-
-interface TeamMember {
-  id: string;
-  userId: string;
-  firstName: string;
-  lastName: string;
-  image: string;
-  roles: string[];
-}
+// Utiliser les interfaces importées de firebase-api
+type Project = FirebaseProject;
+type TeamMember = FirebaseTeamMember;
 
 export default function ProjetEnCoursPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const projectId = searchParams.get('project');
   
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectTeamMembers, setProjectTeamMembers] = useState<TeamMember[]>([]);
+  const [userTeamProfile, setUserTeamProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
@@ -69,10 +57,9 @@ export default function ProjetEnCoursPage() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'my' | 'joined'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'joined'>('all');
   
   const isViewingProject = !!selectedProject;
-  const adminEmail = 'mathieudubris@gmail.com';
 
   useEffect(() => {
     const unsubscribe = setupAuthListener(async (user) => {
@@ -80,15 +67,18 @@ export default function ProjetEnCoursPage() {
         setCurrentUser(user);
         await loadProjects();
         
-        // Si un projectId est dans l'URL, charger ce projet
-        if (projectId) {
+        // Vérifier si un project est dans l'URL
+        const params = new URLSearchParams(window.location.search);
+        const projectId = params.get('project');
+        if (projectId && projects.length > 0) {
           const project = projects.find(p => p.id === projectId);
-          if (project) {
+          if (project && hasAccessToProject(project, user.uid)) {
             handleProjectClick(project);
           }
         }
       } else {
         setCurrentUser(null);
+        setSelectedProject(null);
       }
       setLoading(false);
     });
@@ -96,23 +86,22 @@ export default function ProjetEnCoursPage() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (projectId && projects.length > 0 && !selectedProject) {
-      const project = projects.find(p => p.id === projectId);
-      if (project) {
-        handleProjectClick(project);
-      }
-    }
-  }, [projectId, projects, selectedProject]);
-
   const loadProjects = async () => {
     try {
       let allProjects = await getProjects();
       
-      // Ajoute l'URL par défaut si pas d'image
+      // Filtrer les projets auxquels l'utilisateur a accès
+      if (currentUser) {
+        allProjects = allProjects.filter(project => 
+          hasAccessToProject(project, currentUser.uid)
+        );
+      }
+      
+      // Ajoute l'URL par défaut si pas d'image et initialise teamMembers
       allProjects = allProjects.map(project => ({
         ...project,
-        image: project.image || '/default-project.jpg'
+        image: project.image || '/default-project.jpg',
+        teamMembers: project.teamMembers || []
       }));
       
       setProjects(allProjects);
@@ -132,6 +121,14 @@ export default function ProjetEnCoursPage() {
         setProjectTeamMembers(team);
       } else {
         setProjectTeamMembers([]);
+      }
+      
+      // Charger le profil d'équipe de l'utilisateur courant
+      if (currentUser && project.teamMembers?.includes(currentUser.uid)) {
+        const profile = await getUserTeamProfile(currentUser.uid);
+        setUserTeamProfile(profile);
+      } else {
+        setUserTeamProfile(null);
       }
     } catch (error) {
       console.error('Erreur lors du chargement de l\'équipe:', error);
@@ -153,18 +150,10 @@ export default function ProjetEnCoursPage() {
     
     // Filtre par type
     if (currentUser) {
-      switch (activeFilter) {
-        case 'my':
-          filtered = filtered.filter(project => project.createdBy === currentUser.uid);
-          break;
-        case 'joined':
-          filtered = filtered.filter(project => 
-            project.teamMembers?.includes(currentUser.uid) && project.createdBy !== currentUser.uid
-          );
-          break;
-        default:
-          // 'all' - tous les projets
-          break;
+      if (activeFilter === 'joined') {
+        filtered = filtered.filter(project => 
+          project.teamMembers?.includes(currentUser.uid) && project.createdBy !== currentUser.uid
+        );
       }
     }
     
@@ -176,11 +165,19 @@ export default function ProjetEnCoursPage() {
       setShowLogin(true);
       return;
     }
+    if (!isAdmin(currentUser.email)) {
+      alert('Seul l\'administrateur peut créer des projets');
+      return;
+    }
     setEditingProject(null);
     setShowEditor(true);
   };
 
   const handleEditProject = (project: Project) => {
+    if (!isAdmin(currentUser?.email)) {
+      alert('Seul l\'administrateur peut modifier des projets');
+      return;
+    }
     setEditingProject(project);
     setShowEditor(true);
   };
@@ -193,6 +190,11 @@ export default function ProjetEnCoursPage() {
 
   const handleDeleteProject = async (projectId: string) => {
     try {
+      if (!isAdmin(currentUser?.email)) {
+        alert('Seul l\'administrateur peut supprimer des projets');
+        return;
+      }
+      
       await deleteProject(projectId);
       await loadProjects();
       setDeleteConfirmId(null);
@@ -200,8 +202,6 @@ export default function ProjetEnCoursPage() {
       // Si on supprime le projet actuellement sélectionné
       if (selectedProject?.id === projectId) {
         setSelectedProject(null);
-        // Mettre à jour l'URL
-        router.push('/projet-en-cours');
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
@@ -209,20 +209,15 @@ export default function ProjetEnCoursPage() {
   };
 
   const handleProjectClick = async (project: Project) => {
+    if (!project.id) return;
     setSelectedProject(project);
     await loadProjectTeam(project);
-    // Mettre à jour l'URL sans recharger la page
-    router.push(`/projet-en-cours?project=${project.id}`, { scroll: false });
   };
 
   const handleBackToList = () => {
     setSelectedProject(null);
     setProjectTeamMembers([]);
-    router.push('/projet-en-cours', { scroll: false });
-  };
-
-  const handleViewProfile = (userId: string) => {
-    router.push(`/team?userId=${userId}`);
+    setUserTeamProfile(null);
   };
 
   const handleUserAdded = async () => {
@@ -230,6 +225,12 @@ export default function ProjetEnCoursPage() {
     await loadProjects();
     if (selectedProject) {
       await loadProjectTeam(selectedProject);
+    }
+  };
+
+  const handleEditProfile = () => {
+    if (selectedProject && currentUser) {
+      router.push(`/team?project=${selectedProject.id}`);
     }
   };
 
@@ -260,314 +261,85 @@ export default function ProjetEnCoursPage() {
     );
   }
 
-  // Fonction pour vérifier l'accès au projet
-  const hasAccessToProject = (project: Project) => {
-    if (!currentUser) return false;
-    return project.teamMembers?.includes(currentUser.uid) || 
-           project.createdBy === currentUser.uid ||
-           isAdmin(currentUser.email);
-  };
-
   return (
     <div className={styles.mainContainer}>
       <Header />
       
       <main className={styles.content}>
         <div className={styles.pageContainer}>
-          {/* Vue DÉTAIL d'un projet */}
+          {/* Vue DÉTAIL d'un projet en modal plein écran */}
           {isViewingProject && selectedProject ? (
-            <>
-              {/* Vérifier l'accès */}
-              {!hasAccessToProject(selectedProject) ? (
-                <div className={styles.accessDenied}>
-                  <h2>Accès restreint</h2>
-                  <p>Vous n'avez pas accès à ce projet.</p>
-                  <p>Contactez l'administrateur pour être ajouté à l'équipe.</p>
-                  <button onClick={handleBackToList} className={styles.backButton}>
-                    <ArrowLeft size={16} />
-                    Retour aux projets
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Bouton retour */}
-                  <button onClick={handleBackToList} className={styles.backButton}>
-                    <ArrowLeft size={16} />
-                    <span>Retour aux projets</span>
-                  </button>
-
-                  {/* En-tête du projet */}
-                  <div className={styles.projectHeader}>
-                    <div className={styles.projectImage}>
-                      <img 
-                        src={selectedProject.image || '/default-project.jpg'} 
-                        alt={selectedProject.title}
-                        onError={(e) => {
-                          e.currentTarget.src = '/default-project.jpg';
-                        }}
-                      />
-                    </div>
-                    
-                    <div className={styles.projectInfo}>
-                      <div className={styles.projectTitleSection}>
-                        <h1 className={styles.projectTitle}>{selectedProject.title}</h1>
-                        {currentUser && isAdmin(currentUser.email) && (
-                          <div className={styles.projectActions}>
-                            <button onClick={() => handleEditProject(selectedProject)} className={styles.editButton}>
-                              <Edit2 size={16} />
-                              <span>Modifier</span>
-                            </button>
-                            <button onClick={handleManageTeam} className={styles.teamButton}>
-                              <Users size={16} />
-                              <span>Gérer l'équipe</span>
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirmId(selectedProject.id)}
-                              className={styles.deleteButton}
-                            >
-                              <Trash2 size={16} />
-                              <span>Supprimer</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <p className={styles.projectDescription}>{selectedProject.description}</p>
-                      
-                      <div className={styles.projectMeta}>
-                        <div className={styles.metaItem}>
-                          <Calendar size={16} />
-                          <span>Créé le {formatDate(selectedProject.createdAt)}</span>
-                        </div>
-                        <div className={styles.metaItem}>
-                          <Users size={16} />
-                          <span>{selectedProject.teamMembers?.length || 0} membre(s)</span>
-                        </div>
-                      </div>
-                      
-                      {currentUser && selectedProject.teamMembers?.includes(currentUser.uid) && (
-                        <div className={styles.userStatus}>
-                          <span className={styles.statusBadge}>
-                            Vous êtes membre de ce projet
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Confirmation de suppression */}
-                  {deleteConfirmId === selectedProject.id && (
-                    <div className={styles.confirmOverlayFull}>
-                      <div className={styles.confirmModal}>
-                        <AlertTriangle size={32} color="#ef4444" />
-                        <h3>Supprimer ce projet ?</h3>
-                        <p>Cette action est irréversible. Toutes les données du projet seront perdues.</p>
-                        <div className={styles.confirmButtons}>
-                          <button
-                            onClick={() => handleDeleteProject(selectedProject.id)}
-                            className={styles.confirmYes}
-                          >
-                            Oui, supprimer
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirmId(null)}
-                            className={styles.confirmNo}
-                          >
-                            Annuler
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Section Équipe */}
-                  <div className={styles.teamSection}>
-                    <div className={styles.sectionHeader}>
-                      <h2 className={styles.sectionTitle}>
-                        <Users size={20} />
-                        <span>Équipe du projet</span>
-                      </h2>
-                      {currentUser && isAdmin(currentUser.email) && (
-                        <button onClick={handleManageTeam} className={styles.addMemberButton}>
-                          <Users size={16} />
-                          <span>Gérer l'équipe</span>
-                        </button>
-                      )}
-                    </div>
-
-                    {projectTeamMembers.length > 0 ? (
-                      <div className={styles.teamGrid}>
-                        {projectTeamMembers.map((member) => (
-                          <div key={member.id} className={styles.memberCard}>
-                            <div 
-                              className={styles.memberAvatar}
-                              onClick={() => handleViewProfile(member.userId)}
-                            >
-                              {member.image ? (
-                                <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
-                              ) : (
-                                <div className={styles.avatarPlaceholder}>
-                                  {member.firstName?.[0] || '?'}
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className={styles.memberInfo}>
-                              <h3 className={styles.memberName}>
-                                {member.firstName} {member.lastName}
-                              </h3>
-                              
-                              {member.roles && member.roles.length > 0 && (
-                                <div className={styles.memberRoles}>
-                                  {member.roles.slice(0, 2).map((role, index) => (
-                                    <span key={index} className={styles.roleTag}>
-                                      {role}
-                                    </span>
-                                  ))}
-                                  {member.roles.length > 2 && (
-                                    <span className={styles.moreRoles}>
-                                      +{member.roles.length - 2} autres
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            
-                            <button
-                              onClick={() => handleViewProfile(member.userId)}
-                              className={styles.viewProfileButton}
-                            >
-                              <ExternalLink size={14} />
-                              <span>Voir profil</span>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className={styles.emptyTeam}>
-                        <Users size={48} className={styles.emptyIcon} />
-                        <h3>Aucun membre dans l'équipe</h3>
-                        <p>
-                          {currentUser && isAdmin(currentUser.email)
-                            ? 'Ajoutez des membres pour constituer l\'équipe du projet.'
-                            : 'L\'administrateur n\'a pas encore ajouté de membres à ce projet.'}
-                        </p>
-                        {currentUser && isAdmin(currentUser.email) && (
-                          <button onClick={handleManageTeam} className={styles.addFirstMemberButton}>
-                            <Users size={16} />
-                            Ajouter le premier membre
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Appel à l'action pour les membres */}
-                  {currentUser && 
-                   selectedProject.teamMembers?.includes(currentUser.uid) && 
-                   !projectTeamMembers.find(m => m.userId === currentUser.uid) && (
-                    <div className={styles.callToAction}>
-                      <h3>Complétez votre profil d'équipe</h3>
-                      <p>
-                        Vous êtes membre de ce projet mais n'avez pas encore complété votre profil d'équipe.
-                        Complétez-le pour apparaître dans la liste des membres.
-                      </p>
-                      <button
-                        onClick={() => router.push('/team')}
-                        className={styles.ctaButton}
-                      >
-                        Compléter mon profil
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </>
+            <ProjetDetail
+              project={selectedProject}
+              teamMembers={projectTeamMembers}
+              currentUser={currentUser}
+              userTeamProfile={userTeamProfile}
+              onBack={handleBackToList}
+              onEditProject={() => handleEditProject(selectedProject)}
+              onManageTeam={handleManageTeam}
+              onDeleteProject={() => setDeleteConfirmId(selectedProject.id || '')}
+              onEditProfile={handleEditProfile}
+            />
           ) : (
             /* Vue LISTE des projets */
             <>
-              {/* En-tête de page */}
-              <header className={styles.pageHeader}>
-                <div>
+              {/* En-tête de page COMPACT */}
+              <div className={styles.pageHeader}>
+                <div className={styles.headerTop}>
                   <h1 className={styles.pageTitle}>Projets en cours</h1>
-                  <p className={styles.pageSubtitle}>
-                    {filteredProjects.length} projet{filteredProjects.length > 1 ? 's' : ''}
-                  </p>
-                </div>
-                
-                <div className={styles.headerActions}>
-                  <button
-                    onClick={() => router.push('/team')}
-                    className={styles.teamButton}
-                  >
-                    <FolderKanban size={16} />
-                    <span>Mon équipe</span>
-                  </button>
                   
-                  {currentUser && isAdmin(currentUser.email) && (
-                    <button
-                      onClick={handleCreateProject}
-                      className={styles.createButton}
-                    >
-                      <Plus size={16} />
-                      <span>Nouveau projet</span>
-                    </button>
-                  )}
-                </div>
-              </header>
-
-              {/* Barre de filtres et recherche */}
-              <div className={styles.filterBar}>
-                <div className={styles.searchContainer}>
-                  <Search size={18} className={styles.searchIcon} />
-                  <input
-                    type="text"
-                    placeholder="Rechercher un projet..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={styles.searchInput}
-                  />
-                  {searchQuery && (
-                    <button 
-                      className={styles.clearSearch}
-                      onClick={() => setSearchQuery('')}
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
+                  <div className={styles.headerControls}>
+                    {/* Barre de recherche */}
+                    <div className={styles.searchContainer}>
+                      <Search size={18} className={styles.searchIcon} />
+                      <input
+                        type="text"
+                        placeholder="Rechercher un projet..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className={styles.searchInput}
+                      />
+                    </div>
+                    
+                    {/* Bouton créer (admin seulement) */}
+                    {currentUser && isAdmin(currentUser.email) && (
+                      <button
+                        onClick={handleCreateProject}
+                        className={styles.createButton}
+                      >
+                        <Plus size={16} />
+                        <span>Nouveau projet</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 
-                {currentUser && (
-                  <div className={styles.filterButtons}>
-                    <button
-                      className={`${styles.filterBtn} ${activeFilter === 'all' ? styles.active : ''}`}
-                      onClick={() => setActiveFilter('all')}
-                    >
-                      Tous les projets
-                    </button>
-                    <button
-                      className={`${styles.filterBtn} ${activeFilter === 'my' ? styles.active : ''}`}
-                      onClick={() => setActiveFilter('my')}
-                    >
-                      Mes créations
-                    </button>
+                {/* Filtres */}
+                <div className={styles.filterBar}>
+                  <button
+                    className={`${styles.filterBtn} ${activeFilter === 'all' ? styles.active : ''}`}
+                    onClick={() => setActiveFilter('all')}
+                  >
+                    Tous les projets
+                  </button>
+                  {currentUser && (
                     <button
                       className={`${styles.filterBtn} ${activeFilter === 'joined' ? styles.active : ''}`}
                       onClick={() => setActiveFilter('joined')}
                     >
                       Projets rejoints
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
-              {/* Grille de projets */}
+              {/* Grille de projets en carrés */}
               {filteredProjects.length > 0 ? (
                 <div className={styles.projectsGrid}>
                   <AnimatePresence mode="popLayout">
                     {filteredProjects.map((project, index) => (
                       <motion.div
-                        key={project.id}
+                        key={project.id || index}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
@@ -575,7 +347,7 @@ export default function ProjetEnCoursPage() {
                         className={styles.projectCard}
                         onClick={() => handleProjectClick(project)}
                       >
-                        {deleteConfirmId === project.id ? (
+                        {deleteConfirmId === (project.id || '') ? (
                           <div className={styles.confirmOverlay}>
                             <AlertTriangle size={32} />
                             <p>Supprimer ce projet ?</p>
@@ -583,7 +355,9 @@ export default function ProjetEnCoursPage() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDeleteProject(project.id);
+                                  if (project.id) {
+                                    handleDeleteProject(project.id);
+                                  }
                                 }}
                                 className={styles.confirmYes}
                               >
@@ -602,20 +376,22 @@ export default function ProjetEnCoursPage() {
                           </div>
                         ) : (
                           <>
-                            <div className={styles.cardHeader}>
-                              <div className={styles.projectImageSmall}>
-                                <img 
-                                  src={project.image} 
-                                  alt={project.title}
-                                  onError={(e) => {
-                                    e.currentTarget.src = '/default-project.jpg';
-                                  }}
-                                />
-                              </div>
-                              
-                              <div className={styles.projectActions}>
+                            <div className={styles.projectImageContainer}>
+                              <img 
+                                src={project.image} 
+                                alt={project.title}
+                                className={styles.projectImage}
+                                onError={(e) => {
+                                  e.currentTarget.src = '/default-project.jpg';
+                                }}
+                              />
+                            </div>
+                            
+                            <div className={styles.projectContent}>
+                              <div className={styles.projectHeader}>
+                                <h3 className={styles.projectTitle}>{project.title}</h3>
                                 {currentUser && isAdmin(currentUser.email) && (
-                                  <>
+                                  <div className={styles.projectActions}>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -629,56 +405,41 @@ export default function ProjetEnCoursPage() {
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        // Gérer l'équipe depuis la liste
-                                        setSelectedProject(project);
-                                        setShowUserList(true);
-                                      }}
-                                      className={styles.actionBtn}
-                                      title="Gérer l'équipe"
-                                    >
-                                      <Users size={14} />
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeleteConfirmId(project.id);
+                                        setDeleteConfirmId(project.id || '');
                                       }}
                                       className={styles.actionBtn}
                                       title="Supprimer"
                                     >
                                       <Trash2 size={14} />
                                     </button>
-                                  </>
+                                  </div>
                                 )}
                               </div>
-                            </div>
-                            
-                            <div className={styles.cardBody}>
-                              <h3 className={styles.projectTitle}>{project.title}</h3>
+                              
                               <p className={styles.projectDescription}>
                                 {project.description.length > 100
                                   ? `${project.description.substring(0, 100)}...`
                                   : project.description}
                               </p>
                               
-                              <div className={styles.projectMeta}>
-                                <div className={styles.metaItem}>
-                                  <Calendar size={12} />
-                                  <span>{formatDate(project.createdAt)}</span>
+                              <div className={styles.projectFooter}>
+                                <div className={styles.projectMeta}>
+                                  <div className={styles.metaItem}>
+                                    <Calendar size={12} />
+                                    <span>{formatDate(project.createdAt)}</span>
+                                  </div>
+                                  <div className={styles.metaItem}>
+                                    <Users size={12} />
+                                    <span>{(project.teamMembers || []).length} membre(s)</span>
+                                  </div>
                                 </div>
-                                <div className={styles.metaItem}>
-                                  <Users size={12} />
-                                  <span>{project.teamMembers?.length || 0} membre(s)</span>
-                                </div>
-                              </div>
-                              
-                              {currentUser && project.teamMembers?.includes(currentUser.uid) && (
-                                <div className={styles.projectStatus}>
-                                  <span className={styles.statusBadge}>
-                                    Vous êtes dans ce projet
+                                
+                                {currentUser && project.teamMembers?.includes(currentUser.uid) && (
+                                  <span className={styles.memberBadge}>
+                                    Membre
                                   </span>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
                           </>
                         )}
@@ -742,7 +503,7 @@ export default function ProjetEnCoursPage() {
       <AnimatePresence>
         {showUserList && selectedProject && (
           <UserList
-            projectId={selectedProject.id}
+            projectId={selectedProject.id || ''}
             onClose={() => {
               setShowUserList(false);
             }}

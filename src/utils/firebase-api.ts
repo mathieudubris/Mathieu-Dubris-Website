@@ -1,4 +1,4 @@
-// firebase-api.ts
+// firebase-api.ts - MISES À JOUR
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, 
@@ -17,7 +17,10 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  addDoc,
+  updateDoc,
+  Timestamp
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -51,6 +54,58 @@ export interface UserData {
   photoURL: string | null;
   createdAt: string;
   lastLogin: string;
+}
+
+// Interface pour un projet
+export interface Project {
+  id?: string;
+  title: string;
+  description: string;
+  image: string;
+  createdBy: string;
+  createdAt: any;
+  updatedAt: any;
+  teamMembers: string[];
+}
+
+// Interface pour un membre d'équipe
+export interface TeamMember {
+  id?: string;
+  userId: string;
+  image: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  agePublic: boolean;
+  email: string;
+  phone: string;
+  contacts: {
+    type: 'instagram' | 'whatsapp' | 'discord' | 'tiktok' | 'youtube' | 'facebook' | 'twitter' | 'linkedin';
+    value: string;
+    label?: string;
+    isPublic: boolean;
+  }[];
+  roles: string[];
+  equipment: {
+    phone: {
+      model: string;
+      internet: 'wifi' | 'mobile' | 'both';
+    };
+    computer: {
+      os: 'windows' | 'mac' | 'linux';
+      ram: string;
+      storage: string;
+      gpu?: string;
+    };
+  };
+  location: {
+    country: string;
+    city: string;
+    district: string;
+    districtPublic: boolean;
+  };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Fonction pour stocker/mettre à jour les infos utilisateur
@@ -143,27 +198,9 @@ export const getTeamMembers = async (): Promise<any[]> => {
   }
 };
 
-// Exporter les fonctions d'authentification
-export { signInWithPopup, signOut, onAuthStateChanged };
-export type { User };
-// Ajoute ces fonctions à la fin du fichier firebase-api.ts (après getTeamMembers)
-
-// Interface pour un projet
-export interface Project {
-  id?: string;
-  title: string;
-  description: string;
-  image: string;
-  createdBy: string;
-  createdAt: any;
-  updatedAt: any;
-  teamMembers: string[]; // Liste des IDs des utilisateurs ajoutés au projet
-}
-
 // Fonction pour récupérer tous les projets
 export const getProjects = async (): Promise<Project[]> => {
   try {
-    const db = getFirestore();
     const projectsCollection = collection(db, 'projects');
     const snapshot = await getDocs(projectsCollection);
     
@@ -172,18 +209,46 @@ export const getProjects = async (): Promise<Project[]> => {
       projects.push({ id: doc.id, ...doc.data() } as Project);
     });
     
-    return projects;
+    // Assurer que teamMembers est toujours un tableau
+    return projects.map(project => ({
+      ...project,
+      teamMembers: project.teamMembers || []
+    }));
   } catch (error) {
     console.error('Erreur lors du chargement des projets:', error);
     return [];
   }
 };
 
+// Fonction pour récupérer un projet spécifique
+export const getProject = async (projectId: string): Promise<Project | null> => {
+  try {
+    const projectRef = doc(db, 'projects', projectId);
+    const projectDoc = await getDoc(projectRef);
+    
+    if (projectDoc.exists()) {
+      const project = { id: projectDoc.id, ...projectDoc.data() } as Project;
+      return {
+        ...project,
+        teamMembers: project.teamMembers || []
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Erreur lors du chargement du projet:', error);
+    return null;
+  }
+};
+
 // Fonction pour créer un projet
 export const createProject = async (project: Omit<Project, 'id'>): Promise<string> => {
   try {
-    const db = getFirestore();
-    const docRef = await addDoc(collection(db, 'projects'), project);
+    const docRef = await addDoc(collection(db, 'projects'), {
+      ...project,
+      teamMembers: project.teamMembers || [],
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now()
+    });
     return docRef.id;
   } catch (error) {
     console.error('Erreur lors de la création du projet:', error);
@@ -194,9 +259,11 @@ export const createProject = async (project: Omit<Project, 'id'>): Promise<strin
 // Fonction pour mettre à jour un projet
 export const updateProject = async (projectId: string, projectData: Partial<Project>): Promise<void> => {
   try {
-    const db = getFirestore();
     const projectRef = doc(db, 'projects', projectId);
-    await updateDoc(projectRef, projectData);
+    await updateDoc(projectRef, {
+      ...projectData,
+      updatedAt: Timestamp.now()
+    });
   } catch (error) {
     console.error('Erreur lors de la mise à jour du projet:', error);
     throw error;
@@ -206,7 +273,6 @@ export const updateProject = async (projectId: string, projectData: Partial<Proj
 // Fonction pour supprimer un projet
 export const deleteProject = async (projectId: string): Promise<void> => {
   try {
-    const db = getFirestore();
     const projectRef = doc(db, 'projects', projectId);
     await deleteDoc(projectRef);
   } catch (error) {
@@ -218,10 +284,23 @@ export const deleteProject = async (projectId: string): Promise<void> => {
 // Fonction pour récupérer les projets d'un utilisateur
 export const getUserProjects = async (userId: string): Promise<Project[]> => {
   try {
-    const allProjects = await getProjects();
-    return allProjects.filter(project => 
-      project.teamMembers?.includes(userId) || project.createdBy === userId
+    const projectsCollection = collection(db, 'projects');
+    const q = query(
+      projectsCollection,
+      where('teamMembers', 'array-contains', userId)
     );
+    
+    const snapshot = await getDocs(q);
+    const projects: Project[] = [];
+    snapshot.forEach(doc => {
+      const project = { id: doc.id, ...doc.data() } as Project;
+      projects.push({
+        ...project,
+        teamMembers: project.teamMembers || []
+      });
+    });
+    
+    return projects;
   } catch (error) {
     console.error('Erreur lors du chargement des projets utilisateur:', error);
     return [];
@@ -231,14 +310,17 @@ export const getUserProjects = async (userId: string): Promise<Project[]> => {
 // Fonction pour ajouter un membre à un projet
 export const addMemberToProject = async (projectId: string, userId: string): Promise<void> => {
   try {
-    const db = getFirestore();
     const projectRef = doc(db, 'projects', projectId);
     const projectSnap = await getDoc(projectRef);
     
     if (projectSnap.exists()) {
       const project = projectSnap.data() as Project;
-      const updatedMembers = [...(project.teamMembers || []), userId];
-      await updateDoc(projectRef, { teamMembers: updatedMembers });
+      const currentMembers = project.teamMembers || [];
+      const updatedMembers = Array.from(new Set([...currentMembers, userId]));
+      await updateDoc(projectRef, { 
+        teamMembers: updatedMembers,
+        updatedAt: Timestamp.now()
+      });
     }
   } catch (error) {
     console.error('Erreur lors de l\'ajout du membre:', error);
@@ -249,14 +331,17 @@ export const addMemberToProject = async (projectId: string, userId: string): Pro
 // Fonction pour supprimer un membre d'un projet
 export const removeMemberFromProject = async (projectId: string, userId: string): Promise<void> => {
   try {
-    const db = getFirestore();
     const projectRef = doc(db, 'projects', projectId);
     const projectSnap = await getDoc(projectRef);
     
     if (projectSnap.exists()) {
       const project = projectSnap.data() as Project;
-      const updatedMembers = (project.teamMembers || []).filter(id => id !== userId);
-      await updateDoc(projectRef, { teamMembers: updatedMembers });
+      const currentMembers = project.teamMembers || [];
+      const updatedMembers = currentMembers.filter(id => id !== userId);
+      await updateDoc(projectRef, { 
+        teamMembers: updatedMembers,
+        updatedAt: Timestamp.now()
+      });
     }
   } catch (error) {
     console.error('Erreur lors de la suppression du membre:', error);
@@ -269,9 +354,70 @@ export const isAdmin = (userEmail: string | null): boolean => {
   return userEmail === 'mathieudubris@gmail.com';
 };
 
-// N'oublie pas d'importer les fonctions Firestore nécessaires
-import {
-  // ... autres imports existants
-  addDoc,
-  updateDoc
-} from "firebase/firestore";
+// Fonction pour vérifier si un utilisateur a accès à un projet
+export const hasAccessToProject = (project: Project, userId: string | null): boolean => {
+  if (!userId) return false;
+  const members = project.teamMembers || [];
+  return members.includes(userId) || project.createdBy === userId;
+};
+
+// Fonction pour récupérer tous les utilisateurs (pour la liste d'ajout)
+export const getAllUsers = async (): Promise<UserData[]> => {
+  try {
+    const usersCollection = collection(db, 'users');
+    const snapshot = await getDocs(usersCollection);
+    
+    const users: UserData[] = [];
+    snapshot.forEach(doc => {
+      users.push(doc.data() as UserData);
+    });
+    
+    return users;
+  } catch (error) {
+    console.error('Erreur lors du chargement des utilisateurs:', error);
+    return [];
+  }
+};
+
+// Fonction pour vérifier si un utilisateur est dans un projet
+export const isUserInProject = (project: Project, userId: string | null): boolean => {
+  if (!userId) return false;
+  const members = project.teamMembers || [];
+  return members.includes(userId) || project.createdBy === userId;
+};
+
+// Fonction pour récupérer les membres d'un projet spécifique
+export const getProjectTeamMembers = async (projectId: string): Promise<any[]> => {
+  try {
+    const project = await getProject(projectId);
+    if (!project) return [];
+    
+    const allTeamMembers = await getTeamMembers();
+    return allTeamMembers.filter(member => 
+      project.teamMembers?.includes(member.userId)
+    );
+  } catch (error) {
+    console.error('Erreur lors du chargement des membres du projet:', error);
+    return [];
+  }
+};
+
+// Fonction pour récupérer le profil d'équipe d'un utilisateur pour un projet
+export const getUserTeamProfile = async (userId: string): Promise<any> => {
+  try {
+    const userRef = doc(db, 'team', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      return { id: userDoc.id, ...userDoc.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('Erreur lors du chargement du profil team:', error);
+    return null;
+  }
+};
+
+// Exporter les fonctions d'authentification
+export { signInWithPopup, signOut, onAuthStateChanged };
+export type { User };

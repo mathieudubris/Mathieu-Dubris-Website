@@ -1,0 +1,712 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  z-index: 3000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.modalOverlay::-webkit-scrollbar {
+  display: none;
+}
+
+.modalContent {
+  background: var(--dark);
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+}
+
+.modalMain {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.leftColumn {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.leftColumn::-webkit-scrollbar {
+  display: none;
+}
+
+.rightColumn {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.rightColumn::-webkit-scrollbar {
+  display: none;
+}
+
+.closeBtn {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4000;
+  transition: 0.3s;
+}
+
+.closeBtn:hover {
+  background: var(--primary);
+  color: var(--dark);
+  transform: rotate(90deg);
+}
+
+.modalHeader {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.headerImageContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.headerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0.3) 0%, 
+    rgba(0, 0, 0, 0.5) 50%, 
+    var(--dark) 100%);
+}
+
+.headerContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 0;
+  color: white;
+  z-index: 2;
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 30px;
+}
+
+.headerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.backButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+}
+
+.adminActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.editButton, .teamButton, .deleteButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.editButton {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+}
+
+.editButton:hover {
+  background: #d4ff5e;
+  transform: translateY(-1px);
+}
+
+.teamButton {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.teamButton:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+}
+
+.deleteButton {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+}
+
+.projectTitle {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 900;
+  margin: 0 0 15px 0;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  color: white;
+}
+
+.projectMeta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #bbb;
+  font-size: 0.9rem;
+}
+
+.modalBody {
+  flex: 1;
+  padding: 30px 0;
+}
+
+.descriptionSection {
+  margin-bottom: 30px;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.projectDescription {
+  color: #e0e0e0;
+  font-size: 1rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.callToAction {
+  background: rgba(199, 255, 68, 0.1);
+  border: 1px solid rgba(199, 255, 68, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.callToAction h3 {
+  color: var(--primary);
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.callToAction p {
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.ctaButton {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.ctaButton:hover {
+  background: #d4ff5e;
+  transform: translateY(-2px);
+}
+
+.profileAction {
+  margin: 20px 0;
+}
+
+.editProfileButton {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.editProfileButton:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+}
+
+/* Section Équipe */
+.teamSection {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.addMemberButton {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.addMemberButton:hover {
+  background: #d4ff5e;
+  transform: translateY(-1px);
+}
+
+.teamList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 5px;
+}
+
+.memberItem {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+}
+
+.memberItem:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.memberAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid var(--primary);
+  flex-shrink: 0;
+}
+
+.memberAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: var(--primary);
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.memberInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 5px 0;
+}
+
+.memberDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.memberRoles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.roleTag {
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.moreRoles {
+  color: #aaa;
+  font-size: 0.7rem;
+  font-style: italic;
+}
+
+.viewProfileButton {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.viewProfileButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+}
+
+.emptyTeam {
+  text-align: center;
+  padding: 40px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyIcon {
+  color: var(--primary);
+  opacity: 0.5;
+  margin-bottom: 15px;
+}
+
+.emptyTeam h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+
+.emptyTeam p {
+  color: var(--text-main);
+  opacity: 0.7;
+  font-size: 0.9rem;
+  max-width: 300px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+  .modalContent {
+    flex-direction: column;
+  }
+  
+  .leftColumn, .rightColumn {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .leftColumn {
+    flex: 2;
+    max-height: 60vh;
+  }
+  
+  .rightColumn {
+    flex: 1;
+    max-height: 40vh;
+    padding: 20px;
+  }
+  
+  .modalHeader {
+    height: 200px;
+  }
+}
+
+@media (max-width: 992px) {
+  .modalHeader {
+    height: 180px;
+  }
+  
+  .container {
+    padding: 0 20px;
+  }
+  
+  .projectTitle {
+    font-size: 1.5rem;
+  }
+  
+  .projectDescription {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .modalHeader {
+    height: 160px;
+  }
+  
+  .headerActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .adminActions {
+    justify-content: center;
+  }
+  
+  .container {
+    padding: 0 15px;
+  }
+  
+  .modalBody {
+    padding: 20px 0;
+  }
+  
+  .memberItem {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .memberInfo {
+    text-align: center;
+  }
+  
+  .memberDetails {
+    align-items: center;
+  }
+  
+  .memberRoles {
+    justify-content: center;
+  }
+  
+  .viewProfileButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalHeader {
+    height: 140px;
+  }
+  
+  .projectTitle {
+    font-size: 1.3rem;
+  }
+  
+  .projectMeta {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .container {
+    padding: 0 12px;
+  }
+  
+  .modalBody {
+    padding: 15px 0;
+  }
+  
+  .sectionTitle {
+    font-size: 1.1rem;
+  }
+  
+  .closeBtn {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Ajouter ces styles à ProjetDetail.module.css */
+
+.profileActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.editProfileButton {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.editProfileButton:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+  transform: translateX(5px);
+}
+
+.viewTeamButton {
+  background: rgba(30, 30, 30, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.viewTeamButton:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+  transform: translateX(5px);
+}

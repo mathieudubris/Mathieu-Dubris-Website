@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { FolderKanban } from 'lucide-react';
+import { FolderKanban, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, setupAuthListener, canEditTeamMember } from '@/utils/firebase-api';
 import { getFirestore, doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { 
@@ -89,12 +89,15 @@ const convertFirestoreDate = (date: any): Date => {
 };
 
 export default function EquipePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
+  
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState('profile');
-  const router = useRouter();
   
   const [teamMember, setTeamMember] = useState<TeamMember>({
     userId: '',
@@ -155,6 +158,8 @@ export default function EquipePage() {
         const canEdit = await canEditTeamMember(userId, auth.currentUser);
         if (!canEdit) {
           console.warn("L'utilisateur n'a pas la permission de modifier cette fiche");
+          // Si l'utilisateur ne peut pas éditer, on le redirige vers la vue
+          router.push('/team/view');
           return;
         }
         
@@ -195,10 +200,14 @@ export default function EquipePage() {
           updatedAt
         });
       } else {
+        // Nouvel utilisateur - initialiser avec les données de base
         setTeamMember(prev => ({
           ...prev,
           userId,
           email: currentUser?.email || '',
+          firstName: currentUser?.displayName?.split(' ')[0] || '',
+          lastName: currentUser?.displayName?.split(' ').slice(1).join(' ') || '',
+          image: currentUser?.photoURL || '',
           createdAt: new Date(),
           updatedAt: new Date()
         }));
@@ -307,6 +316,7 @@ export default function EquipePage() {
         roles: teamMember.roles || []
       };
       
+      // Nettoyer les données undefined
       Object.keys(teamData).forEach(key => {
         if (teamData[key as keyof typeof teamData] === undefined) {
           delete teamData[key as keyof typeof teamData];
@@ -316,9 +326,17 @@ export default function EquipePage() {
       await setDoc(teamRef, teamData, { merge: true });
 
       alert('✅ Profil enregistré avec succès!');
-      setTimeout(() => {
-        router.push('/team/view');
-      }, 1500);
+      
+      // Rediriger vers le projet ou la vue équipe
+      if (projectId) {
+        setTimeout(() => {
+          router.push(`/projet-en-cours?project=${projectId}`);
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          router.push('/team/view');
+        }, 1500);
+      }
       
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
@@ -483,32 +501,48 @@ export default function EquipePage() {
               })}
             </div>
             
-<div className={styles.headerActions}>
-  {/* Bouton pour aller aux projets */}
-  <button
-    onClick={() => router.push('/projet-en-cours')}
-    className={styles.viewTeamButton}
-    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-  >
-    <FolderKanban size={16} />
-    <span>Projets en cours</span>
-  </button>
-  
-  <button
-    onClick={() => router.push('/team/view')}
-    className={styles.viewTeamButton}
-  >
-    Voir l'équipe
-  </button>
-  <button
-    onClick={handleSave}
-    disabled={isSaving}
-    className={styles.saveButton}
-  >
-    {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-    {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-  </button>
-</div>
+            <div className={styles.headerActions}>
+              {/* Bouton pour retourner au projet */}
+              {projectId && (
+                <button
+                  onClick={() => router.push(`/projet-en-cours?project=${projectId}`)}
+                  className={styles.viewTeamButton}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <ArrowLeft size={16} />
+                  <span>Retour au projet</span>
+                </button>
+              )}
+              
+              {/* Bouton pour aller aux projets */}
+              <button
+                onClick={() => router.push('/projet-en-cours')}
+                className={styles.viewTeamButton}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <FolderKanban size={16} />
+                <span>Projets en cours</span>
+              </button>
+              
+              {/* Bouton pour voir l'équipe (seulement si pas de projectId) */}
+              {!projectId && (
+                <button
+                  onClick={() => router.push('/team/view')}
+                  className={styles.viewTeamButton}
+                >
+                  Voir l'équipe
+                </button>
+              )}
+              
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className={styles.saveButton}
+              >
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
           </header>
 
           <div className={styles.mainContent}>

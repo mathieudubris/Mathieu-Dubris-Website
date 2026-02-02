@@ -1,4 +1,5 @@
-/* projet-en-cours.module.css */
+/* projet-en-cours.module.css - VERSION COMPLÈTEMENT REVISÉE */
+
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -11,100 +12,48 @@
 .content {
   flex: 1;
   padding-top: 80px;
-  min-height: calc(100svh - 80px);
   width: 100%;
   background-color: var(--bg-main);
 }
 
 .pageContainer {
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 2rem;
   width: 100%;
 }
 
-/* En-tête de page */
+/* En-tête compact */
 .pageHeader {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.headerTop {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
 .pageTitle {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 900;
   color: var(--primary);
-  margin-bottom: 0.5rem;
+  margin: 0;
+  letter-spacing: -0.5px;
 }
 
-.pageSubtitle {
-  color: var(--text-main);
-  opacity: 0.7;
-  font-size: 1.1rem;
-}
-
-.headerActions {
+.headerControls {
   display: flex;
+  align-items: center;
   gap: 1rem;
-  align-items: center;
-}
-
-.teamButton {
-  background: transparent;
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.teamButton:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: rgba(199, 255, 68, 0.05);
-}
-
-.createButton {
-  background: var(--primary);
-  color: var(--dark);
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.createButton:hover {
-  background: #d4ff5e;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
-}
-
-/* Barre de filtres */
-.filterBar {
-  margin-bottom: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
 }
 
 .searchContainer {
   position: relative;
-  max-width: 500px;
+  width: 300px;
 }
 
 .searchIcon {
@@ -119,9 +68,9 @@
 .searchInput {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
-  background: rgba(30, 30, 30, 0.7);
+  background: rgba(30, 30, 30, 0.8);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--text-main);
   font-size: 0.95rem;
   font-family: inherit;
@@ -132,48 +81,45 @@
   outline: none;
   border-color: var(--primary);
   background: rgba(30, 30, 30, 0.9);
+  box-shadow: 0 0 0 3px rgba(199, 255, 68, 0.1);
 }
 
-.clearSearch {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
+.createButton {
+  background: var(--primary);
+  color: var(--dark);
   border: none;
-  color: var(--text-main);
-  opacity: 0.5;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0;
-  width: 24px;
-  height: 24px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
 }
 
-.clearSearch:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
+.createButton:hover {
+  background: #d4ff5e;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
 }
 
-.filterButtons {
+/* Filtres */
+.filterBar {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
 }
 
 .filterBtn {
   background: rgba(30, 30, 30, 0.5);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
 }
 
@@ -189,54 +135,77 @@
   font-weight: 600;
 }
 
-/* Grille de projets */
+/* Grille de projets en carrés */
 .projectsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
+  margin-top: 1rem;
 }
 
 .projectCard {
   background: rgba(30, 30, 30, 0.7);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   display: flex;
   flex-direction: column;
+  height: 280px;
 }
 
 .projectCard:hover {
   transform: translateY(-5px);
   border-color: var(--primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-.cardHeader {
-  position: relative;
-  height: 180px;
+.projectImageContainer {
+  width: 100%;
+  height: 140px;
   overflow: hidden;
 }
 
 .projectImage {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
 }
 
-.projectImage img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.projectCard:hover .projectImage {
+  transform: scale(1.05);
+}
+
+.projectContent {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.projectHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.projectTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.2;
+  flex: 1;
 }
 
 .projectActions {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   display: flex;
-  gap: 5px;
+  gap: 0.25rem;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -249,8 +218,8 @@
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -267,127 +236,57 @@
   transform: scale(1.1);
 }
 
-.cardBody {
-  padding: 1.25rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.projectTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 0.75rem;
-  line-height: 1.3;
-}
-
 .projectDescription {
   color: var(--text-main);
-  opacity: 0.8;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 1rem;
+  opacity: 0.7;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0 0 1rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   flex: 1;
+}
+
+.projectFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .projectMeta {
   display: flex;
-  gap: 1rem;
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.75rem;
 }
 
 .metaItem {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   color: var(--text-main);
   opacity: 0.6;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
-.projectStatus {
-  margin-top: 1rem;
-}
-
-.statusBadge {
+.memberBadge {
   background: rgba(199, 255, 68, 0.1);
   color: var(--primary);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 500;
   border: 1px solid rgba(199, 255, 68, 0.3);
 }
 
-/* Confirmation de suppression */
-.confirmOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-main);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  z-index: 10;
-}
-
-.confirmOverlay svg {
-  color: #ef4444;
-  margin-bottom: 1rem;
-}
-
-.confirmOverlay p {
-  color: var(--text-main);
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.confirmButtons {
-  display: flex;
-  gap: 1rem;
-}
-
-.confirmYes {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.confirmYes:hover {
-  background: #dc2626;
-}
-
-.confirmNo {
-  background: rgba(30, 30, 30, 0.7);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.confirmNo:hover {
-  border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.1);
-}
-
-/* État vide */
+/* États vides */
 .emptyState {
   text-align: center;
   padding: 4rem 2rem;
+  grid-column: 1 / -1;
 }
 
 .emptyIcon {
@@ -400,16 +299,17 @@
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-main);
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
 }
 
 .emptyText {
   color: var(--text-main);
   opacity: 0.7;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   max-width: 400px;
   margin-left: auto;
   margin-right: auto;
+  font-size: 0.95rem;
 }
 
 .emptyButton {
@@ -424,6 +324,7 @@
   gap: 0.5rem;
   font-weight: 600;
   margin: 0 auto;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
 }
 
@@ -434,7 +335,7 @@
 
 /* Loading */
 .loadingContainer {
-  min-height: calc(100svh - 80px);
+  min-height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -461,19 +362,112 @@
   font-weight: 500;
 }
 
+/* Confirmation de suppression */
+.confirmOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 10;
+  border-radius: 16px;
+}
+
+.confirmOverlay svg {
+  color: #ef4444;
+  margin-bottom: 1rem;
+}
+
+.confirmOverlay p {
+  color: var(--text-main);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.confirmButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.confirmYes {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.confirmYes:hover {
+  background: #dc2626;
+}
+
+.confirmNo {
+  background: rgba(30, 30, 30, 0.7);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.confirmNo:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+}
+
 /* Responsive */
+@media (max-width: 1200px) {
+  .projectsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .pageContainer {
-    padding: 1rem;
+    padding: 1.5rem 1rem;
   }
   
-  .pageHeader {
+  .headerTop {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .pageTitle {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  
+  .headerControls {
     flex-direction: column;
     align-items: stretch;
   }
   
-  .headerActions {
-    justify-content: flex-start;
+  .searchContainer {
+    width: 100%;
+  }
+  
+  .createButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filterBar {
+    justify-content: center;
+    flex-wrap: wrap;
   }
   
   .projectsGrid {
@@ -481,8 +475,8 @@
     gap: 1rem;
   }
   
-  .cardHeader {
-    height: 150px;
+  .projectCard {
+    height: 260px;
   }
 }
 
@@ -491,149 +485,23 @@
     grid-template-columns: 1fr;
   }
   
-  .pageTitle {
-    font-size: 2rem;
+  .projectCard {
+    height: 240px;
   }
   
-  .filterButtons {
-    justify-content: center;
+  .projectImageContainer {
+    height: 120px;
   }
   
-  .filterBtn {
-    flex: 1;
-    min-width: calc(33.333% - 0.5rem);
-    text-align: center;
-  }
-}
-/* Ajoute ces styles à la fin du fichier existant */
-
-/* Confirmation de suppression plein écran */
-.confirmOverlayFull {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.confirmModal {
-  background: var(--bg-main);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 2rem;
-  max-width: 400px;
-  text-align: center;
-}
-
-.confirmModal h3 {
-  color: #ef4444;
-  margin: 1rem 0 0.5rem 0;
-}
-
-.confirmModal p {
-  color: var(--text-main);
-  opacity: 0.8;
-  margin-bottom: 1.5rem;
-}
-
-/* Bouton supprimer dans le détail */
-.deleteButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.deleteButton:hover {
-  background: rgba(239, 68, 68, 0.2);
-  transform: translateY(-1px);
-}
-
-/* Styles pour l'image du projet dans la liste */
-.projectImageSmall {
-  width: 100%;
-  height: 180px;
-  overflow: hidden;
-}
-
-.projectImageSmall img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Accès refusé */
-.accessDenied {
-  text-align: center;
-  padding: 4rem 2rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.accessDenied h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ef4444;
-  margin-bottom: 1rem;
-}
-
-.accessDenied p {
-  color: var(--text-main);
-  opacity: 0.8;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-
-/* Responsive pour la vue détail */
-@media (max-width: 768px) {
-  .projectHeader {
-    flex-direction: column;
-    text-align: center;
+  .projectContent {
+    padding: 1rem;
   }
   
-  .projectImage {
-    margin: 0 auto 1.5rem auto;
+  .projectTitle {
+    font-size: 1rem;
   }
   
-  .projectTitleSection {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .projectActions {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .teamSection {
-    margin-top: 2rem;
-  }
-  
-  .memberCard {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .memberInfo {
-    width: 100%;
-    margin-bottom: 1rem;
-  }
-  
-  .viewProfileButton {
-    width: 100%;
-    justify-content: center;
+  .projectDescription {
+    font-size: 0.8rem;
   }
 }
