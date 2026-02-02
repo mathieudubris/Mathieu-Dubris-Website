@@ -1,3 +1,4 @@
+/* view.module.css - Version simplifiée */
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -25,22 +26,81 @@
   padding: 2rem 1.5rem;
 }
 
+/* Login Center */
+.loginCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100svh - 80px - 4rem);
+  width: 100%;
+}
+
+.loginCenterButton {
+  background-color: var(--primary);
+  color: var(--dark);
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.loginCenterButton:hover {
+  background-color: #d4ff5e;
+  transform: translateY(-2px);
+}
+
+/* Page Header */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .pageTitle {
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--primary);
   margin-bottom: 0.5rem;
-  text-align: center;
+  text-align: left;
 }
 
 .pageSubtitle {
   color: var(--text-main);
   opacity: 0.7;
-  text-align: center;
-  margin-bottom: 3rem;
+  text-align: left;
   font-size: 1.1rem;
 }
 
+.editProfileButton {
+  background-color: var(--primary);
+  color: var(--dark);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.editProfileButton:hover {
+  background-color: #d4ff5e;
+  transform: translateY(-1px);
+}
+
+/* Team Grid */
 .teamGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -161,6 +221,51 @@
   font-size: 0.875rem;
   opacity: 0.9;
   margin: 0;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.emptyStateIcon {
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+}
+
+.emptyStateTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+.emptyStateText {
+  color: var(--text-main);
+  opacity: 0.7;
+  margin-bottom: 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.emptyStateButton {
+  background-color: var(--primary);
+  color: var(--dark);
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.emptyStateButton:hover {
+  background-color: #d4ff5e;
+  transform: translateY(-2px);
 }
 
 /* Modal */
@@ -409,6 +514,11 @@
   
   .modalContent {
     padding: 1.5rem;
+  }
+  
+  .loginCenterButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
   }
 }
 

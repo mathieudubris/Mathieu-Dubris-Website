@@ -2,12 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { auth, setupAuthListener, getTeamMembers } from '@/utils/firebase-api';
 import { User, Mail, Phone, MapPin, Monitor, Laptop } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
+import Login from '@/components/app/Header/Login/Login';
 import styles from './view.module.css';
 
 interface TeamMember {
+  id: string;
   userId: string;
   image: string;
   firstName: string;
@@ -46,30 +50,39 @@ interface TeamMember {
 
 export default function TeamViewPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    loadTeamMembers();
+    const unsubscribe = setupAuthListener(async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        await loadTeamMembers();
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const loadTeamMembers = async () => {
     try {
-      const db = getFirestore();
-      const teamCollection = collection(db, 'team');
-      const snapshot = await getDocs(teamCollection);
+      const members = await getTeamMembers();
       
-      const members: TeamMember[] = [];
-      snapshot.forEach(doc => {
-        const data = doc.data() as TeamMember;
-        members.push(data);
-      });
+      const formattedMembers = members.map(member => ({
+        ...member,
+        id: member.id,
+        createdAt: member.createdAt?.toDate ? member.createdAt.toDate() : new Date(member.createdAt || Date.now())
+      })) as TeamMember[];
       
-      setTeamMembers(members);
+      setTeamMembers(formattedMembers);
     } catch (error) {
       console.error('Erreur lors du chargement des membres:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -85,6 +98,14 @@ export default function TeamViewPage() {
       linkedin: '💼'
     };
     return icons[type as keyof typeof icons] || '📱';
+  };
+
+  const handleEditProfile = () => {
+    if (currentUser) {
+      router.push('/team');
+    } else {
+      setShowLogin(true);
+    }
   };
 
   if (loading) {
@@ -105,74 +126,116 @@ export default function TeamViewPage() {
       
       <main className={styles.content}>
         <div className={styles.viewContainer}>
-          <h1 className={styles.pageTitle}>Notre Équipe</h1>
-          <p className={styles.pageSubtitle}>
-            {teamMembers.length} membre{teamMembers.length > 1 ? 's' : ''} dans l'équipe
-          </p>
-          
-          <div className={styles.teamGrid}>
-            {teamMembers.map((member, index) => (
-              <motion.div
-                key={member.userId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={styles.memberCard}
-                onClick={() => setSelectedMember(member)}
+          {!currentUser ? (
+            <div className={styles.loginCenter}>
+              <button
+                onClick={() => setShowLogin(true)}
+                className={styles.loginCenterButton}
               >
-                <div className={styles.cardHeader}>
-                  <div className={styles.avatar}>
-                    {member.image ? (
-                      <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
-                    ) : (
-                      <User size={32} />
-                    )}
-                  </div>
-                  <div className={styles.memberInfo}>
-                    <h3 className={styles.memberName}>
-                      {member.firstName} {member.lastName}
-                    </h3>
-                    {member.agePublic && member.age > 0 && (
-                      <div className={styles.memberAge}>{member.age} ans</div>
-                    )}
-                  </div>
+                <User size={20} />
+                Se connecter pour voir l'équipe
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className={styles.pageHeader}>
+                <div>
+                  <h1 className={styles.pageTitle}>Notre Équipe</h1>
+                  <p className={styles.pageSubtitle}>
+                    {teamMembers.length} membre{teamMembers.length > 1 ? 's' : ''} dans l'équipe
+                  </p>
                 </div>
                 
-                <div className={styles.cardContent}>
-                  {member.roles && member.roles.length > 0 && (
-                    <div className={styles.rolesSection}>
-                      <h4 className={styles.sectionTitle}>
-                        <Monitor size={14} />
-                        <span>Rôles</span>
-                      </h4>
-                      <div className={styles.rolesList}>
-                        {member.roles.slice(0, 3).map((role, i) => (
-                          <span key={i} className={styles.roleTag}>
-                            {role}
-                          </span>
-                        ))}
-                        {member.roles.length > 3 && (
-                          <span className={styles.moreRoles}>
-                            +{member.roles.length - 3} autres
-                          </span>
-                        )}
+                <button
+                  onClick={handleEditProfile}
+                  className={styles.editProfileButton}
+                >
+                  <User size={16} />
+                  Mon Profil
+                </button>
+              </div>
+              
+              {teamMembers.length > 0 ? (
+                <div className={styles.teamGrid}>
+                  {teamMembers.map((member, index) => (
+                    <motion.div
+                      key={member.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={styles.memberCard}
+                      onClick={() => setSelectedMember(member)}
+                    >
+                      <div className={styles.cardHeader}>
+                        <div className={styles.avatar}>
+                          {member.image ? (
+                            <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
+                          ) : (
+                            <User size={32} />
+                          )}
+                        </div>
+                        <div className={styles.memberInfo}>
+                          <h3 className={styles.memberName}>
+                            {member.firstName} {member.lastName}
+                          </h3>
+                          {member.agePublic && member.age > 0 && (
+                            <div className={styles.memberAge}>{member.age} ans</div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  <div className={styles.locationSection}>
-                    <h4 className={styles.sectionTitle}>
-                      <MapPin size={14} />
-                      <span>Localisation</span>
-                    </h4>
-                    <p className={styles.locationText}>
-                      {member.location.city}, {member.location.country}
-                    </p>
-                  </div>
+                      
+                      <div className={styles.cardContent}>
+                        {member.roles && member.roles.length > 0 && (
+                          <div className={styles.rolesSection}>
+                            <h4 className={styles.sectionTitle}>
+                              <Monitor size={14} />
+                              <span>Rôles</span>
+                            </h4>
+                            <div className={styles.rolesList}>
+                              {member.roles.slice(0, 3).map((role, i) => (
+                                <span key={i} className={styles.roleTag}>
+                                  {role}
+                                </span>
+                              ))}
+                              {member.roles.length > 3 && (
+                                <span className={styles.moreRoles}>
+                                  +{member.roles.length - 3} autres
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className={styles.locationSection}>
+                          <h4 className={styles.sectionTitle}>
+                            <MapPin size={14} />
+                            <span>Localisation</span>
+                          </h4>
+                          <p className={styles.locationText}>
+                            {member.location.city}, {member.location.country}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <User size={48} className={styles.emptyStateIcon} />
+                  <h3 className={styles.emptyStateTitle}>Aucun membre dans l'équipe</h3>
+                  <p className={styles.emptyStateText}>
+                    Créez votre profil pour être le premier membre de l'équipe
+                  </p>
+                  <button
+                    onClick={handleEditProfile}
+                    className={styles.emptyStateButton}
+                  >
+                    Créer mon profil
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
@@ -210,7 +273,6 @@ export default function TeamViewPage() {
             </div>
             
             <div className={styles.modalSections}>
-              {/* Rôles */}
               {selectedMember.roles && selectedMember.roles.length > 0 && (
                 <div className={styles.modalSection}>
                   <h3 className={styles.modalSectionTitle}>
@@ -227,7 +289,6 @@ export default function TeamViewPage() {
                 </div>
               )}
               
-              {/* Localisation */}
               <div className={styles.modalSection}>
                 <h3 className={styles.modalSectionTitle}>
                   <MapPin size={18} />
@@ -243,7 +304,6 @@ export default function TeamViewPage() {
                 </p>
               </div>
               
-              {/* Contacts */}
               {selectedMember.contacts && selectedMember.contacts.filter(c => c.isPublic).length > 0 && (
                 <div className={styles.modalSection}>
                   <h3 className={styles.modalSectionTitle}>
@@ -270,7 +330,6 @@ export default function TeamViewPage() {
                 </div>
               )}
               
-              {/* Matériel */}
               <div className={styles.modalSection}>
                 <h3 className={styles.modalSectionTitle}>
                   <Laptop size={18} />
@@ -293,6 +352,8 @@ export default function TeamViewPage() {
           </div>
         </div>
       )}
+
+      {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>
   );
 }

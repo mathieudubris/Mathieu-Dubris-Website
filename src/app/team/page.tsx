@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { auth, setupAuthListener } from '@/utils/firebase-api';
+import { FolderKanban } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { auth, setupAuthListener, canEditTeamMember } from '@/utils/firebase-api';
 import { getFirestore, doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { 
   User, Info, Phone, Monitor, Laptop, MapPin,
@@ -56,12 +58,6 @@ interface TeamMember {
   updatedAt: Date;
 }
 
-// Type pour les données brutes de Firestore
-interface FirestoreTeamMember extends Omit<TeamMember, 'createdAt' | 'updatedAt'> {
-  createdAt?: Timestamp | Date;
-  updatedAt?: Timestamp | Date;
-}
-
 const sections = [
   { id: 'profile', label: 'Profil', icon: User },
   { id: 'info', label: 'Infos', icon: Info },
@@ -70,7 +66,6 @@ const sections = [
   { id: 'equipment', label: 'Matériel', icon: Laptop },
 ];
 
-// Fonction utilitaire pour convertir les dates Firestore
 const convertFirestoreDate = (date: any): Date => {
   if (!date) return new Date();
   
@@ -99,6 +94,7 @@ export default function EquipePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState('profile');
+  const router = useRouter();
   
   const [teamMember, setTeamMember] = useState<TeamMember>({
     userId: '',
@@ -154,9 +150,14 @@ export default function EquipePage() {
       const teamSnap = await getDoc(teamRef);
       
       if (teamSnap.exists()) {
-        const data = teamSnap.data() as FirestoreTeamMember;
+        const data = teamSnap.data() as any;
         
-        // Conversion sécurisée des dates
+        const canEdit = await canEditTeamMember(userId, auth.currentUser);
+        if (!canEdit) {
+          console.warn("L'utilisateur n'a pas la permission de modifier cette fiche");
+          return;
+        }
+        
         const createdAt = convertFirestoreDate(data.createdAt);
         const updatedAt = convertFirestoreDate(data.updatedAt);
         
@@ -194,7 +195,6 @@ export default function EquipePage() {
           updatedAt
         });
       } else {
-        // Nouvel utilisateur
         setTeamMember(prev => ({
           ...prev,
           userId,
@@ -209,6 +209,11 @@ export default function EquipePage() {
   };
 
   const handleImageUpload = () => {
+    if (!currentUser) {
+      setShowLogin(true);
+      return;
+    }
+
     if (typeof window !== "undefined" && (window as any).cloudinary) {
       const widget = (window as any).cloudinary.createUploadWidget({
         cloudName: 'dhqqx2m3y',
@@ -227,6 +232,11 @@ export default function EquipePage() {
   };
 
   const updateTeamMember = (field: string, value: any) => {
+    if (!currentUser) {
+      setShowLogin(true);
+      return;
+    }
+
     const fieldParts = field.split('.');
     
     if (fieldParts.length === 1) {
@@ -272,7 +282,6 @@ export default function EquipePage() {
       return;
     }
 
-    // Validation des champs obligatoires
     if (!teamMember.firstName.trim() || !teamMember.lastName.trim() || !teamMember.email.trim()) {
       alert('⚠️ Veuillez remplir les informations obligatoires (Prénom, Nom, Email)');
       return;
@@ -283,20 +292,21 @@ export default function EquipePage() {
       const db = getFirestore();
       const teamRef = doc(db, 'team', currentUser.uid);
       
-      // Créer l'objet pour Firestore
+      if (teamMember.userId !== currentUser.uid) {
+        alert('❌ Vous ne pouvez pas modifier cette fiche');
+        return;
+      }
+      
       const teamData = {
         ...teamMember,
         userId: currentUser.uid,
-        // Convertir les dates en Timestamp Firestore
         createdAt: teamMember.createdAt ? Timestamp.fromDate(new Date(teamMember.createdAt)) : Timestamp.now(),
         updatedAt: Timestamp.now(),
-        // S'assurer que tous les champs sont définis
         phone: teamMember.phone || '',
         contacts: teamMember.contacts || [],
         roles: teamMember.roles || []
       };
       
-      // Supprimer les propriétés undefined
       Object.keys(teamData).forEach(key => {
         if (teamData[key as keyof typeof teamData] === undefined) {
           delete teamData[key as keyof typeof teamData];
@@ -306,9 +316,8 @@ export default function EquipePage() {
       await setDoc(teamRef, teamData, { merge: true });
 
       alert('✅ Profil enregistré avec succès!');
-      // Redirection vers la page view
       setTimeout(() => {
-        window.location.href = '/team/view';
+        router.push('/team/view');
       }, 1500);
       
     } catch (error) {
@@ -320,6 +329,11 @@ export default function EquipePage() {
   };
 
   const addContact = (contact: any) => {
+    if (!currentUser) {
+      setShowLogin(true);
+      return;
+    }
+
     setTeamMember(prev => ({
       ...prev,
       contacts: [...prev.contacts, { ...contact, isPublic: true }],
@@ -328,6 +342,11 @@ export default function EquipePage() {
   };
 
   const removeContact = (index: number) => {
+    if (!currentUser) {
+      setShowLogin(true);
+      return;
+    }
+
     setTeamMember(prev => ({
       ...prev,
       contacts: prev.contacts.filter((_, i) => i !== index),
@@ -336,6 +355,11 @@ export default function EquipePage() {
   };
 
   const updateContactPrivacy = (index: number, isPublic: boolean) => {
+    if (!currentUser) {
+      setShowLogin(true);
+      return;
+    }
+
     setTeamMember(prev => {
       const newContacts = [...prev.contacts];
       newContacts[index] = { ...newContacts[index], isPublic };
@@ -370,7 +394,6 @@ export default function EquipePage() {
             onImageUpload={handleImageUpload}
           />
         );
-
       case 'info':
         return (
           <PersonalInfoLocation
@@ -378,7 +401,6 @@ export default function EquipePage() {
             onUpdate={updateTeamMember}
           />
         );
-
       case 'contacts':
         return (
           <Contacts
@@ -389,7 +411,6 @@ export default function EquipePage() {
             onUpdateContactPrivacy={updateContactPrivacy}
           />
         );
-
       case 'role':
         return (
           <Role
@@ -397,7 +418,6 @@ export default function EquipePage() {
             onUpdate={updateTeamMember}
           />
         );
-
       case 'equipment':
         return (
           <Equipment
@@ -405,7 +425,6 @@ export default function EquipePage() {
             onUpdate={updateTeamMember}
           />
         );
-
       default:
         return null;
     }
@@ -422,29 +441,19 @@ export default function EquipePage() {
 
   if (!currentUser) {
     return (
-      <div className={styles.loginContainer}>
+      <div className={styles.mainContainer}>
         <Header />
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={styles.loginContent}
-          style={{ paddingTop: '80px' }}
-        >
-          <h1 className={styles.loginTitle}>Accès Équipe</h1>
-          <p className={styles.loginSubtitle}>
-            Connectez-vous pour créer ou modifier votre profil d'équipe
-          </p>
+        <div className={styles.loginCenter}>
           <button
             onClick={() => setShowLogin(true)}
-            className={styles.loginButton}
+            className={styles.loginCenterButton}
           >
-            Se connecter avec Google
+            <User size={20} />
+            Se connecter pour créer votre profil
           </button>
-        </motion.div>
+        </div>
         
-        <AnimatePresence>
-          {showLogin && <Login onClose={() => setShowLogin(false)} />}
-        </AnimatePresence>
+        {showLogin && <Login onClose={() => setShowLogin(false)} />}
       </div>
     );
   }
@@ -455,7 +464,6 @@ export default function EquipePage() {
       
       <main className={styles.content}>
         <div className={styles.pageContainer}>
-          {/* Header de navigation */}
           <header className={styles.header}>
             <div className={styles.navButtons}>
               {sections.map((section) => {
@@ -475,32 +483,45 @@ export default function EquipePage() {
               })}
             </div>
             
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className={styles.saveButton}
-            >
-              {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-            </button>
+<div className={styles.headerActions}>
+  {/* Bouton pour aller aux projets */}
+  <button
+    onClick={() => router.push('/projet-en-cours')}
+    className={styles.viewTeamButton}
+    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+  >
+    <FolderKanban size={16} />
+    <span>Projets en cours</span>
+  </button>
+  
+  <button
+    onClick={() => router.push('/team/view')}
+    className={styles.viewTeamButton}
+  >
+    Voir l'équipe
+  </button>
+  <button
+    onClick={handleSave}
+    disabled={isSaving}
+    className={styles.saveButton}
+  >
+    {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+    {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+  </button>
+</div>
           </header>
 
-          {/* Contenu Scrollable */}
           <div className={styles.mainContent}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSection}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                {renderSection()}
-              </motion.div>
-            </AnimatePresence>
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderSection()}
+            </motion.div>
           </div>
 
-          {/* Footer de navigation */}
           <footer className={styles.footer}>
             <button
               onClick={prevSection}
@@ -526,6 +547,8 @@ export default function EquipePage() {
           </footer>
         </div>
       </main>
+
+      {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>
   );
 }

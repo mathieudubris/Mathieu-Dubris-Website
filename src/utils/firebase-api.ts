@@ -12,7 +12,12 @@ import {
   getFirestore, 
   doc, 
   setDoc, 
-  getDoc, 
+  getDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -37,7 +42,6 @@ export const provider = new GoogleAuthProvider();
 provider.setCustomParameters({
   prompt: 'select_account'
 });
-
 
 // Interface pour un utilisateur
 export interface UserData {
@@ -114,6 +118,160 @@ export const setupAuthListener = (callback: (user: User | null) => void) => {
   });
 };
 
+// Fonction pour vérifier si un utilisateur peut modifier une fiche team
+export const canEditTeamMember = async (userId: string, currentUser: User | null): Promise<boolean> => {
+  if (!currentUser) return false;
+  return currentUser.uid === userId;
+};
+
+// Fonction pour récupérer les membres de l'équipe (avec sécurité)
+export const getTeamMembers = async (): Promise<any[]> => {
+  try {
+    const db = getFirestore();
+    const teamCollection = collection(db, 'team');
+    const snapshot = await getDocs(teamCollection);
+    
+    const members: any[] = [];
+    snapshot.forEach(doc => {
+      members.push({ id: doc.id, ...doc.data() });
+    });
+    
+    return members;
+  } catch (error) {
+    console.error('Erreur lors du chargement des membres:', error);
+    return [];
+  }
+};
+
 // Exporter les fonctions d'authentification
 export { signInWithPopup, signOut, onAuthStateChanged };
 export type { User };
+// Ajoute ces fonctions à la fin du fichier firebase-api.ts (après getTeamMembers)
+
+// Interface pour un projet
+export interface Project {
+  id?: string;
+  title: string;
+  description: string;
+  image: string;
+  createdBy: string;
+  createdAt: any;
+  updatedAt: any;
+  teamMembers: string[]; // Liste des IDs des utilisateurs ajoutés au projet
+}
+
+// Fonction pour récupérer tous les projets
+export const getProjects = async (): Promise<Project[]> => {
+  try {
+    const db = getFirestore();
+    const projectsCollection = collection(db, 'projects');
+    const snapshot = await getDocs(projectsCollection);
+    
+    const projects: Project[] = [];
+    snapshot.forEach(doc => {
+      projects.push({ id: doc.id, ...doc.data() } as Project);
+    });
+    
+    return projects;
+  } catch (error) {
+    console.error('Erreur lors du chargement des projets:', error);
+    return [];
+  }
+};
+
+// Fonction pour créer un projet
+export const createProject = async (project: Omit<Project, 'id'>): Promise<string> => {
+  try {
+    const db = getFirestore();
+    const docRef = await addDoc(collection(db, 'projects'), project);
+    return docRef.id;
+  } catch (error) {
+    console.error('Erreur lors de la création du projet:', error);
+    throw error;
+  }
+};
+
+// Fonction pour mettre à jour un projet
+export const updateProject = async (projectId: string, projectData: Partial<Project>): Promise<void> => {
+  try {
+    const db = getFirestore();
+    const projectRef = doc(db, 'projects', projectId);
+    await updateDoc(projectRef, projectData);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour du projet:', error);
+    throw error;
+  }
+};
+
+// Fonction pour supprimer un projet
+export const deleteProject = async (projectId: string): Promise<void> => {
+  try {
+    const db = getFirestore();
+    const projectRef = doc(db, 'projects', projectId);
+    await deleteDoc(projectRef);
+  } catch (error) {
+    console.error('Erreur lors de la suppression du projet:', error);
+    throw error;
+  }
+};
+
+// Fonction pour récupérer les projets d'un utilisateur
+export const getUserProjects = async (userId: string): Promise<Project[]> => {
+  try {
+    const allProjects = await getProjects();
+    return allProjects.filter(project => 
+      project.teamMembers?.includes(userId) || project.createdBy === userId
+    );
+  } catch (error) {
+    console.error('Erreur lors du chargement des projets utilisateur:', error);
+    return [];
+  }
+};
+
+// Fonction pour ajouter un membre à un projet
+export const addMemberToProject = async (projectId: string, userId: string): Promise<void> => {
+  try {
+    const db = getFirestore();
+    const projectRef = doc(db, 'projects', projectId);
+    const projectSnap = await getDoc(projectRef);
+    
+    if (projectSnap.exists()) {
+      const project = projectSnap.data() as Project;
+      const updatedMembers = [...(project.teamMembers || []), userId];
+      await updateDoc(projectRef, { teamMembers: updatedMembers });
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du membre:', error);
+    throw error;
+  }
+};
+
+// Fonction pour supprimer un membre d'un projet
+export const removeMemberFromProject = async (projectId: string, userId: string): Promise<void> => {
+  try {
+    const db = getFirestore();
+    const projectRef = doc(db, 'projects', projectId);
+    const projectSnap = await getDoc(projectRef);
+    
+    if (projectSnap.exists()) {
+      const project = projectSnap.data() as Project;
+      const updatedMembers = (project.teamMembers || []).filter(id => id !== userId);
+      await updateDoc(projectRef, { teamMembers: updatedMembers });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la suppression du membre:', error);
+    throw error;
+  }
+};
+
+// Fonction pour vérifier si l'utilisateur est admin (toi)
+export const isAdmin = (userEmail: string | null): boolean => {
+  return userEmail === 'mathieudubris@gmail.com';
+};
+
+// N'oublie pas d'importer les fonctions Firestore nécessaires
+import {
+  // ... autres imports existants
+  addDoc,
+  updateDoc
+} from "firebase/firestore";
