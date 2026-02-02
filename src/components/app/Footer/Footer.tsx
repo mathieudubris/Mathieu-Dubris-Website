@@ -1,19 +1,26 @@
+
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Github, 
-  Twitter, 
   Linkedin, 
+  Github, 
   Mail, 
-  ArrowRight,
-  Globe
+  Youtube,
+  MessageSquare,
+  Instagram,
+  Phone,
+  Globe,
+  ChevronDown,
+  ArrowRight
 } from 'lucide-react';
 import styles from './Footer.module.css';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [selectedLanguage, setSelectedLanguage] = useState('Français (FR)');
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
   const footerLinks = [
     {
@@ -29,6 +36,17 @@ const Footer = () => {
       links: ["Blog", "Newsletter", "Événements", "Centre d'aide"]
     }
   ];
+
+  const languages = [
+    { code: 'FR', label: 'Français (FR)' },
+    { code: 'EN', label: 'English (EN)' },
+    { code: 'MG', label: 'Malagasy (MG)' }
+  ];
+
+  const handleLanguageSelect = (language: { code: string, label: string }) => {
+    setSelectedLanguage(language.label);
+    setShowLanguageDropdown(false);
+  };
 
   return (
     <footer className={styles.footer}>
@@ -95,21 +113,60 @@ const Footer = () => {
           <div className={styles.bottomLeft}>
             <span>© {currentYear} Mathieu Dubris. Tous droits réservés.</span>
             <div className={styles.legalLinks}>
-              <a href="#">Confidentialité</a>
+              <a href="/confidentialite">Confidentialité</a>
               <span className={styles.dot} />
-              <a href="#">Conditions</a>
+              <a href="/conditions">Conditions</a>
             </div>
           </div>
           
           <div className={styles.bottomRight}>
             <div className={styles.socialIcons}>
-              <a href="#" className={styles.socialBtn}><Twitter size={18} /></a>
-              <a href="#" className={styles.socialBtn}><Linkedin size={18} /></a>
-              <a href="#" className={styles.socialBtn}><Github size={18} /></a>
+              {/* Ordre professionnel : plus professionnel → moins professionnel */}
+              <a href="https://www.linkedin.com/in/fanampy-nirinah-%E2%80%8Emiarintsoa-5061313a3?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="LinkedIn">
+                <Linkedin size={18} />
+              </a>
+              <a href="https://github.com/mathieudubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="GitHub">
+                <Github size={18} />
+              </a>
+              <a href="mailto:mathieudubris@gmail.com" className={styles.socialBtn} title="Email">
+                <Mail size={18} />
+              </a>
+              <a href="https://youtube.com/@mathieu_dubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="YouTube">
+                <Youtube size={18} />
+              </a>
+              <a href="https://instagram.com/mathieu_dubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="Instagram">
+                <Instagram size={18} />
+              </a>
+              <a href="https://discord.gg/mathieu_dubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="Discord">
+                <MessageSquare size={18} />
+              </a>
+              <a href="https://wa.me/0342526948" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="WhatsApp">
+                <Phone size={18} />
+              </a>
             </div>
-            <div className={styles.languageSelector}>
+            
+            <div 
+              className={styles.languageSelector}
+              onMouseEnter={() => setShowLanguageDropdown(true)}
+              onMouseLeave={() => setShowLanguageDropdown(false)}
+            >
               <Globe size={14} />
-              <span>Français (FR)</span>
+              <span>{selectedLanguage}</span>
+              <ChevronDown size={12} />
+              
+              {showLanguageDropdown && (
+                <div className={styles.languageDropdown}>
+                  {languages.map((lang) => (
+                    <div
+                      key={lang.code}
+                      className={styles.languageOption}
+                      onClick={() => handleLanguageSelect(lang)}
+                    >
+                      {lang.label}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

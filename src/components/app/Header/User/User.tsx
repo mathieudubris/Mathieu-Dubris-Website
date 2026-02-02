@@ -10,34 +10,56 @@ interface Props {
 }
 
 const UserComp: React.FC<Props> = ({ user, onProfileClick }) => {
-  // On définit le chemin par défaut à partir du dossier public
   const defaultAvatar = "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg";
   const [avatarError, setAvatarError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // URL de l'avatar à utiliser
+  // Pour un utilisateur non connecté, on affiche directement l'image par défaut
   const avatarUrl = user?.photoURL && !avatarError ? user.photoURL : defaultAvatar;
+  
+  // Si pas d'utilisateur, on affiche directement l'avatar par défaut
+  const shouldShowPlaceholder = user && user.photoURL && !imageLoaded;
+  const shouldShowDefaultAvatar = !user || !user.photoURL || avatarError;
 
   return (
     <div className={styles.userWrapper}>
       <button className={styles.iconBtn} onClick={onProfileClick} type="button">
         <div className={styles.avatarContainer}>
-          <img 
-            src={avatarUrl}
-            className={`${styles.userAvatar} ${imageLoaded ? styles.loaded : ''}`}
-            alt={user?.displayName || "Default Profile"}
-            onError={() => {
-              setAvatarError(true);
-            }}
-            onLoad={() => {
-              setImageLoaded(true);
-            }}
-            loading="lazy"
-          />
-          {!imageLoaded && (
-            <div className={styles.avatarPlaceholder}>
-              {user?.displayName?.charAt(0) || "U"}
-            </div>
+          {/* Avatar par défaut pour les non-connectés */}
+          {shouldShowDefaultAvatar ? (
+            <img 
+              src={defaultAvatar}
+              className={`${styles.userAvatar} ${styles.loaded}`}
+              alt="Default Profile"
+              onError={() => {
+                setAvatarError(true);
+              }}
+              onLoad={() => {
+                setImageLoaded(true);
+              }}
+            />
+          ) : (
+            <>
+              {/* Avatar utilisateur connecté */}
+              <img 
+                src={avatarUrl}
+                className={`${styles.userAvatar} ${imageLoaded ? styles.loaded : ''}`}
+                alt={user?.displayName || "User Profile"}
+                onError={() => {
+                  setAvatarError(true);
+                }}
+                onLoad={() => {
+                  setImageLoaded(true);
+                }}
+                loading="lazy"
+              />
+              {/* Placeholder uniquement pour les utilisateurs connectés pendant le chargement */}
+              {shouldShowPlaceholder && (
+                <div className={styles.avatarPlaceholder}>
+                  {user?.displayName?.charAt(0) || "U"}
+                </div>
+              )}
+            </>
           )}
         </div>
       </button>

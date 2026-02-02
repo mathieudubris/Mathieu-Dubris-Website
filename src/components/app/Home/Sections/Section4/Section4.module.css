@@ -25,7 +25,7 @@
 }
 
 .title {
-  color: #fff;
+  color: var(--main-text);
   font-size: clamp(28px, 5vw, 42px);
   font-weight: 800;
   letter-spacing: -1px;

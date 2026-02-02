@@ -47,7 +47,7 @@ export default function RootPage() {
         <AnimatePresence mode="wait">
           {!isFinished && (
             <motion.div 
-              className={styles.textWrapper}
+              className={styles.contentContainer}  // Changé ici
               variants={containerVariants}
               initial="hidden"
               animate="visible"

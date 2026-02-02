@@ -1,6 +1,7 @@
+
 .footer {
   background-color: var(--bg-main);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-color);
   padding: 100px 24px 40px;
   font-family: var(--font-main);
 }
@@ -35,18 +36,19 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .logoText {
-  color: #fff;
+  color: var(--white);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 
 .brandTagline {
-  color: #888;
+  color: var(--text-main);
+  opacity: 0.6;
   line-height: 1.6;
   font-size: 15px;
   max-width: 320px;
@@ -57,7 +59,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(179, 255, 0, 0.05);
+  background: rgba(199, 255, 68, 0.05);
   border-radius: 100px;
   width: fit-content;
 }
@@ -84,7 +86,7 @@
 }
 
 .groupTitle {
-  color: #fff;
+  color: var(--white);
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
@@ -102,7 +104,8 @@
 }
 
 .linkItem {
-  color: #777;
+  color: var(--text-main);
+  opacity: 0.7;
   text-decoration: none;
   font-size: 15px;
   transition: all 0.2s ease;
@@ -110,6 +113,7 @@
 
 .linkItem:hover {
   color: var(--primary);
+  opacity: 1;
   transform: translateX(4px);
 }
 
@@ -117,7 +121,7 @@
 .ctaRow {
   padding: 48px;
   background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
   border-radius: 24px;
   display: flex;
   justify-content: space-between;
@@ -126,13 +130,14 @@
 }
 
 .ctaText h3 {
-  color: #fff;
+  color: var(--white);
   font-size: 24px;
   margin-bottom: 8px;
 }
 
 .ctaText p {
-  color: #666;
+  color: var(--text-main);
+  opacity: 0.6;
 }
 
 .newsletterBox {
@@ -141,7 +146,7 @@
   background: rgba(255, 255, 255, 0.03);
   padding: 6px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
   min-width: 400px;
 }
 
@@ -150,13 +155,18 @@
   background: transparent;
   border: none;
   padding: 10px 16px;
-  color: #fff;
+  color: var(--white);
   outline: none;
 }
 
+.input::placeholder {
+  color: var(--text-main);
+  opacity: 0.5;
+}
+
 .submitBtn {
-  background: #fff;
-  color: #000;
+  background: var(--white);
+  color: var(--dark);
   border: none;
   padding: 10px 20px;
   border-radius: 10px;
@@ -178,8 +188,9 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 40px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  color: #555;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-main);
+  opacity: 0.5;
   font-size: 14px;
 }
 
@@ -196,19 +207,22 @@
 }
 
 .legalLinks a {
-  color: #555;
+  color: var(--text-main);
+  opacity: 0.7;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s;
 }
 
 .legalLinks a:hover {
-  color: #888;
+  color: var(--text-main);
+  opacity: 1;
 }
 
 .dot {
   width: 3px;
   height: 3px;
-  background: #333;
+  background: var(--text-main);
+  opacity: 0.3;
   border-radius: 50%;
 }
 
@@ -224,20 +238,55 @@
 }
 
 .socialBtn {
-  color: #555;
-  transition: color 0.2s;
+  color: var(--text-main);
+  opacity: 0.7;
+  transition: all 0.2s;
 }
 
 .socialBtn:hover {
   color: var(--primary);
+  opacity: 1;
 }
 
 .languageSelector {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #888;
+  color: var(--text-main);
+  opacity: 0.7;
   cursor: pointer;
+  position: relative;
+}
+
+.languageDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 120px;
+  margin-top: 8px;
+  display: none;
+}
+
+.languageSelector:hover .languageDropdown {
+  display: block;
+}
+
+.languageOption {
+  padding: 8px 16px;
+  color: var(--text-main);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.languageOption:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary);
+  opacity: 1;
 }
 
 /* RESPONSIVITÉ */
@@ -294,7 +343,7 @@
 
   .input {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     margin-bottom: 8px;
   }
