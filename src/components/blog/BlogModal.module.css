@@ -1,0 +1,692 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.modalOverlay::-webkit-scrollbar {
+    display: none;
+}
+
+.modalContent {
+    background: var(--dark);
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    border: none;
+    border-radius: 0;
+}
+
+.modalMain {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.leftColumn {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.leftColumn::-webkit-scrollbar {
+    display: none;
+}
+
+.rightColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.rightColumn::-webkit-scrollbar {
+    display: none;
+}
+
+.closeBtn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 4000;
+    transition: 0.3s;
+}
+
+.closeBtn:hover {
+    background: var(--primary);
+    color: var(--dark);
+    transform: rotate(90deg);
+}
+
+.modalHeader {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.headerImageContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+.headerImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+}
+
+.imageOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, 
+        rgba(0, 0, 0, 0.3) 0%, 
+        rgba(0, 0, 0, 0.5) 50%, 
+        var(--dark) 100%);
+}
+
+.headerContent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 0;
+    color: white;
+    z-index: 2;
+}
+
+.categoryBadge {
+    background: var(--primary);
+    color: var(--dark);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.headerContent h1 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 900;
+    margin-bottom: 10px;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+}
+
+.meta {
+    display: flex;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #bbb;
+    flex-wrap: wrap;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 30px;
+}
+
+.modalBody {
+    flex: 1;
+    padding: 30px 0;
+}
+
+.tagsContainer {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    background: rgba(255,255,255,0.05);
+    color: #aaa;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.content {
+    color: #e0e0e0;
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 30px;
+    white-space: pre-wrap;
+}
+
+.mediaSection {
+    margin: 30px 0;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+}
+
+.media {
+    width: 100%;
+    display: block;
+    max-height: 400px;
+    object-fit: contain;
+    background: #000;
+}
+
+/* Colonne droite */
+.rightColumn {
+    overflow-y: auto;
+    padding-top: 60px;
+}
+
+.rightColumn h3 {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.statsColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #888;
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.likeBtn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--white);
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    transition: 0.3s;
+    width: 100%;
+    justify-content: center;
+}
+
+.likeBtn:hover {
+    background: var(--primary);
+    color: var(--dark);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.activeHeart {
+    fill: currentColor;
+}
+
+.commentsSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.commentInputArea {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.userAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.userAvatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarPlaceholder, .commentAvatarPlaceholder {
+    width: 100%;
+    height: 100%;
+    background: var(--primary);
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.commentInputArea input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 10px;
+    outline: none;
+    font-size: 0.9rem;
+    min-width: 0;
+}
+
+.submitCommentBtn {
+    background: var(--primary);
+    border: none;
+    color: var(--dark);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
+
+.submitCommentBtn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.commentsList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+    flex: 1;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding-right: 5px;
+}
+
+.commentsList::-webkit-scrollbar {
+    display: none;
+}
+
+.commentItem {
+    background: rgba(255,255,255,0.02);
+    padding: 15px;
+    border-radius: 12px;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+.commentAuthor {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.commentAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.commentMeta strong {
+    color: var(--primary);
+    font-size: 0.9rem;
+    display: block;
+}
+
+.commentMeta span {
+    color: #555;
+    font-size: 0.7rem;
+}
+
+.commentText {
+    font-size: 0.9rem;
+    color: #bbb;
+    line-height: 1.5;
+}
+
+.delComment {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #ff4444;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.4;
+    padding: 5px;
+}
+
+.delComment:hover {
+    opacity: 1;
+}
+
+/* RESPONSIVE AMÉLIORÉ */
+@media (max-width: 1200px) {
+    .modalContent {
+        flex-direction: column;
+    }
+    
+    .leftColumn, .rightColumn {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .leftColumn {
+        flex: 2;
+        max-height: 60vh;
+    }
+    
+    .rightColumn {
+        flex: 1;
+        max-height: 40vh;
+        padding: 20px;
+        padding-top: 50px;
+    }
+    
+    .modalHeader {
+        height: 220px;
+    }
+}
+
+@media (max-width: 992px) {
+    .modalHeader {
+        height: 200px;
+    }
+    
+    .container {
+        padding: 0 20px;
+    }
+    
+    .headerContent h1 {
+        font-size: 1.5rem;
+    }
+    
+    .content {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    
+    .rightColumn {
+        padding: 15px;
+        padding-top: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modalHeader {
+        height: 180px;
+    }
+    
+    .headerContent {
+        padding: 15px 0;
+    }
+    
+    .headerContent h1 {
+        font-size: 1.3rem;
+    }
+    
+    .container {
+        padding: 0 15px;
+    }
+    
+    .modalBody {
+        padding: 20px 0;
+    }
+    
+    .content {
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+    
+    .mediaSection {
+        margin: 20px 0;
+    }
+    
+    .media {
+        max-height: 250px;
+    }
+    
+    .rightColumn {
+        padding: 12px;
+        padding-top: 50px;
+    }
+    
+    .commentInputArea {
+        flex-wrap: wrap;
+        padding: 8px;
+    }
+    
+    .commentInputArea input {
+        order: 3;
+        width: 100%;
+        margin-top: 8px;
+        padding: 8px;
+    }
+    
+    .userAvatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .submitCommentBtn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .commentsList {
+        gap: 12px;
+    }
+    
+    .commentItem {
+        padding: 12px;
+    }
+    
+    .commentAvatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .closeBtn {
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modalHeader {
+        height: 160px;
+    }
+    
+    .headerContent h1 {
+        font-size: 1.2rem;
+        line-height: 1.2;
+    }
+    
+    .categoryBadge {
+        font-size: 0.6rem;
+        padding: 3px 8px;
+        margin-bottom: 8px;
+    }
+    
+    .meta {
+        font-size: 0.75rem;
+        gap: 6px;
+    }
+    
+    .container {
+        padding: 0 12px;
+    }
+    
+    .modalBody {
+        padding: 15px 0;
+    }
+    
+    .tagsContainer {
+        margin-bottom: 15px;
+        gap: 6px;
+    }
+    
+    .tag {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    .content {
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+    
+    .mediaSection {
+        margin: 15px 0;
+    }
+    
+    .media {
+        max-height: 180px;
+    }
+    
+    .rightColumn {
+        padding: 10px;
+        padding-top: 45px;
+    }
+    
+    .rightColumn h3 {
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    
+    .statsColumn {
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .statItem {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .likeBtn {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+    
+    .commentsSection {
+        gap: 12px;
+    }
+    
+    .commentInputArea {
+        margin-bottom: 15px;
+    }
+    
+    .commentsList {
+        gap: 10px;
+    }
+    
+    .commentText {
+        font-size: 0.8rem;
+    }
+    
+    .delComment {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* Orientation paysage sur mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+    .modalContent {
+        flex-direction: row;
+    }
+    
+    .leftColumn {
+        max-height: 100vh;
+        height: 100vh;
+    }
+    
+    .rightColumn {
+        max-height: 100vh;
+        height: 100vh;
+        padding-top: 60px;
+    }
+    
+    .modalHeader {
+        height: 180px;
+    }
+    
+    .closeBtn {
+        top: 10px;
+        right: 10px;
+    }
+}

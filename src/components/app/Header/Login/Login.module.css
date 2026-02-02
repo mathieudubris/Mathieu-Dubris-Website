@@ -1,0 +1,152 @@
+.loginFullScreenWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #050505;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.meshGradient {
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
+  filter: blur(80px);
+  opacity: 0.3;
+  z-index: 0;
+}
+
+.noiseOverlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 380px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  text-align: center;
+  position: relative;
+  z-index: 5;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.loginTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.loginSubtitle {
+  color: #666;
+  font-size: 14px;
+}
+
+.loginActions {
+  margin-bottom: 32px;
+}
+
+.btnGoogle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  border: none;
+  border-radius: 12px;
+  color: #000;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btnGoogle:hover {
+  transform: translateY(-1px);
+}
+
+.googleIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.loginFooter {
+  color: #444;
+  font-size: 12px;
+}
+
+.legalLinks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.legalLinks a {
+  color: #555;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.legalLinks a:hover {
+  color: #888;
+}
+
+.dot {
+  width: 2px;
+  height: 2px;
+  background: #333;
+  border-radius: 50%;
+}
+
+@media (max-width: 480px) {
+  .loginCard {
+    max-width: 100%;
+    height: auto;
+    border: none;
+    background: transparent;
+    padding: 24px;
+  }
+}

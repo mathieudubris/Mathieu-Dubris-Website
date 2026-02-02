@@ -1,0 +1,277 @@
+/* --- DESKTOP --- */
+.navDesktop {
+  display: flex;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Réduit de 2rem */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLinkWrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Réduit de 6px */
+  cursor: pointer;
+}
+
+.navLink {
+  font-weight: 500;
+  font-size: 0.75rem; /* Réduit de 0.85rem */
+  color: var(--text-main);
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.chevronIcon {
+  transition: transform 0.3s ease, color 0.3s ease;
+  opacity: 0.6;
+}
+
+.dropdown {
+  position: relative;
+  padding: 15px 0; /* Réduit de 20px */
+}
+
+.dropdown:hover .chevronIcon {
+  transform: rotate(180deg);
+  color: var(--primary);
+  opacity: 1;
+}
+
+.dropdown:hover .navLink {
+  color: var(--primary);
+}
+
+.dropdownContent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 10px; /* Réduit de 12px */
+  padding: 6px; /* Réduit de 8px */
+  min-width: 200px; /* Réduit de 240px */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.dropdown:hover .dropdownContent {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdownContent a {
+  display: flex;
+  padding: 8px 12px; /* Réduit de 10px 15px */
+  font-size: 0.75rem; /* Réduit de 0.85rem */
+  color: var(--text-main);
+  border-radius: 6px; /* Réduit de 8px */
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+}
+
+.dropdownContent a:hover {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--primary);
+}
+
+.quoteBtn {
+  background: var(--primary);
+  color: #000;
+  border: none;
+  padding: 8px 16px; /* Réduit de 10px 20px */
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem; /* Réduit de 0.8rem */
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* --- HAMBURGER ICON --- */
+.menuToggle {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.hamburger {
+  width: 20px; /* Réduit de 22px */
+  height: 2px;
+  background: var(--text-main);
+  position: relative;
+  display: block;
+  transition: 0.3s;
+}
+
+.hamburger::before,
+.hamburger::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background: var(--text-main);
+  left: 0;
+  transition: 0.3s;
+}
+
+.hamburger::before {
+  top: -6px; /* Ajusté */
+}
+
+.hamburger::after {
+  bottom: -6px; /* Ajusté */
+}
+
+.open {
+  background: transparent !important;
+}
+
+.open::before {
+  transform: rotate(45deg);
+  top: 0 !important;
+}
+
+.open::after {
+  transform: rotate(-45deg);
+  bottom: 0 !important;
+}
+
+/* --- MOBILE MENU --- */
+.mobileMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100dvh;
+  background: var(--bg-main);
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 60px 15px 30px; /* Réduit */
+  display: flex;
+  flex-direction: column;
+  will-change: opacity;
+}
+
+.closeMobile {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.profileCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  padding: 15px; /* Réduit de 20px */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.userAvatarLarge {
+  width: 45px; /* Réduit de 55px */
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  object-fit: cover;
+}
+
+.profileName {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.profileSubtext {
+  font-size: 0.7rem; /* Réduit de 0.8rem */
+  color: var(--text-main);
+  opacity: 0.6;
+}
+
+.mobileSection {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobileDropdownTrigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 5px; /* Réduit de 20px */
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileSectionTitle {
+  font-size: 0.8rem; /* Réduit de 0.9rem */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.mobileLinksGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Réduit de 8px */
+  will-change: height, opacity;
+}
+
+.mobileLinkItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px; /* Réduit de 14px 15px */
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 0.75rem; /* Réduit de 0.85rem */
+  margin-bottom: 4px;
+}
+
+/* --- DISPLAY LOGIC --- */
+.desktopOnly {
+  display: flex;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .desktopOnly {
+    display: none;
+  }
+  .mobileOnly {
+    display: flex;
+  }
+}

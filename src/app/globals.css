@@ -1,0 +1,70 @@
+:root {
+  --primary: #c7ff44; 
+  --dark: #0f0f0f;
+  --white: #dddddd;
+  --text-main: #e0e0e0;
+  --bg-main: #141414;
+  --font-main: 'Inter', sans-serif;
+  --nav-bg: rgba(17, 17, 17, 0.85);
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  overflow-x: hidden;
+  min-height: 100vh;
+  /* Scroll personnalisé */
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Masquer la scrollbar par défaut */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+}
+
+img, a, button, input, textarea, [role="button"] {
+  pointer-events: auto;
+}
+
+.app-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--bg-main);
+}
+
+/* Scrollbar personnalisée pour les conteneurs avec scroll */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+  opacity: 0.3;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+  opacity: 0.5;
+}

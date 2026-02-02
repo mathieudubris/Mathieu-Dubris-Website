@@ -1,0 +1,144 @@
+.container {
+  width: 100%;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.section {
+  background: rgba(30, 30, 30, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.formGroup {
+  margin-bottom: 1.25rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-main);
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.optional {
+  opacity: 0.5;
+  font-weight: normal;
+  font-size: 0.75rem;
+}
+
+.input {
+  width: 100%;
+  background: rgba(40, 40, 40, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(199, 255, 68, 0.1);
+}
+
+.internetButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.internetButton {
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+.internetButton:hover {
+  border-color: rgba(199, 255, 68, 0.5);
+}
+
+.internetButton.active {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
+}
+
+.osButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.osButton {
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.osButton:hover {
+  border-color: rgba(199, 255, 68, 0.5);
+}
+
+.osButton.active {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
+}

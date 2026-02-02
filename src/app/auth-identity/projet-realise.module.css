@@ -1,0 +1,443 @@
+.pageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  padding: 20px;
+  position: relative;
+}
+
+.content {
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.title {
+  color: var(--primary);
+  font-size: 2rem;
+  margin: 10px 0 0 0;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  color: var(--white);
+  font-size: 1rem;
+  opacity: 0.7;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Bouton d'info en cercle */
+.infoCircleButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(199, 255, 68, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.infoCircleButton:hover {
+  background: rgba(199, 255, 68, 0.15);
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+/* Overlay flou pour popup */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Popup d'information */
+.infoPopup {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.popupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 25px 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.popupHeader h3 {
+  color: var(--primary);
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  opacity: 1;
+}
+
+.popupContent {
+  padding: 25px;
+}
+
+.popupContent p {
+  color: var(--text-main);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 15px 0;
+  opacity: 0.9;
+}
+
+.popupContent p:last-child {
+  margin-bottom: 0;
+}
+
+.popupActions {
+  padding: 20px 25px 25px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+}
+
+.contactButton {
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(199, 255, 68, 0.3);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.contactButton:hover {
+  background: rgba(199, 255, 68, 0.15);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Formulaire */
+.form {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px;
+}
+
+.inputContainer {
+  margin-bottom: 25px;
+}
+
+.input {
+  width: 100%;
+  padding: 18px;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(199, 255, 68, 0.2);
+  border-radius: 8px;
+  color: var(--white);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.05);
+}
+
+.input::placeholder {
+  color: rgba(221, 221, 221, 0.4);
+  letter-spacing: 1px;
+}
+
+/* Conteneur d'erreur à taille fixe */
+.errorContainer {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.errorContainer.visible {
+  height: 80px; /* Taille fixe pour éviter le déplacement */
+}
+
+.errorMessage {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  color: #ff4444;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  width: 100%;
+  text-align: center;
+}
+
+.supportLink {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border: 1px solid rgba(199, 255, 68, 0.3);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.supportLink:hover {
+  background: rgba(199, 255, 68, 0.1);
+  border-color: var(--primary);
+}
+
+.button {
+  width: 100%;
+  padding: 18px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: rgba(199, 255, 68, 0.9);
+  transform: translateY(-2px);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.portfolioContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--white);
+  padding: 20px;
+  text-align: center;
+}
+
+.portfolioContainer h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: var(--primary);
+}
+
+.portfolioContainer p {
+  font-size: 1.2rem;
+  color: var(--text-main);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 15px;
+  }
+  
+  .content {
+    max-width: 100%;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .form {
+    padding: 25px 20px;
+  }
+  
+  .input {
+    padding: 16px;
+    font-size: 1rem;
+  }
+  
+  .button {
+    padding: 16px;
+    font-size: 1rem;
+  }
+  
+  .infoPopup {
+    margin: 15px;
+    max-width: calc(100% - 30px);
+  }
+  
+  .popupHeader {
+    padding: 20px 20px 15px;
+  }
+  
+  .popupContent {
+    padding: 20px;
+  }
+  
+  .popupActions {
+    padding: 15px 20px 20px;
+  }
+  
+  .contactButton {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .infoCircleButton {
+    width: 36px;
+    height: 36px;
+    top: -5px;
+  }
+  
+  .infoCircleButton svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .errorContainer.visible {
+    height: 90px; /* Un peu plus grand sur mobile */
+  }
+  
+  .errorMessage {
+    font-size: 0.9rem;
+    padding: 10px 15px;
+  }
+  
+  .supportLink {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+  
+  .portfolioContainer h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.6rem;
+  }
+  
+  .form {
+    padding: 20px 15px;
+  }
+  
+  .input {
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+  
+  .button {
+    padding: 14px;
+  }
+  
+  .infoPopup {
+    margin: 10px;
+  }
+  
+  .popupHeader {
+    padding: 15px 15px 10px;
+  }
+  
+  .popupContent {
+    padding: 15px;
+  }
+  
+  .popupContent p {
+    font-size: 0.9rem;
+  }
+  
+  .infoCircleButton {
+    width: 32px;
+    height: 32px;
+    top: -10px;
+  }
+  
+  .infoCircleButton svg {
+    width: 16px;
+    height: 16px;
+  }
+}

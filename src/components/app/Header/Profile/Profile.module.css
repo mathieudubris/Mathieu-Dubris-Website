@@ -1,0 +1,132 @@
+.profilOverlayWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.closeOverlayBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(128, 128, 128, 0.1);
+  border: none;
+  color: var(--text-main);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10000;
+}
+
+.closeOverlayBtn:hover {
+  background: rgba(128, 128, 128, 0.2);
+  transform: rotate(90deg);
+}
+
+.profilCard {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-main);
+}
+
+.largeAvatar {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 1.5rem;
+  background-color: #333;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+}
+
+.userName {
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+.userEmail {
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  opacity: 0.6;
+}
+
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2.5rem 0;
+}
+
+.settingBlock label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.5;
+}
+
+.toggleGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  background: rgba(128, 128, 128, 0.1);
+  border-radius: 12px;
+}
+
+.toggleGroup button {
+  padding: 12px;
+  color: var(--text-main);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.toggleGroup button.active {
+  color: #000;
+  background: var(--primary);
+  font-weight: 700;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 16px;
+  color: white;
+  background: #ff4757;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.logoutBtn:hover {
+  transform: scale(1.02);
+}
+
+@media (max-width: 480px) {
+  .closeOverlayBtn {
+    top: 15px;
+    right: 15px;
+  }
+}

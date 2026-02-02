@@ -1,0 +1,59 @@
+.userAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: 0.3s;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+}
+
+.userAvatar:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.avatarContainer {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.userAvatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.userAvatar.loaded {
+  opacity: 1;
+}
+
+.avatarPlaceholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 50%;
+}
