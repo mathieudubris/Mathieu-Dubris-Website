@@ -1,0 +1,365 @@
+/* components/projet-en-cours/ProjectCard.module.css */
+
+.projectCard {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 450px;
+  backdrop-filter: blur(10px);
+}
+
+.projectCard:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 30px rgba(199, 255, 68, 0.15);
+}
+
+/* Header avec badge et actions */
+.cardHeader {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.memberBadge {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--dark);
+  padding: 6px 16px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+}
+
+.memberBadge svg {
+  stroke-width: 2.5;
+}
+
+.adminActions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.projectCard:hover .adminActions {
+  opacity: 1;
+}
+
+.actionBtn {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.actionBtn:hover {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+  transform: scale(1.1);
+}
+
+/* Image de couverture arrondie */
+.coverImageContainer {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.coverImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.projectCard:hover .coverImage {
+  transform: scale(1.08);
+}
+
+/* Contenu de la carte */
+.cardContent {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.projectTitle {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.projectDescription {
+  color: var(--text-main);
+  opacity: 0.7;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* Section logiciels */
+.softwareSection {
+  margin: 8px 0;
+}
+
+/* Barre de progression */
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, #a8ff78 100%);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+/* Footer avec avatars et date */
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.memberAvatars {
+  display: flex;
+  align-items: center;
+}
+
+.memberAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--dark);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -10px;
+  transition: transform 0.3s ease;
+}
+
+.memberAvatar:first-child {
+  margin-left: 0;
+}
+
+.memberAvatar:hover {
+  transform: scale(1.15);
+  z-index: 1;
+}
+
+.avatarPlaceholder {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.moreMembers {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid var(--dark);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: -10px;
+}
+
+.projectDate {
+  color: var(--text-main);
+  opacity: 0.6;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Confirmation de suppression */
+.deleteConfirmOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 15, 15, 0.98);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 20px;
+}
+
+.deleteConfirmContent {
+  text-align: center;
+  padding: 30px;
+  width: 100%;
+}
+
+.deleteIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.deleteTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 12px 0;
+}
+
+.deleteMessage {
+  color: var(--text-main);
+  opacity: 0.7;
+  font-size: 0.9rem;
+  margin: 0 0 24px 0;
+}
+
+.deleteActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.deleteConfirmBtn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.deleteConfirmBtn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+.deleteCancelBtn {
+  background: rgba(30, 30, 30, 0.9);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 10px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.deleteCancelBtn:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .projectCard {
+    min-height: 420px;
+  }
+  
+  .coverImageContainer {
+    height: 160px;
+  }
+  
+  .projectTitle {
+    font-size: 1.1rem;
+  }
+  
+  .projectDescription {
+    font-size: 0.8rem;
+  }
+  
+  .adminActions {
+    opacity: 1;
+  }
+  
+  .cardContent {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .projectCard {
+    min-height: 400px;
+  }
+  
+  .coverImageContainer {
+    height: 140px;
+  }
+  
+  .cardHeader {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+  }
+  
+  .memberBadge {
+    padding: 4px 12px;
+    font-size: 0.7rem;
+  }
+  
+  .actionBtn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .cardContent {
+    padding: 14px;
+  }
+}

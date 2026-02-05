@@ -1,4 +1,3 @@
-// components/projet-en-cours/ProjetDetail.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -13,8 +12,12 @@ import {
   ArrowLeft,
   ExternalLink,
   UserPlus,
+  User,
   Mail,
+  Phone,
   MapPin,
+  Monitor,
+  Laptop,
   Settings,
   ChevronRight
 } from 'lucide-react';
@@ -24,9 +27,9 @@ import {
   Project as FirebaseProject,
   TeamMember as FirebaseTeamMember 
 } from '@/utils/firebase-api';
-import SoftwareList from '@/components/projet-en-cours/SoftwareList';
 import styles from './ProjetDetail.module.css';
 
+// Utiliser les interfaces importées de firebase-api
 type Project = FirebaseProject;
 type TeamMember = FirebaseTeamMember;
 
@@ -89,13 +92,12 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     <div className={styles.modalOverlay} onClick={onBack}>
       <motion.div 
         className={styles.modalContent}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.3 }}
+        initial={{ y: "100vh" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100vh" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Bouton de fermeture */}
         <button className={styles.closeBtn} onClick={onBack}>
           <X size={24} />
         </button>
@@ -103,7 +105,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
         <div className={styles.modalMain}>
           {/* Colonne de gauche - Contenu du projet */}
           <div className={styles.leftColumn}>
-            {/* Header avec image */}
             <div className={styles.modalHeader}>
               <div className={styles.headerImageContainer}>
                 <img 
@@ -115,30 +116,36 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
               </div>
               <div className={styles.headerContent}>
                 <div className={styles.container}>
-                  {/* Actions admin uniquement */}
-                  {currentUser && isAdmin(currentUser.email) && (
-                    <div className={styles.adminActions}>
-                      <button onClick={onEditProject} className={styles.editButton}>
-                        <Edit2 size={16} />
-                        <span>Modifier</span>
-                      </button>
-                      <button onClick={onManageTeam} className={styles.teamButton}>
-                        <UserPlus size={16} />
-                        <span>Gérer l'équipe</span>
-                      </button>
-                      <button onClick={onDeleteProject} className={styles.deleteButton}>
-                        <Trash2 size={16} />
-                        <span>Supprimer</span>
-                      </button>
-                    </div>
-                  )}
+                  <div className={styles.headerActions}>
+                    <button onClick={onBack} className={styles.backButton}>
+                      <ArrowLeft size={16} />
+                      <span>Retour aux projets</span>
+                    </button>
+                    
+                    {currentUser && isAdmin(currentUser.email) && (
+                      <div className={styles.adminActions}>
+                        <button onClick={onEditProject} className={styles.editButton}>
+                          <Edit2 size={16} />
+                          <span>Modifier le projet</span>
+                        </button>
+                        <button onClick={onManageTeam} className={styles.teamButton}>
+                          <UserPlus size={16} />
+                          <span>Gérer l'équipe</span>
+                        </button>
+                        <button onClick={onDeleteProject} className={styles.deleteButton}>
+                          <Trash2 size={16} />
+                          <span>Supprimer</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   
                   <h1 className={styles.projectTitle}>{project.title}</h1>
                   
                   <div className={styles.projectMeta}>
                     <div className={styles.metaItem}>
                       <Calendar size={16} />
-                      <span>{formatDate(project.createdAt)}</span>
+                      <span>Créé le {formatDate(project.createdAt)}</span>
                     </div>
                     <div className={styles.metaItem}>
                       <Users size={16} />
@@ -149,30 +156,25 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
               </div>
             </div>
 
-            {/* Corps du modal */}
             <div className={styles.modalBody}>
               <div className={styles.container}>
-                {/* Description */}
                 <div className={styles.descriptionSection}>
                   <h2 className={styles.sectionTitle}>Description du projet</h2>
                   <p className={styles.projectDescription}>{project.description}</p>
                 </div>
 
-                {/* Logiciels utilisés */}
-                <div className={styles.softwareSection}>
-                  <SoftwareList 
-                    projectId={project.id || ''}
-                    isAdmin={currentUser && isAdmin(currentUser.email)}
-                    compact={false}
-                  />
-                </div>
-
-                {/* Actions pour les membres */}
+                {/* Bouton pour modifier le profil pour les membres */}
                 {isInTeam && (
                   <div className={styles.profileActions}>
                     <button onClick={onEditProfile} className={styles.editProfileButton}>
                       <Settings size={16} />
-                      <span>Gérer mes informations</span>
+                      <span>Gérer mes informations dans ce projet</span>
+                      <ChevronRight size={16} />
+                    </button>
+                    
+                    <button onClick={handleGoToTeam} className={styles.viewTeamButton}>
+                      <Users size={16} />
+                      <span>Voir tous les membres</span>
                       <ChevronRight size={16} />
                     </button>
                     
@@ -180,10 +182,11 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                       <div className={styles.callToAction}>
                         <h3>Complétez votre profil d'équipe</h3>
                         <p>
-                          Vous êtes membre de ce projet mais n'avez pas encore complété votre profil.
+                          Vous êtes membre de ce projet mais n'avez pas encore complété votre profil d'équipe.
+                          Complétez-le pour apparaître dans la liste des membres.
                         </p>
                         <button onClick={onEditProfile} className={styles.ctaButton}>
-                          <Settings size={16} />
+                          <User size={16} />
                           Compléter mon profil
                         </button>
                       </div>
@@ -200,11 +203,12 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>
                   <Users size={20} />
-                  <span>Équipe</span>
+                  <span>Équipe du projet</span>
                 </h2>
                 {currentUser && isAdmin(currentUser.email) && (
                   <button onClick={onManageTeam} className={styles.addMemberButton}>
                     <UserPlus size={16} />
+                    <span>Gérer l'équipe</span>
                   </button>
                 )}
               </div>
@@ -242,20 +246,20 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                           {member.location?.city && (
                             <div className={styles.detailItem}>
                               <MapPin size={12} />
-                              <span>{member.location.city}</span>
+                              <span>{member.location.city}, {member.location.country}</span>
                             </div>
                           )}
                           
                           {member.roles && member.roles.length > 0 && (
                             <div className={styles.memberRoles}>
-                              {member.roles.slice(0, 3).map((role, index) => (
+                              {member.roles.slice(0, 2).map((role, index) => (
                                 <span key={index} className={styles.roleTag}>
                                   {role}
                                 </span>
                               ))}
-                              {member.roles.length > 3 && (
+                              {member.roles.length > 2 && (
                                 <span className={styles.moreRoles}>
-                                  +{member.roles.length - 3}
+                                  +{member.roles.length - 2} autres
                                 </span>
                               )}
                             </div>
@@ -268,6 +272,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                         className={styles.viewProfileButton}
                       >
                         <ExternalLink size={14} />
+                        <span>Voir</span>
                       </button>
                     </div>
                   ))}
@@ -275,11 +280,11 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
               ) : (
                 <div className={styles.emptyTeam}>
                   <Users size={48} className={styles.emptyIcon} />
-                  <h3>Aucun membre</h3>
+                  <h3>Aucun membre dans l'équipe</h3>
                   <p>
                     {currentUser && isAdmin(currentUser.email)
-                      ? 'Ajoutez des membres pour constituer l\'équipe.'
-                      : 'Aucun membre n\'a encore été ajouté.'}
+                      ? 'Ajoutez des membres pour constituer l\'équipe du projet.'
+                      : 'L\'administrateur n\'a pas encore ajouté de membres à ce projet.'}
                   </p>
                 </div>
               )}

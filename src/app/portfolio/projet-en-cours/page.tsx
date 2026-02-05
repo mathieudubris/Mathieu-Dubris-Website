@@ -35,6 +35,7 @@ import Login from '@/components/app/Header/Login/Login';
 import ProjetEditor from '@/components/projet-en-cours/ProjetEditor';
 import ProjetDetail from '@/components/projet-en-cours/ProjetDetail';
 import UserList from '@/components/UserList/UserList';
+import ProjectCard from '@/components/projet-en-cours/ProjectCard';
 import styles from './projet-en-cours.module.css';
 
 // Utiliser les interfaces importées de firebase-api
@@ -337,114 +338,25 @@ export default function ProjetEnCoursPage() {
               {filteredProjects.length > 0 ? (
                 <div className={styles.projectsGrid}>
                   <AnimatePresence mode="popLayout">
-                    {filteredProjects.map((project, index) => (
-                      <motion.div
-                        key={project.id || index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ delay: index * 0.05 }}
-                        className={styles.projectCard}
-                        onClick={() => handleProjectClick(project)}
-                      >
-                        {deleteConfirmId === (project.id || '') ? (
-                          <div className={styles.confirmOverlay}>
-                            <AlertTriangle size={32} />
-                            <p>Supprimer ce projet ?</p>
-                            <div className={styles.confirmButtons}>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (project.id) {
-                                    handleDeleteProject(project.id);
-                                  }
-                                }}
-                                className={styles.confirmYes}
-                              >
-                                OUI
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleteConfirmId(null);
-                                }}
-                                className={styles.confirmNo}
-                              >
-                                NON
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className={styles.projectImageContainer}>
-                              <img 
-                                src={project.image} 
-                                alt={project.title}
-                                className={styles.projectImage}
-                                onError={(e) => {
-                                  e.currentTarget.src = '/default-project.jpg';
-                                }}
-                              />
-                            </div>
-                            
-                            <div className={styles.projectContent}>
-                              <div className={styles.projectHeader}>
-                                <h3 className={styles.projectTitle}>{project.title}</h3>
-                                {currentUser && isAdmin(currentUser.email) && (
-                                  <div className={styles.projectActions}>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditProject(project);
-                                      }}
-                                      className={styles.actionBtn}
-                                      title="Modifier"
-                                    >
-                                      <Edit2 size={14} />
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeleteConfirmId(project.id || '');
-                                      }}
-                                      className={styles.actionBtn}
-                                      title="Supprimer"
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <p className={styles.projectDescription}>
-                                {project.description.length > 100
-                                  ? `${project.description.substring(0, 100)}...`
-                                  : project.description}
-                              </p>
-                              
-                              <div className={styles.projectFooter}>
-                                <div className={styles.projectMeta}>
-                                  <div className={styles.metaItem}>
-                                    <Calendar size={12} />
-                                    <span>{formatDate(project.createdAt)}</span>
-                                  </div>
-                                  <div className={styles.metaItem}>
-                                    <Users size={12} />
-                                    <span>{(project.teamMembers || []).length} membre(s)</span>
-                                  </div>
-                                </div>
-                                
-                                {currentUser && project.teamMembers?.includes(currentUser.uid) && (
-                                  <span className={styles.memberBadge}>
-                                    Membre
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </motion.div>
-                    ))}
+                    {filteredProjects.map((project, index) => {
+                      const isMember = currentUser && isUserInProject(project, currentUser.uid);
+                      const adminStatus = currentUser && isAdmin(currentUser.email);
+                      
+                      return (
+                        <ProjectCard
+                          key={project.id || index}
+                          project={project}
+                          currentUser={currentUser}
+                          isAdmin={adminStatus}
+                          isMember={isMember}
+                          isDeleteConfirm={deleteConfirmId === (project.id || '')}
+                          onEdit={handleEditProject}
+                          onDelete={handleDeleteProject}
+                          onDeleteConfirm={setDeleteConfirmId}
+                          onClick={() => handleProjectClick(project)}
+                        />
+                      );
+                    })}
                   </AnimatePresence>
                 </div>
               ) : (

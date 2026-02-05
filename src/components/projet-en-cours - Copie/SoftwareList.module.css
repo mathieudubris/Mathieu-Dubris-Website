@@ -1,0 +1,264 @@
+/* components/app/SoftwareList/SoftwareList.module.css */
+
+.softwareContainer {
+  width: 100%;
+}
+
+.softwareHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.softwareTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+  opacity: 0.8;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.editButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.editButton:hover {
+  background: rgba(199, 255, 68, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+  opacity: 1;
+}
+
+/* Grille des logiciels */
+.softwareGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.softwareItem {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.softwareItem:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.05);
+}
+
+.softwareIcon {
+  font-size: 0.9rem;
+}
+
+.softwareName {
+  color: var(--text-main);
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.removeButton {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.6rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.softwareItem:hover .removeButton {
+  opacity: 1;
+}
+
+.removeButton:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.addSoftwareBtn {
+  background: rgba(199, 255, 68, 0.1);
+  border: 1px dashed rgba(199, 255, 68, 0.3);
+  border-radius: 6px;
+  width: 32px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--primary);
+  transition: all 0.3s ease;
+}
+
+.addSoftwareBtn:hover {
+  background: rgba(199, 255, 68, 0.2);
+  border-style: solid;
+  transform: scale(1.05);
+}
+
+/* Éditeur */
+.softwareEditor {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(199, 255, 68, 0.2);
+}
+
+.editorHeader {
+  margin-bottom: 12px;
+}
+
+.editorTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0 0 8px 0;
+}
+
+.categoryFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.categoryBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.categoryBtn:hover {
+  background: rgba(199, 255, 68, 0.1);
+  border-color: var(--primary);
+}
+
+.categoryBtn.active {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+/* Logiciels disponibles */
+.availableSoftware {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.availableItem {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+.availableItem:hover {
+  background: rgba(199, 255, 68, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.availableIcon {
+  font-size: 0.9rem;
+}
+
+.availableName {
+  color: var(--text-main);
+  flex: 1;
+}
+
+.addIcon {
+  color: var(--primary);
+  opacity: 0.7;
+}
+
+/* Actions de l'éditeur */
+.editorActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveButton {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.saveButton:hover {
+  background: #d4ff5e;
+  transform: translateY(-2px);
+}
+
+/* Scrollbar personnalisée */
+.availableSoftware::-webkit-scrollbar {
+  width: 4px;
+}
+
+.availableSoftware::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.availableSoftware::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 2px;
+  opacity: 0.3;
+}
