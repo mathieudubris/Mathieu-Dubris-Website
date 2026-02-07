@@ -1,4 +1,4 @@
-// components/projet-en-cours/ProjetDetail.tsx
+// ProjetDetail.tsx - AVEC CAROUSEL ET VUES
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -9,20 +9,22 @@ import {
   Users, 
   Calendar, 
   Edit2, 
-  Trash2, 
-  ArrowLeft,
+  Trash2,
   ExternalLink,
   UserPlus,
   Mail,
   MapPin,
   Settings,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft,
+  Eye
 } from 'lucide-react';
 import { 
   isAdmin, 
   isUserInProject, 
   Project as FirebaseProject,
-  TeamMember as FirebaseTeamMember 
+  TeamMember as FirebaseTeamMember,
+  updateProject
 } from '@/utils/firebase-api';
 import SoftwareList from '@/components/projet-en-cours/SoftwareList';
 import styles from './ProjetDetail.module.css';
@@ -55,12 +57,56 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
 }) => {
   const router = useRouter();
   const [isInTeam, setIsInTeam] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [views, setViews] = useState(project.views || 0);
+
+  // Images du carousel: image principale + carouselImages
+  const carouselImages = [
+    project.image || '/default-project.jpg',
+    ...(project.carouselImages || [])
+  ];
 
   useEffect(() => {
     if (currentUser && project) {
       setIsInTeam(isUserInProject(project, currentUser.uid));
+      incrementViews();
     }
   }, [currentUser, project]);
+
+  // Carousel automatique
+  useEffect(() => {
+    if (carouselImages.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+      }, 5000); // Change toutes les 5 secondes
+
+      return () => clearInterval(interval);
+    }
+  }, [carouselImages.length]);
+
+  const incrementViews = async () => {
+    if (!project.id) return;
+    
+    try {
+      const newViews = (project.views || 0) + 1;
+      await updateProject(project.id, { views: newViews });
+      setViews(newViews);
+    } catch (error) {
+      console.error('Erreur lors de l\'incrémentation des vues:', error);
+    }
+  };
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
 
   const formatDate = (date: any) => {
     if (!date) return '';
@@ -81,10 +127,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     router.push(`/team?userId=${userId}&project=${project.id || ''}`);
   };
 
-  const handleGoToTeam = () => {
-    router.push(`/team?project=${project.id || ''}`);
-  };
-
   return (
     <div className={styles.modalOverlay} onClick={onBack}>
       <motion.div 
@@ -95,6 +137,12 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Compteur de vues */}
+        <div className={styles.viewsCounter}>
+          <Eye size={16} />
+          <span>{views} vues</span>
+        </div>
+
         {/* Bouton de fermeture */}
         <button className={styles.closeBtn} onClick={onBack}>
           <X size={24} />
@@ -103,16 +151,56 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
         <div className={styles.modalMain}>
           {/* Colonne de gauche - Contenu du projet */}
           <div className={styles.leftColumn}>
-            {/* Header avec image */}
+            {/* Header avec CAROUSEL */}
             <div className={styles.modalHeader}>
-              <div className={styles.headerImageContainer}>
-                <img 
-                  src={project.image || "/default-project.jpg"} 
-                  alt={project.title} 
-                  className={styles.headerImage} 
-                />
+              <div className={styles.carouselWrapper}>
+                {carouselImages.map((img, index) => (
+                  <div 
+                    key={index}
+                    className={`${styles.carouselSlide} ${index === currentSlide ? styles.active : ''}`}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`${project.title} - Image ${index + 1}`} 
+                      className={styles.carouselImage} 
+                    />
+                  </div>
+                ))}
+                
                 <div className={styles.imageOverlay}></div>
+
+                {/* Flèches de navigation */}
+                {carouselImages.length > 1 && (
+                  <>
+                    <button 
+                      className={`${styles.carouselArrow} ${styles.prev}`}
+                      onClick={prevSlide}
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                      className={`${styles.carouselArrow} ${styles.next}`}
+                      onClick={nextSlide}
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
+
+                {/* Dots de navigation */}
+                {carouselImages.length > 1 && (
+                  <div className={styles.carouselControls}>
+                    {carouselImages.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`${styles.carouselDot} ${index === currentSlide ? styles.active : ''}`}
+                        onClick={() => goToSlide(index)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
+
               <div className={styles.headerContent}>
                 <div className={styles.container}>
                   {/* Actions admin uniquement */}
@@ -164,6 +252,9 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                     projectId={project.id || ''}
                     isAdmin={currentUser && isAdmin(currentUser.email)}
                     compact={false}
+                    selectedSoftware={project.software || []}
+                    onClose={() => {}}
+                    onSave={() => {}}
                   />
                 </div>
 

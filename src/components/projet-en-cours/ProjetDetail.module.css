@@ -1,4 +1,4 @@
-/* components/projet-en-cours/ProjetDetail.module.css */
+/* ProjetDetail.module.css - AVEC CAROUSEL ET VUES */
 
 .modalOverlay {
   position: fixed;
@@ -15,12 +15,6 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.modalOverlay::-webkit-scrollbar {
-  display: none;
 }
 
 .modalContent {
@@ -75,37 +69,115 @@
   overflow: hidden;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   overflow-y: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
 .leftColumn::-webkit-scrollbar {
-  display: none;
+  width: 6px;
 }
 
-/* Header avec image */
+.leftColumn::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.leftColumn::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+/* Header avec CAROUSEL */
 .modalHeader {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 400px;
   overflow: hidden;
   flex-shrink: 0;
+  background: #000;
 }
 
-.headerImageContainer {
+.carouselWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carouselSlide {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
 }
 
-.headerImage {
+.carouselSlide.active {
+  opacity: 1;
+}
+
+.carouselImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.6;
+}
+
+.carouselControls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.carouselDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.carouselDot.active {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 5px;
+}
+
+.carouselArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.carouselArrow:hover {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+}
+
+.carouselArrow.prev {
+  left: 20px;
+}
+
+.carouselArrow.next {
+  right: 20px;
 }
 
 .imageOverlay {
@@ -118,6 +190,7 @@
     rgba(0, 0, 0, 0.2) 0%, 
     rgba(0, 0, 0, 0.5) 50%, 
     var(--dark) 100%);
+  pointer-events: none;
 }
 
 .headerContent {
@@ -135,6 +208,29 @@
   margin: 0 auto;
   width: 100%;
   padding: 0 32px;
+}
+
+/* Vue counter */
+.viewsCounter {
+  position: absolute;
+  top: 20px;
+  right: 80px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 3;
+}
+
+.viewsCounter svg {
+  color: var(--primary);
 }
 
 /* Actions admin */
@@ -331,12 +427,19 @@
   padding: 24px;
   background: rgba(0, 0, 0, 0.2);
   overflow-y: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
 .rightColumn::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+.rightColumn::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.rightColumn::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
 }
 
 .teamSection {
@@ -560,7 +663,7 @@
   }
   
   .modalHeader {
-    height: 220px;
+    height: 300px;
   }
 }
 
@@ -578,8 +681,28 @@
     height: 40px;
   }
   
+  .viewsCounter {
+    top: 12px;
+    right: 60px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  
   .modalHeader {
-    height: 180px;
+    height: 250px;
+  }
+  
+  .carouselArrow {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .carouselArrow.prev {
+    left: 10px;
+  }
+  
+  .carouselArrow.next {
+    right: 10px;
   }
   
   .container {
@@ -621,7 +744,7 @@
 
 @media (max-width: 480px) {
   .modalHeader {
-    height: 160px;
+    height: 220px;
   }
   
   .container {

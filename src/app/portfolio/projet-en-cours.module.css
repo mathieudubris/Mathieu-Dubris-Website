@@ -1,4 +1,4 @@
-/* projet-en-cours.module.css - VERSION MISE À JOUR */
+/* projet-en-cours.module.css - VERSION COMPLÈTEMENT REVISÉEE */
 
 .mainContainer {
   display: flex;
@@ -135,7 +135,7 @@
   font-weight: 600;
 }
 
-/* Grille de projets */
+/* Grille de projets - MAJ pour les nouvelles cartes */
 .projectsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -274,9 +274,5 @@
 @media (max-width: 480px) {
   .projectsGrid {
     grid-template-columns: 1fr;
-  }
-  
-  .pageTitle {
-    font-size: 1.5rem;
   }
 }

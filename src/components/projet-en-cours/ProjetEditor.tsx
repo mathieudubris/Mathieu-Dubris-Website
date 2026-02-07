@@ -1,10 +1,13 @@
+// ProjetEditor.tsx - AVEC CAROUSEL, SOFTWARE ET MEMBERS EN MODAL
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { X, Save, Image as ImageIcon, Send } from 'lucide-react';
-import { createProject, updateProject, isAdmin, getAllUsers, addMemberToProject, removeMemberFromProject } from '@/utils/firebase-api';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Save, Image as ImageIcon, Send, Plus, Wrench, Users as UsersIcon } from 'lucide-react';
+import { createProject, updateProject, isAdmin } from '@/utils/firebase-api';
 import { Timestamp } from 'firebase/firestore';
+import SoftwareList from '@/components/projet-en-cours/SoftwareList';
+import UserList from '@/components/UserList/UserList';
 import styles from './ProjetEditor.module.css';
 
 interface Project {
@@ -12,17 +15,15 @@ interface Project {
   title: string;
   description: string;
   image: string;
+  carouselImages: string[];
+  progress: number;
+  software: any[];
+  members: any[];
   createdBy: string;
   createdAt: any;
   updatedAt: any;
   teamMembers: string[];
-}
-
-interface UserData {
-  uid: string;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
+  views?: number;
 }
 
 interface ProjetEditorProps {
@@ -41,36 +42,37 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
+  const [carouselImages, setCarouselImages] = useState<string[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [software, setSoftware] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
-  const [allUsers, setAllUsers] = useState<UserData[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showSoftwareModal, setShowSoftwareModal] = useState(false);
+  const [showMembersModal, setShowMembersModal] = useState(false);
 
   useEffect(() => {
     if (project) {
       setTitle(project.title);
       setDescription(project.description);
       setImage(project.image);
+      setCarouselImages(project.carouselImages || []);
+      setProgress(project.progress || 0);
+      setSoftware(project.software || []);
+      setMembers(project.members || []);
       setTeamMembers(project.teamMembers || []);
     } else {
       setTitle('');
       setDescription('');
       setImage('');
+      setCarouselImages([]);
+      setProgress(0);
+      setSoftware([]);
+      setMembers([]);
       setTeamMembers([currentUser?.uid]);
     }
-    
-    loadUsers();
   }, [project, currentUser]);
-
-  const loadUsers = async () => {
-    try {
-      const users = await getAllUsers();
-      setAllUsers(users);
-    } catch (error) {
-      console.error('Erreur lors du chargement des utilisateurs:', error);
-    }
-  };
 
   const handleImageUpload = () => {
     if (typeof window !== "undefined" && (window as any).cloudinary) {
@@ -90,18 +92,27 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
     }
   };
 
-  const toggleTeamMember = (userId: string) => {
-    if (teamMembers.includes(userId)) {
-      setTeamMembers(teamMembers.filter(id => id !== userId));
-    } else {
-      setTeamMembers([...teamMembers, userId]);
+  const handleCarouselUpload = () => {
+    if (typeof window !== "undefined" && (window as any).cloudinary) {
+      const widget = (window as any).cloudinary.createUploadWidget({
+        cloudName: 'dhqqx2m3y',
+        uploadPreset: 'blog_preset',
+        sources: ['local', 'url'],
+        multiple: true,
+        resourceType: 'image',
+        theme: "minimal",
+      }, (error: any, result: any) => {
+        if (!error && result && result.event === "success") {
+          setCarouselImages(prev => [...prev, result.info.secure_url]);
+        }
+      });
+      widget.open();
     }
   };
 
-  const filteredUsers = allUsers.filter(user => 
-    user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const removeCarouselImage = (index: number) => {
+    setCarouselImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,10 +135,15 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
         title: title.trim(),
         description: description.trim(),
         image: image || '/default-project.jpg',
+        carouselImages: carouselImages,
+        progress: progress,
+        software: software,
+        members: members,
         createdBy: currentUser.uid,
         createdAt: project ? project.createdAt : Timestamp.now(),
         updatedAt: Timestamp.now(),
-        teamMembers: teamMembers
+        teamMembers: teamMembers,
+        views: project?.views || 0
       };
 
       if (project?.id) {
@@ -145,132 +161,198 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
     }
   };
 
+  const handleSoftwareSave = (selectedSoftware: any[]) => {
+    setSoftware(selectedSoftware);
+    setShowSoftwareModal(false);
+  };
+
+  const handleMembersSave = (selectedMembers: string[]) => {
+    setTeamMembers(selectedMembers);
+    setShowMembersModal(false);
+  };
+
   return (
-    <motion.div 
-      className={styles.overlay}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
+    <>
       <motion.div 
-        className={styles.editorPanel}
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        onClick={(e) => e.stopPropagation()}
+        className={styles.overlay}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
       >
-        <div className={styles.editorHeader}>
-          <div className={styles.headerLeft}>
-            <span className={styles.headerTitle}>
-              {project ? 'Modifier le projet' : 'Nouveau projet'}
-            </span>
-            <button 
-              type="submit" 
-              disabled={isSubmitting} 
-              className={styles.publishBtnTop}
-              onClick={handleSubmit}
-            >
-              {isSubmitting ? "Enregistrement..." : <><Send size={16} /> {project ? "Mettre à jour" : "Créer"}</>}
+        <motion.div 
+          className={styles.editorPanel}
+          initial={{ scale: 0.9, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.9, y: 20 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.editorHeader}>
+            <div className={styles.headerLeft}>
+              <span className={styles.headerTitle}>
+                {project ? 'Modifier le projet' : 'Nouveau projet'}
+              </span>
+              <button 
+                type="submit" 
+                disabled={isSubmitting} 
+                className={styles.publishBtnTop}
+                onClick={handleSubmit}
+              >
+                {isSubmitting ? "Enregistrement..." : <><Send size={16} /> {project ? "Mettre à jour" : "Créer"}</>}
+              </button>
+            </div>
+            
+            <button onClick={onClose} className={styles.closeBtn}>
+              <X size={24} />
             </button>
           </div>
-          
-          <button onClick={onClose} className={styles.closeBtn}>
-            <X size={24} />
-          </button>
-        </div>
 
-        <form onSubmit={handleSubmit} className={styles.publishForm}>
-          {error && (
-            <div className={styles.errorMessage}>
-              {error}
-            </div>
-          )}
+          <form onSubmit={handleSubmit} className={styles.publishForm}>
+            {error && (
+              <div className={styles.errorMessage}>
+                {error}
+              </div>
+            )}
 
-          <div className={styles.formGrid}>
-            <div className={styles.mainFields}>
-              <input 
-                type="text" 
-                placeholder="Titre du projet..." 
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={styles.titleInput}
-                required
-              />
-              
-              <textarea 
-                placeholder="Description du projet..." 
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className={styles.contentInput}
-                required
-                rows={8}
-              />
-            </div>
-
-            <div className={styles.mediaSidebar}>
-              <div className={styles.sidebarSection}>
-                <label>Image du projet</label>
-                <div className={styles.featuredUpload} onClick={handleImageUpload}>
-                  {image ? (
-                    <img src={image} alt="Projet" />
-                  ) : (
-                    <div className={styles.imagePlaceholder}>
-                      <ImageIcon size={24} />
-                      <span>Cliquer pour uploader</span>
-                    </div>
-                  )}
-                </div>
+            <div className={styles.formGrid}>
+              <div className={styles.mainFields}>
+                <input 
+                  type="text" 
+                  placeholder="Titre du projet..." 
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={styles.titleInput}
+                  required
+                />
+                
+                <textarea 
+                  placeholder="Description du projet..." 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={styles.contentInput}
+                  required
+                  rows={8}
+                />
               </div>
 
-              <div className={styles.sidebarSection}>
-                <label>Membres de l'équipe</label>
-                <div className={styles.searchTeam}>
-                  <input
-                    type="text"
-                    placeholder="Rechercher un utilisateur..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={styles.teamSearch}
-                  />
+              <div className={styles.mediaSidebar}>
+                {/* Image principale */}
+                <div className={styles.sidebarSection}>
+                  <label>Image principale</label>
+                  <div className={styles.featuredUpload} onClick={handleImageUpload}>
+                    {image ? (
+                      <img src={image} alt="Projet" />
+                    ) : (
+                      <div className={styles.imagePlaceholder}>
+                        <ImageIcon size={24} />
+                        <span>Cliquer pour uploader</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                <div className={styles.teamList}>
-                  {filteredUsers.map(user => (
-                    <div 
-                      key={user.uid}
-                      className={`${styles.teamMember} ${teamMembers.includes(user.uid) ? styles.selected : ''}`}
-                      onClick={() => toggleTeamMember(user.uid)}
-                    >
-                      <div className={styles.memberAvatar}>
-                        {user.photoURL ? (
-                          <img src={user.photoURL} alt={user.displayName || ''} />
-                        ) : (
-                          <div className={styles.avatarPlaceholder}>
-                            {user.displayName?.[0] || '?'}
-                          </div>
-                        )}
+
+                {/* Carousel d'images */}
+                <div className={styles.sidebarSection}>
+                  <label>Carousel d'images</label>
+                  <div className={styles.carouselContainer}>
+                    <div className={styles.carouselImages}>
+                      {carouselImages.map((img, index) => (
+                        <div key={index} className={styles.carouselItem}>
+                          <div className={styles.carouselNumber}>{index + 1}</div>
+                          <img src={img} alt={`Carousel ${index + 1}`} />
+                          <button
+                            type="button"
+                            onClick={() => removeCarouselImage(index)}
+                            className={styles.removeCarouselBtn}
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                      <div 
+                        className={styles.addCarouselBtn}
+                        onClick={handleCarouselUpload}
+                      >
+                        <Plus size={24} />
                       </div>
-                      <div className={styles.memberInfo}>
-                        <span className={styles.memberName}>{user.displayName || 'Utilisateur'}</span>
-                        <span className={styles.memberEmail}>{user.email}</span>
-                      </div>
-                      {teamMembers.includes(user.uid) && (
-                        <div className={styles.selectedIndicator}>✓</div>
-                      )}
                     </div>
-                  ))}
+                  </div>
                 </div>
-                
-                <div className={styles.selectedCount}>
-                  {teamMembers.length} membre{teamMembers.length > 1 ? 's' : ''} sélectionné{teamMembers.length > 1 ? 's' : ''}
+
+                {/* Progression */}
+                <div className={styles.sidebarSection}>
+                  <div className={styles.progressSection}>
+                    <div className={styles.progressLabel}>
+                      <label>Progression</label>
+                      <span className={styles.progressValue}>{progress}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={progress}
+                      onChange={(e) => setProgress(Number(e.target.value))}
+                      className={styles.progressSlider}
+                    />
+                  </div>
+                </div>
+
+                {/* Logiciels */}
+                <div className={styles.sidebarSection}>
+                  <label>Logiciels</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowSoftwareModal(true)}
+                    className={styles.sectionButton}
+                  >
+                    <span><Wrench size={16} style={{ display: 'inline', marginRight: '8px' }} />Software</span>
+                    <span className={styles.selectedCount}>{software.length} sélectionné{software.length > 1 ? 's' : ''}</span>
+                  </button>
+                </div>
+
+                {/* Membres */}
+                <div className={styles.sidebarSection}>
+                  <label>Membres de l'équipe</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowMembersModal(true)}
+                    className={styles.sectionButton}
+                  >
+                    <span><UsersIcon size={16} style={{ display: 'inline', marginRight: '8px' }} />Membres</span>
+                    <span className={styles.selectedCount}>{teamMembers.length} sélectionné{teamMembers.length > 1 ? 's' : ''}</span>
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </motion.div>
       </motion.div>
-    </motion.div>
+
+      {/* Modal Software */}
+      <AnimatePresence>
+        {showSoftwareModal && (
+          <SoftwareList
+            projectId={project?.id || ''}
+            isAdmin={true}
+            compact={false}
+            selectedSoftware={software}
+            onClose={() => setShowSoftwareModal(false)}
+            onSave={handleSoftwareSave}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal Members */}
+      <AnimatePresence>
+        {showMembersModal && project?.id && (
+          <UserList
+            projectId={project.id}
+            onClose={() => setShowMembersModal(false)}
+            onUserAdded={() => {}}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

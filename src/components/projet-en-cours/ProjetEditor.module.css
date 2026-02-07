@@ -1,4 +1,4 @@
-/* ProjetEditor.module.css */
+/* ProjetEditor.module.css - AVEC CAROUSEL D'IMAGES */
 
 .overlay {
   position: fixed;
@@ -16,12 +16,6 @@
   align-items: center;
   padding: 0;
   overflow: hidden;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.overlay::-webkit-scrollbar {
-  display: none;
 }
 
 .editorPanel {
@@ -60,14 +54,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #b3ff00;
+  color: var(--primary);
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
 .publishBtnTop {
-  background: #b3ff00;
-  color: #000;
+  background: var(--primary);
+  color: var(--dark);
   border: none;
   padding: 10px 25px;
   border-radius: 8px;
@@ -88,7 +82,7 @@
 
 .publishBtnTop:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(179, 255, 0, 0.3);
+  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
 }
 
 .closeBtn {
@@ -123,7 +117,7 @@
 
 .formGrid {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 1fr 380px;
   gap: 30px;
   flex: 1;
   overflow: hidden;
@@ -150,7 +144,7 @@
 }
 
 .titleInput:focus {
-  border-color: #b3ff00;
+  border-color: var(--primary);
 }
 
 .contentInput {
@@ -167,27 +161,42 @@
   resize: none;
   overflow-y: auto;
   min-height: 300px;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
 .contentInput::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+.contentInput::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.contentInput::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
 }
 
 .mediaSidebar {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 24px;
   overflow-y: auto;
   padding-right: 10px;
   height: 100%;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  max-height: calc(100vh - 150px);
 }
 
 .mediaSidebar::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+.mediaSidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.mediaSidebar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
 }
 
 .sidebarSection {
@@ -204,6 +213,122 @@
   letter-spacing: 0.5px;
 }
 
+/* CAROUSEL D'IMAGES */
+.carouselContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.carouselImages {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px;
+}
+
+.carouselImages::-webkit-scrollbar {
+  height: 4px;
+}
+
+.carouselImages::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.carouselImages::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.carouselItem {
+  position: relative;
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #151515;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.carouselItem:hover {
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+.carouselItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carouselNumber {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.removeCarouselBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.carouselItem:hover .removeCarouselBtn {
+  opacity: 1;
+}
+
+.removeCarouselBtn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.addCarouselBtn {
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  background: #151515;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--primary);
+}
+
+.addCarouselBtn:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.05);
+}
+
+/* IMAGE PRINCIPALE */
 .featuredUpload {
   width: 100%;
   aspect-ratio: 16/9;
@@ -219,7 +344,7 @@
 }
 
 .featuredUpload:hover {
-  border-color: #b3ff00;
+  border-color: var(--primary);
   background: #1a1a1a;
 }
 
@@ -241,119 +366,82 @@
   opacity: 0.5;
 }
 
-/* Team management */
-.searchTeam {
-  width: 100%;
-}
-
-.teamSearch {
-  width: 100%;
-  background: #151515;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  border-radius: 8px;
-  padding: 10px 14px;
-  outline: none;
-  font-size: 0.9rem;
-}
-
-.teamSearch:focus {
-  border-color: #b3ff00;
-}
-
-.teamList {
+/* SLIDER DE PROGRESSION */
+.progressSection {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 5px;
 }
 
-.teamMember {
+.progressLabel {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: #151515;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.progressValue {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.progressSlider {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.progressSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+}
+
+.progressSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: none;
+}
+
+/* LOGICIELS ET MEMBRES - BOUTONS */
+.sectionButton {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  padding: 12px 16px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.teamMember:hover {
-  background: #1a1a1a;
-  border-color: rgba(179, 255, 0, 0.3);
-}
-
-.teamMember.selected {
-  background: rgba(179, 255, 0, 0.1);
-  border-color: #b3ff00;
-}
-
-.memberAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.memberAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatarPlaceholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #b3ff00 0%, rgba(179, 255, 0, 0.8) 100%);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #000;
-  font-weight: 700;
-  font-size: 1rem;
+  justify-content: space-between;
 }
 
-.memberInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.memberName {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 2px;
-}
-
-.memberEmail {
-  display: block;
-  font-size: 0.75rem;
-  color: #888;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.selectedIndicator {
-  color: #b3ff00;
-  font-weight: 700;
-  font-size: 1.2rem;
+.sectionButton:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
 }
 
 .selectedCount {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #888;
-  text-align: center;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 
 .errorMessage {
@@ -377,20 +465,12 @@
   .mediaSidebar {
     order: -1;
     height: auto;
-    max-height: 400px;
+    max-height: 500px;
     width: 100%;
   }
   
   .mainFields {
     min-height: 400px;
-  }
-  
-  .editorHeader {
-    padding: 15px 20px;
-  }
-  
-  .publishForm {
-    padding: 15px 20px;
   }
 }
 
@@ -424,7 +504,9 @@
     min-height: 250px;
   }
   
-  .teamList {
-    max-height: 200px;
+  .carouselItem,
+  .addCarouselBtn {
+    width: 60px;
+    height: 60px;
   }
 }

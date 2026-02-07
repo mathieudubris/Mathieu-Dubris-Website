@@ -1,24 +1,25 @@
-/* components/projet-en-cours/SoftwareList.module.css */
+/* SoftwareList.module.css - MODAL PLEIN ÉCRAN */
 
 /* Vue compacte pour la carte projet */
 .softwareCompact {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 
 .softwareIconBox {
-  width: 40px;
-  height: 40px;
-  background: rgba(0, 0, 0, 0.4);
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-main);
+  color: var(--primary);
   transition: all 0.3s ease;
+  font-size: 0.85rem;
 }
 
 .softwareIconBox:hover {
@@ -28,166 +29,121 @@
 }
 
 .moreSoftware {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-main);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   opacity: 0.7;
 }
 
-/* Vue complète */
-.softwareContainer {
-  width: 100%;
+/* MODAL PLEIN ÉCRAN */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.softwareHeader {
+.modalContent {
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  width: 90vw;
+  max-width: 900px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.modalHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-}
-
-.softwareTitle {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-main);
-  opacity: 0.9;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.editButton {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--text-main);
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 0.7;
-}
-
-.editButton:hover {
-  background: rgba(199, 255, 68, 0.1);
-  border-color: var(--primary);
-  color: var(--primary);
-  opacity: 1;
-}
-
-/* Grille des logiciels */
-.softwareGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.softwareItem {
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 6px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  transition: all 0.3s ease;
-  position: relative;
+  flex-shrink: 0;
 }
 
-.softwareItem:hover {
-  border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.05);
-  transform: translateY(-1px);
-}
-
-.softwareIcon {
+.headerContent h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
   color: var(--primary);
+  margin: 0 0 6px 0;
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
-.softwareName {
+.headerContent p {
   color: var(--text-main);
-  opacity: 0.9;
-  font-weight: 500;
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin: 0;
 }
 
-.removeButton {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  width: 18px;
-  height: 18px;
+.closeBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.6rem;
-  opacity: 0;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
-.softwareItem:hover .removeButton {
-  opacity: 1;
+.closeBtn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+  transform: rotate(90deg);
 }
 
-.removeButton:hover {
-  background: #dc2626;
-  transform: scale(1.15);
-}
-
-/* Éditeur */
-.softwareEditor {
-  margin-top: 16px;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  border: 1px solid rgba(199, 255, 68, 0.2);
-}
-
-.editorHeader {
-  margin-bottom: 16px;
-}
-
-.editorTitle {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--primary);
-  margin: 0 0 12px 0;
-}
-
+/* Filtres de catégorie */
 .categoryFilters {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .categoryBtn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-main);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .categoryBtn:hover {
@@ -202,133 +158,254 @@
   font-weight: 700;
 }
 
-/* Logiciels disponibles */
-.availableSoftware {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-  max-height: 200px;
+/* Contenu */
+.modalBody {
+  flex: 1;
   overflow-y: auto;
-  margin-bottom: 16px;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  padding: 24px;
 }
 
-.availableItem {
+.modalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modalBody::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.modalBody::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+/* Grille des logiciels */
+.softwareGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.softwareCard {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.8rem;
+  position: relative;
 }
 
-.availableItem:hover {
+.softwareCard:hover {
   background: rgba(199, 255, 68, 0.1);
   border-color: var(--primary);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.2);
 }
 
-.availableIcon {
-  color: var(--primary);
+.softwareCard.selected {
+  background: rgba(199, 255, 68, 0.15);
+  border-color: var(--primary);
+  border-width: 2px;
+}
+
+.softwareIcon {
+  font-size: 2.5rem;
   display: flex;
   align-items: center;
-}
-
-.availableName {
-  color: var(--text-main);
-  flex: 1;
-  font-weight: 500;
-}
-
-.addIcon {
+  justify-content: center;
   color: var(--primary);
-  opacity: 0.7;
 }
 
-/* Actions de l'éditeur */
-.editorActions {
-  display: flex;
-  justify-content: flex-end;
+.softwareName {
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
 }
 
-.saveButton {
+.softwareCategory {
+  font-size: 0.7rem;
+  color: var(--text-main);
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.selectedBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   background: var(--primary);
   color: var(--dark);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  justify-content: center;
   font-weight: 700;
+  font-size: 0.75rem;
+}
+
+/* Footer */
+.modalFooter {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.selectedCount {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  opacity: 0.7;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.footerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.cancelBtn {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
   font-size: 0.85rem;
   transition: all 0.3s ease;
 }
 
-.saveButton:hover {
+.cancelBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.saveBtn {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.saveBtn:hover {
   background: #d4ff5e;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
 }
 
-/* Scrollbar personnalisée */
-.availableSoftware::-webkit-scrollbar {
-  width: 6px;
+/* États vides */
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-main);
+  opacity: 0.6;
 }
 
-.availableSoftware::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
+.emptyState svg {
+  color: var(--primary);
+  opacity: 0.4;
+  margin-bottom: 16px;
 }
 
-.availableSoftware::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
-  opacity: 0.3;
+.emptyState h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
 }
 
-.availableSoftware::-webkit-scrollbar-thumb:hover {
-  opacity: 0.5;
+.emptyState p {
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .softwareIconBox {
-    width: 36px;
-    height: 36px;
+  .modalContent {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
   }
   
-  .availableSoftware {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    max-height: 160px;
+  .modalHeader {
+    padding: 16px 20px;
+  }
+  
+  .headerContent h2 {
+    font-size: 1.1rem;
+  }
+  
+  .categoryFilters {
+    padding: 12px 20px;
+  }
+  
+  .modalBody {
+    padding: 20px;
+  }
+  
+  .softwareGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  
+  .softwareCard {
+    padding: 12px;
+  }
+  
+  .softwareIcon {
+    font-size: 2rem;
+  }
+  
+  .modalFooter {
+    padding: 12px 20px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .footerActions {
+    width: 100%;
+  }
+  
+  .cancelBtn,
+  .saveBtn {
+    flex: 1;
   }
 }
 
 @media (max-width: 480px) {
-  .softwareCompact {
-    gap: 6px;
+  .softwareGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
   
-  .softwareIconBox {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+  .categoryFilters {
+    gap: 8px;
   }
   
-  .moreSoftware {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-  }
-  
-  .availableSoftware {
-    grid-template-columns: 1fr 1fr;
+  .categoryBtn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
   }
 }

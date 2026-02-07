@@ -3,9 +3,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Users, MoreVertical } from 'lucide-react';
+import { Edit2, Trash2, Users } from 'lucide-react';
 import { Project as FirebaseProject } from '@/utils/firebase-api';
-import SoftwareList from '@/components/projet-en-cours/SoftwareList';
 import styles from './ProjectCard.module.css';
 
 type Project = FirebaseProject;
@@ -48,26 +47,52 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
-  // Calculer le pourcentage de progression (basé sur le nombre de membres)
-  const progressPercentage = Math.min((project.teamMembers?.length || 0) * 10, 100);
+  // Récupérer les logiciels du projet (max 5 icônes + compteur)
+  const renderSoftwareIcons = () => {
+    const softwareList = project.software || [];
+    const maxVisible = 5;
+    const visibleSoftware = softwareList.slice(0, maxVisible);
+    const remaining = softwareList.length - maxVisible;
 
-  // Afficher les avatars des membres (max 5 visibles)
-  const displayMembers = (members: string[]) => {
-    const visibleCount = Math.min(members.length, 5);
-    const remainingCount = members.length - visibleCount;
+    return (
+      <div className={styles.softwareSection}>
+        {visibleSoftware.map((software: any, index: number) => (
+          <div key={index} className={styles.softwareIcon} title={software.name}>
+            {software.icon || '📦'}
+          </div>
+        ))}
+        {remaining > 0 && (
+          <div className={styles.moreSoftware} title={`+${remaining} autres logiciels`}>
+            +{remaining}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Afficher les avatars des membres (max 5 + compteur)
+  const renderMemberAvatars = () => {
+    const members = project.members || [];
+    const maxVisible = 5;
+    const visibleMembers = members.slice(0, maxVisible);
+    const remaining = members.length - maxVisible;
     
     return (
       <div className={styles.memberAvatars}>
-        {Array.from({ length: visibleCount }).map((_, index) => (
-          <div key={index} className={styles.memberAvatar}>
-            <div className={styles.avatarPlaceholder}>
-              {index + 1}
-            </div>
+        {visibleMembers.map((member: any, index: number) => (
+          <div key={index} className={styles.memberAvatar} title={member.displayName || 'Membre'}>
+            {member.photoURL ? (
+              <img src={member.photoURL} alt={member.displayName || 'Membre'} />
+            ) : (
+              <div className={styles.avatarPlaceholder}>
+                {member.displayName?.[0]?.toUpperCase() || (index + 1)}
+              </div>
+            )}
           </div>
         ))}
-        {remainingCount > 0 && (
-          <div className={styles.moreMembers}>
-            +{remainingCount}
+        {remaining > 0 && (
+          <div className={styles.moreMembers} title={`+${remaining} autres membres`}>
+            +{remaining}
           </div>
         )}
       </div>
@@ -123,15 +148,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       transition={{ duration: 0.3 }}
       onClick={() => onClick(project)}
     >
-      {/* Header avec badge et actions admin */}
+      {/* Header avec badge membre et actions admin */}
       <div className={styles.cardHeader}>
-        <div className={styles.memberBadge}>
-          <Users size={14} />
-          <span>Membre</span>
-        </div>
+        {isMember && (
+          <div className={styles.memberBadge}>
+            <Users size={12} />
+            <span>Vous êtes membre</span>
+          </div>
+        )}
 
         {isAdmin && (
-          <div className={styles.adminActions}>
+          <div className={styles.adminActions} style={{ marginLeft: isMember ? 'auto' : '0' }}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -152,18 +179,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             >
               <Trash2 size={14} />
             </button>
-            <button
-              onClick={(e) => e.stopPropagation()}
-              className={styles.actionBtn}
-              title="Plus"
-            >
-              <MoreVertical size={14} />
-            </button>
           </div>
         )}
       </div>
 
-      {/* Image de couverture arrondie */}
+      {/* Image de couverture */}
       <div className={styles.coverImageContainer}>
         <img 
           src={project.image || '/default-project.jpg'} 
@@ -175,39 +195,30 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         />
       </div>
 
-      {/* Titre du projet */}
+      {/* Contenu */}
       <div className={styles.cardContent}>
         <h3 className={styles.projectTitle}>
           {project.title}
         </h3>
 
-        {/* Description */}
         <p className={styles.projectDescription}>
-          {project.description.length > 120
-            ? `${project.description.substring(0, 120)}...`
-            : project.description}
+          {project.description}
         </p>
 
-        {/* Liste des logiciels */}
-        <div className={styles.softwareSection}>
-          <SoftwareList 
-            projectId={project.id || ''}
-            isAdmin={isAdmin}
-            compact={true}
-          />
-        </div>
+        {/* Icônes des logiciels */}
+        {renderSoftwareIcons()}
 
         {/* Barre de progression */}
         <div className={styles.progressBar}>
           <div 
             className={styles.progressFill}
-            style={{ width: `${progressPercentage}%` }}
+            style={{ width: `${project.progress || 0}%` }}
           ></div>
         </div>
 
         {/* Footer avec avatars et date */}
         <div className={styles.cardFooter}>
-          {displayMembers(project.teamMembers || [])}
+          {renderMemberAvatars()}
           <span className={styles.projectDate}>{formatDate(project.createdAt)}</span>
         </div>
       </div>

@@ -14,13 +14,21 @@ import {
   isUserInProject,
   getUserTeamProfile,
   Project as FirebaseProject,
-  TeamMember as FirebaseTeamMember,
-  getAllUsers
+  TeamMember as FirebaseTeamMember
 } from '@/utils/firebase-api';
 import { 
   Plus, 
+  Users, 
+  Calendar, 
+  Edit2, 
+  Trash2, 
+  AlertTriangle,
   Search,
-  Filter
+  Filter,
+  ArrowLeft,
+  X,
+  User,
+  Eye
 } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
@@ -90,29 +98,11 @@ export default function ProjetEnCoursPage() {
         );
       }
       
-      // Enrichir avec les données des membres
-      const allUsers = await getAllUsers();
-      allProjects = await Promise.all(allProjects.map(async project => {
-        const members = project.teamMembers?.map(userId => {
-          const user = allUsers.find(u => u.uid === userId);
-          return user ? {
-            userId: user.uid,
-            displayName: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL
-          } : null;
-        }).filter(Boolean) || [];
-
-        return {
-          ...project,
-          image: project.image || '/default-project.jpg',
-          teamMembers: project.teamMembers || [],
-          members: members,
-          software: project.software || [],
-          carouselImages: project.carouselImages || [],
-          progress: project.progress || 0,
-          views: project.views || 0
-        };
+      // Ajoute l'URL par défaut si pas d'image et initialise teamMembers
+      allProjects = allProjects.map(project => ({
+        ...project,
+        image: project.image || '/default-project.jpg',
+        teamMembers: project.teamMembers || []
       }));
       
       setProjects(allProjects);
@@ -245,6 +235,21 @@ export default function ProjetEnCoursPage() {
     }
   };
 
+  const formatDate = (date: any) => {
+    if (!date) return '';
+    
+    try {
+      const dateObj = date.toDate ? date.toDate() : new Date(date);
+      return dateObj.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return '';
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.mainContainer}>
@@ -329,7 +334,7 @@ export default function ProjetEnCoursPage() {
                 </div>
               </div>
 
-              {/* Grille de projets */}
+              {/* Grille de projets en carrés */}
               {filteredProjects.length > 0 ? (
                 <div className={styles.projectsGrid}>
                   <AnimatePresence mode="popLayout">

@@ -1,4 +1,4 @@
-// firebase-api.ts - MISES À JOUR
+// firebase-api.ts - MIS À JOUR AVEC CAROUSEL, VIEWS, PROGRESS, SOFTWARE
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, 
@@ -20,7 +20,8 @@ import {
   getDocs,
   addDoc,
   updateDoc,
-  Timestamp
+  Timestamp,
+  increment
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -56,12 +57,17 @@ export interface UserData {
   lastLogin: string;
 }
 
-// Interface pour un projet
+// Interface pour un projet - MISE À JOUR
 export interface Project {
   id?: string;
   title: string;
   description: string;
   image: string;
+  carouselImages: string[]; // NOUVEAU: Images du carousel
+  progress: number; // NOUVEAU: Pourcentage de progression
+  software: any[]; // NOUVEAU: Logiciels utilisés
+  members: any[]; // NOUVEAU: Données enrichies des membres
+  views: number; // NOUVEAU: Nombre de vues
   createdBy: string;
   createdAt: any;
   updatedAt: any;
@@ -179,7 +185,7 @@ export const canEditTeamMember = async (userId: string, currentUser: User | null
   return currentUser.uid === userId;
 };
 
-// Fonction pour récupérer les membres de l'équipe (avec sécurité)
+// Fonction pour récupérer les membres de l'équipe
 export const getTeamMembers = async (): Promise<any[]> => {
   try {
     const db = getFirestore();
@@ -206,7 +212,16 @@ export const getProjects = async (): Promise<Project[]> => {
     
     const projects: Project[] = [];
     snapshot.forEach(doc => {
-      projects.push({ id: doc.id, ...doc.data() } as Project);
+      const data = doc.data();
+      projects.push({ 
+        id: doc.id, 
+        ...data,
+        carouselImages: data.carouselImages || [],
+        progress: data.progress || 0,
+        software: data.software || [],
+        members: data.members || [],
+        views: data.views || 0
+      } as Project);
     });
     
     // Assurer que teamMembers est toujours un tableau
@@ -227,7 +242,16 @@ export const getProject = async (projectId: string): Promise<Project | null> => 
     const projectDoc = await getDoc(projectRef);
     
     if (projectDoc.exists()) {
-      const project = { id: projectDoc.id, ...projectDoc.data() } as Project;
+      const data = projectDoc.data();
+      const project = { 
+        id: projectDoc.id, 
+        ...data,
+        carouselImages: data.carouselImages || [],
+        progress: data.progress || 0,
+        software: data.software || [],
+        members: data.members || [],
+        views: data.views || 0
+      } as Project;
       return {
         ...project,
         teamMembers: project.teamMembers || []
@@ -246,6 +270,11 @@ export const createProject = async (project: Omit<Project, 'id'>): Promise<strin
     const docRef = await addDoc(collection(db, 'projects'), {
       ...project,
       teamMembers: project.teamMembers || [],
+      carouselImages: project.carouselImages || [],
+      progress: project.progress || 0,
+      software: project.software || [],
+      members: project.members || [],
+      views: 0,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
@@ -267,6 +296,18 @@ export const updateProject = async (projectId: string, projectData: Partial<Proj
   } catch (error) {
     console.error('Erreur lors de la mise à jour du projet:', error);
     throw error;
+  }
+};
+
+// Fonction pour incrémenter les vues d'un projet
+export const incrementProjectViews = async (projectId: string): Promise<void> => {
+  try {
+    const projectRef = doc(db, 'projects', projectId);
+    await updateDoc(projectRef, {
+      views: increment(1)
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'incrémentation des vues:', error);
   }
 };
 
@@ -293,7 +334,16 @@ export const getUserProjects = async (userId: string): Promise<Project[]> => {
     const snapshot = await getDocs(q);
     const projects: Project[] = [];
     snapshot.forEach(doc => {
-      const project = { id: doc.id, ...doc.data() } as Project;
+      const data = doc.data();
+      const project = { 
+        id: doc.id, 
+        ...data,
+        carouselImages: data.carouselImages || [],
+        progress: data.progress || 0,
+        software: data.software || [],
+        members: data.members || [],
+        views: data.views || 0
+      } as Project;
       projects.push({
         ...project,
         teamMembers: project.teamMembers || []
@@ -349,7 +399,7 @@ export const removeMemberFromProject = async (projectId: string, userId: string)
   }
 };
 
-// Fonction pour vérifier si l'utilisateur est admin (toi)
+// Fonction pour vérifier si l'utilisateur est admin
 export const isAdmin = (userEmail: string | null): boolean => {
   return userEmail === 'mathieudubris@gmail.com';
 };
@@ -361,7 +411,7 @@ export const hasAccessToProject = (project: Project, userId: string | null): boo
   return members.includes(userId) || project.createdBy === userId;
 };
 
-// Fonction pour récupérer tous les utilisateurs (pour la liste d'ajout)
+// Fonction pour récupérer tous les utilisateurs
 export const getAllUsers = async (): Promise<UserData[]> => {
   try {
     const usersCollection = collection(db, 'users');
@@ -402,7 +452,7 @@ export const getProjectTeamMembers = async (projectId: string): Promise<any[]> =
   }
 };
 
-// Fonction pour récupérer le profil d'équipe d'un utilisateur pour un projet
+// Fonction pour récupérer le profil d'équipe d'un utilisateur
 export const getUserTeamProfile = async (userId: string): Promise<any> => {
   try {
     const userRef = doc(db, 'team', userId);
