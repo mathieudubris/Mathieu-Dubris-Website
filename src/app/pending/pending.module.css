@@ -4,10 +4,9 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: var(--bg-main);
+  background: var(--dark);
   position: relative;
   overflow: hidden;
-  /* Empêche le scroll */
   height: 100vh;
 }
 
@@ -21,11 +20,14 @@
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--grey) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grey) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+  opacity: 0.1; /* Pour garder un effet subtil */
 }
+
+
 
 .gradientOrb {
   position: absolute;
@@ -36,10 +38,19 @@
   height: min(600px, 90vh);
   background: radial-gradient(
     circle,
-    rgba(199, 255, 68, 0.03) 0%,
+    rgba(var(--primary-rgb), 0.03) 0%,
     transparent 60%
   );
   filter: blur(40px);
+}
+
+/* Ajout d'une variable pour les valeurs RGB de --primary */
+.gradientOrb {
+  --primary-rgb: 199, 255, 68; /* #c7ff44 en RGB */
+}
+
+.light-theme .gradientOrb {
+  --primary-rgb: 156, 223, 0; /* #9cdf00 en RGB */
 }
 
 /* Close Button */
@@ -50,9 +61,9 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(17, 17, 17, 0.7);
-  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(var(--white-rgb), 0.1);
+  background: rgba(var(--dark-rgb), 0.7);
+  color: rgba(var(--white-rgb), 0.8);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -60,6 +71,16 @@
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
   z-index: 100;
+}
+
+/* Ajout d'une variable pour les valeurs RGB de --dark */
+.closeButton {
+  --dark-rgb: 22, 22, 22; /* #161616 en RGB */
+}
+
+.light-theme .closeButton {
+  --dark-rgb: 233, 236, 239; /* #e9ecef en RGB */
+  --white-rgb: 33, 37, 41; /* #212529 en RGB */
 }
 
 .closeButton:hover {
@@ -73,7 +94,6 @@
   z-index: 1;
   max-width: 700px;
   width: 100%;
-  /* Ajuste automatiquement la hauteur */
   margin: auto;
   padding: 0 1.5rem;
 }
@@ -125,7 +145,7 @@
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--primary);
-  background: rgba(199, 255, 68, 0.08);
+  background: rgba(var(--primary-rgb), 0.08);
   border-radius: 100px;
 }
 
@@ -160,7 +180,7 @@
 .message {
   font-size: clamp(1rem, 2vw, 1.125rem);
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(var(--white-rgb), 0.7);
   margin: 0 0 2.5rem 0;
   font-weight: 400;
   max-width: 500px;
@@ -170,7 +190,7 @@
 
 .contactSection {
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(var(--white-rgb), 0.05);
   max-width: 400px;
   margin: 0 auto;
 }
@@ -190,12 +210,12 @@
 }
 
 .emailButton:hover {
-  background: rgba(199, 255, 68, 0.05);
+  background: rgba(var(--primary-rgb), 0.05);
 }
 
 .emailLabel {
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--grey);
   font-weight: 400;
 }
 
@@ -212,7 +232,7 @@
   color: var(--primary);
 }
 
-/* Responsive - Ajustements pour éviter le scroll */
+/* Responsive */
 @media (max-height: 700px) {
   .container {
     padding: 1rem;
@@ -292,7 +312,6 @@
   }
 }
 
-/* Ajustements de largeur */
 @media (max-width: 768px) {
   .content {
     padding: 0 1rem;
@@ -323,7 +342,6 @@
   }
 }
 
-/* Réduction d'animation pour les préférences utilisateur */
 @media (prefers-reduced-motion: reduce) {
   .clockIcon {
     animation: none !important;

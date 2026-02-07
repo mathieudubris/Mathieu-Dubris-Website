@@ -48,6 +48,35 @@ interface TeamMember {
   createdAt: Date;
 }
 
+// Fonction utilitaire pour normaliser les données des membres
+const normalizeMemberData = (member: any): TeamMember => {
+  return {
+    ...member,
+    id: member.id || '',
+    userId: member.userId || '',
+    firstName: member.firstName || '',
+    lastName: member.lastName || '',
+    age: member.age || 0,
+    agePublic: member.agePublic !== undefined ? member.agePublic : true,
+    email: member.email || '',
+    phone: member.phone || '',
+    image: member.image || '',
+    contacts: member.contacts || [],
+    roles: member.roles || [],
+    equipment: member.equipment || {
+      phone: { model: '', internet: 'wifi' },
+      computer: { os: 'windows', ram: '', storage: '', gpu: '' }
+    },
+    location: member.location || {
+      country: '',
+      city: '',
+      district: '',
+      districtPublic: true
+    },
+    createdAt: member.createdAt?.toDate ? member.createdAt.toDate() : new Date(member.createdAt || Date.now())
+  };
+};
+
 export default function TeamViewPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -74,11 +103,10 @@ export default function TeamViewPage() {
     try {
       const members = await getTeamMembers();
       
-      const formattedMembers = members.map(member => ({
-        ...member,
-        id: member.id,
-        createdAt: member.createdAt?.toDate ? member.createdAt.toDate() : new Date(member.createdAt || Date.now())
-      })) as TeamMember[];
+      // Normaliser les données de chaque membre
+      const formattedMembers = members.map(member => 
+        normalizeMemberData(member)
+      );
       
       setTeamMembers(formattedMembers);
     } catch (error) {
@@ -212,7 +240,13 @@ export default function TeamViewPage() {
                             <span>Localisation</span>
                           </h4>
                           <p className={styles.locationText}>
-                            {member.location.city}, {member.location.country}
+                            {member.location ? (
+                              <>
+                                {member.location.city || 'Ville non renseignée'}, {member.location.country || 'Pays non renseigné'}
+                              </>
+                            ) : (
+                              'Localisation non renseignée'
+                            )}
                           </p>
                         </div>
                       </div>
@@ -295,11 +329,17 @@ export default function TeamViewPage() {
                   <span>Localisation</span>
                 </h3>
                 <p className={styles.modalLocation}>
-                  {selectedMember.location.city}, {selectedMember.location.country}
-                  {selectedMember.location.districtPublic && selectedMember.location.district && (
-                    <span className={styles.modalDistrict}>
-                      • {selectedMember.location.district}
-                    </span>
+                  {selectedMember.location ? (
+                    <>
+                      {selectedMember.location.city || 'Ville non renseignée'}, {selectedMember.location.country || 'Pays non renseigné'}
+                      {selectedMember.location.districtPublic && selectedMember.location.district && (
+                        <span className={styles.modalDistrict}>
+                          • {selectedMember.location.district}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    'Localisation non renseignée'
                   )}
                 </p>
               </div>

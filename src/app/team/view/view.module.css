@@ -3,8 +3,8 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: var(--dark);
+  color: var(--white);
   font-family: var(--font-main);
 }
 
@@ -17,7 +17,7 @@
   align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
-  background-color: var(--bg-main);
+  background-color: var(--dark);
 }
 
 .viewContainer {
@@ -51,7 +51,7 @@
 }
 
 .loginCenterButton:hover {
-  background-color: #d4ff5e;
+  background-color: rgba(199, 255, 68, 0.9);
   transform: translateY(-2px);
 }
 
@@ -74,7 +74,7 @@
 }
 
 .pageSubtitle {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   text-align: left;
   font-size: 1.1rem;
@@ -96,7 +96,7 @@
 }
 
 .editProfileButton:hover {
-  background-color: #d4ff5e;
+  background-color: rgba(199, 255, 68, 0.9);
   transform: translateY(-1px);
 }
 
@@ -109,8 +109,8 @@
 }
 
 .memberCard {
-  background: rgba(30, 30, 30, 0.7);
-  border: 1px solid var(--border-color);
+  background-color: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--grey);
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
@@ -141,7 +141,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(40, 40, 40, 0.8);
+  background-color: rgba(40, 40, 40, 0.8);
 }
 
 .avatar img {
@@ -157,7 +157,7 @@
 .memberName {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--white);
   margin: 0 0 0.25rem 0;
 }
 
@@ -179,7 +179,7 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.8;
   margin-bottom: 0.5rem;
 }
@@ -196,7 +196,7 @@
 }
 
 .roleTag {
-  background: rgba(199, 255, 68, 0.1);
+  background-color: rgba(199, 255, 68, 0.1);
   color: var(--primary);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -205,7 +205,7 @@
 }
 
 .moreRoles {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.6;
   font-size: 0.75rem;
   font-style: italic;
@@ -217,7 +217,7 @@
 }
 
 .locationText {
-  color: var(--text-main);
+  color: var(--white);
   font-size: 0.875rem;
   opacity: 0.9;
   margin: 0;
@@ -238,12 +238,12 @@
 .emptyStateTitle {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--white);
   margin-bottom: 1rem;
 }
 
 .emptyStateText {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   margin-bottom: 2rem;
   max-width: 400px;
@@ -264,7 +264,7 @@
 }
 
 .emptyStateButton:hover {
-  background-color: #d4ff5e;
+  background-color: rgba(199, 255, 68, 0.9);
   transform: translateY(-2px);
 }
 
@@ -275,7 +275,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -285,8 +285,8 @@
 }
 
 .modalContent {
-  background: var(--bg-main);
-  border: 1px solid var(--border-color);
+  background-color: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 16px;
   max-width: 800px;
   width: 100%;
@@ -302,7 +302,7 @@
   right: 1rem;
   background: none;
   border: none;
-  color: var(--text-main);
+  color: var(--white);
   font-size: 2rem;
   cursor: pointer;
   line-height: 1;
@@ -317,7 +317,7 @@
 }
 
 .closeModal:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   color: var(--primary);
 }
 
@@ -327,7 +327,7 @@
   gap: 2rem;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--grey);
 }
 
 .modalAvatar {
@@ -339,7 +339,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(40, 40, 40, 0.8);
+  background-color: rgba(40, 40, 40, 0.8);
 }
 
 .modalAvatar img {
@@ -355,7 +355,7 @@
 .modalName {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--white);
   margin: 0 0 0.5rem 0;
 }
 
@@ -370,7 +370,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.8;
   font-size: 0.875rem;
 }
@@ -403,7 +403,7 @@
 }
 
 .modalRoleTag {
-  background: rgba(199, 255, 68, 0.15);
+  background-color: rgba(199, 255, 68, 0.15);
   color: var(--primary);
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
@@ -412,7 +412,7 @@
 }
 
 .modalLocation {
-  color: var(--text-main);
+  color: var(--white);
   font-size: 1rem;
   margin: 0;
 }
@@ -433,9 +433,9 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: rgba(40, 40, 40, 0.5);
+  background-color: rgba(40, 40, 40, 0.5);
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
 }
 
 .contactIcon {
@@ -444,12 +444,12 @@
 
 .contactType {
   font-weight: 500;
-  color: var(--text-main);
+  color: var(--white);
   min-width: 80px;
 }
 
 .contactValue {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.9;
   word-break: break-all;
 }
@@ -461,12 +461,12 @@
 }
 
 .equipmentItem {
-  color: var(--text-main);
+  color: var(--white);
   font-size: 0.875rem;
   padding: 0.75rem;
-  background: rgba(40, 40, 40, 0.5);
+  background-color: rgba(40, 40, 40, 0.5);
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
 }
 
 .equipmentItem strong {
@@ -481,7 +481,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-main);
+  background-color: var(--dark);
   gap: 1.5rem;
 }
 
@@ -498,6 +498,43 @@
   color: var(--primary);
   font-size: 1.125rem;
   font-weight: 500;
+}
+
+/* Support pour le thème clair */
+.light-theme .mainContainer,
+.light-theme .content,
+.light-theme .viewContainer,
+.light-theme .modalContent,
+.light-theme .memberCard,
+.light-theme .modalContact,
+.light-theme .equipmentItem {
+  background-color: var(--dark);
+  color: var(--white);
+  transition: all 0.3s ease;
+}
+
+.light-theme .memberCard,
+.light-theme .modalContent,
+.light-theme .modalContact,
+.light-theme .equipmentItem,
+.light-theme .modalHeader {
+  border-color: var(--grey);
+}
+
+.light-theme .pageSubtitle,
+.light-theme .emptyStateTitle,
+.light-theme .emptyStateText,
+.light-theme .memberName,
+.light-theme .sectionTitle,
+.light-theme .locationText,
+.light-theme .moreRoles,
+.light-theme .modalName,
+.light-theme .modalEmail,
+.light-theme .modalLocation,
+.light-theme .contactType,
+.light-theme .contactValue,
+.light-theme .equipmentItem {
+  color: var(--white);
 }
 
 /* Responsive */

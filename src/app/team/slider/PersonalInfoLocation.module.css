@@ -31,7 +31,7 @@
 
 .label {
   font-size: 0.875rem;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.8;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -39,11 +39,11 @@
 
 .input {
   width: 100%;
-  background: rgba(40, 40, 40, 0.7);
-  border: 1px solid var(--border-color);
+  background: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 0.5rem;
   padding: 0.75rem;
-  color: var(--text-main);
+  color: var(--white);
   font-family: var(--font-main);
   font-size: 0.875rem;
   transition: all 0.3s ease;
@@ -73,7 +73,7 @@
 
 .switchLabel {
   font-size: 0.75rem;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   min-width: 45px;
 }
@@ -98,9 +98,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(60, 60, 60, 0.7);
+  background-color: rgba(199, 255, 68, 0.1);
   transition: .4s;
   border-radius: 24px;
+  border: 1px solid var(--grey);
 }
 
 .slider:before {
@@ -108,17 +109,28 @@
   content: "";
   height: 16px;
   width: 16px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--white);
   transition: .4s;
   border-radius: 50%;
 }
 
 input:checked + .slider {
   background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 input:checked + .slider:before {
   transform: translateX(26px);
+  background-color: var(--dark);
+}
+
+/* Support pour le thème clair */
+.light-theme .slider {
+  background-color: rgba(156, 223, 0, 0.1);
+}
+
+.light-theme .input:focus {
+  box-shadow: 0 0 0 2px rgba(156, 223, 0, 0.1);
 }

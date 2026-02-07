@@ -1,7 +1,7 @@
 .section {
   padding: 100px 20px;
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: var(--dark);
+  color: var(--white);
   font-family: var(--font-main);
   overflow: hidden;
 }
@@ -21,7 +21,7 @@
   padding: 6px 16px;
   border-radius: 100px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -33,7 +33,7 @@
   font-size: clamp(32px, 5vw, 48px);
   font-weight: 800;
   margin-bottom: 20px;
-  background: linear-gradient(180deg, var(--white) 0%, #888 100%);
+  background: linear-gradient(180deg, var(--white) 0%, var(--grey) 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -49,7 +49,7 @@
   position: relative;
   padding: 40px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   border-radius: 24px;
   overflow: hidden;
   transition: border-color 0.3s ease;
@@ -63,7 +63,7 @@
 .iconWrapper {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, var(--primary) 0%, #0072ff 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -79,7 +79,7 @@
 }
 
 .cardDescription {
-  color: #a0a0a0;
+  color: var(--grey);
   line-height: 1.6;
   font-size: 16px;
 }
@@ -90,12 +90,12 @@
   height: 100%;
   top: 0;
   left: 0;
-  background: radial-gradient(circle at var(--x) var(--y), rgba(179, 255, 0, 0.15) 0%, transparent 80%);
+  background: radial-gradient(circle at var(--x) var(--y), var(--primary) 15%, transparent 80%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
 .card:hover .glow {
-  opacity: 1;
+  opacity: 0.15;
 }

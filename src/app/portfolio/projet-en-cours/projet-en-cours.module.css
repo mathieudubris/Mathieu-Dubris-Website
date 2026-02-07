@@ -1,11 +1,11 @@
-/* projet-en-cours.module.css - VERSION MISE À JOUR */
+/* projet-en-cours.module.css - VERSION CORRIGÉE */
 
 .mainContainer {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: var(--dark);
+  color: var(--white);
   font-family: var(--font-main);
 }
 
@@ -13,7 +13,7 @@
   flex: 1;
   padding-top: 80px;
   width: 100%;
-  background-color: var(--bg-main);
+  background-color: var(--dark);
 }
 
 .pageContainer {
@@ -23,10 +23,10 @@
   width: 100%;
 }
 
-/* En-tête compact avec tous les éléments sur une ligne */
+/* En-tête */
 .pageHeader {
   margin-bottom: 2rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--grey);
   padding-bottom: 1.5rem;
 }
 
@@ -38,7 +38,7 @@
   width: 100%;
 }
 
-/* Conteneur des filtres (à gauche) */
+/* Conteneur des filtres */
 .filtersContainer {
   display: flex;
   gap: 0.75rem;
@@ -47,9 +47,9 @@
 }
 
 .filterBtn {
-  background: rgba(30, 30, 30, 0.5);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
+  background: var(--dark);
+  border: 1px solid var(--grey);
+  color: var(--white);
   padding: 0.625rem 1.5rem;
   border-radius: 8px;
   cursor: pointer;
@@ -61,7 +61,7 @@
 
 .filterBtn:hover {
   border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.1);
+  background: var(--dark);
 }
 
 .filterBtn.active {
@@ -71,7 +71,7 @@
   font-weight: 600;
 }
 
-/* Barre de recherche (au centre) */
+/* Barre de recherche */
 .searchContainer {
   position: relative;
   flex: 1;
@@ -85,17 +85,17 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-main);
+  color: var(--primary);
   opacity: 0.5;
 }
 
 .searchInput {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
-  background: rgba(30, 30, 30, 0.8);
-  border: 1px solid var(--border-color);
+   background: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 12px;
-  color: var(--text-main);
+  color: var(--white);
   font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.3s ease;
@@ -104,11 +104,10 @@
 .searchInput:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(30, 30, 30, 0.9);
-  box-shadow: 0 0 0 3px rgba(199, 255, 68, 0.1);
+  background: var(--dark);
 }
 
-/* Bouton créer (à droite) */
+/* Bouton créer */
 .createButton {
   background: var(--primary);
   color: var(--dark);
@@ -127,7 +126,7 @@
 }
 
 .createButton:hover {
-  background: #d4ff5e;
+  background: rgba(199, 255, 68, 0.9); /* var(--primary) avec opacité */
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
 }
@@ -156,12 +155,12 @@
 .emptyTitle {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--white);
   margin-bottom: 0.8rem;
 }
 
 .emptyText {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   margin-bottom: 1.5rem;
   max-width: 400px;
@@ -187,7 +186,7 @@
 }
 
 .emptyButton:hover {
-  background: #d4ff5e;
+  background: rgba(199, 255, 68, 0.9);
   transform: translateY(-2px);
 }
 

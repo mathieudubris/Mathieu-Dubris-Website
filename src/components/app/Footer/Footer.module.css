@@ -1,7 +1,6 @@
-
 .footer {
-  background-color: var(--bg-main);
-  border-top: 1px solid var(--border-color);
+  background-color: var(--dark);
+  border-top: 1px solid var(--grey);
   padding: 100px 24px 40px;
   font-family: var(--font-main);
 }
@@ -36,7 +35,7 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
 }
 
 .logoText {
@@ -47,7 +46,7 @@
 }
 
 .brandTagline {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.6;
   line-height: 1.6;
   font-size: 15px;
@@ -104,7 +103,7 @@
 }
 
 .linkItem {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   text-decoration: none;
   font-size: 15px;
@@ -121,7 +120,7 @@
 .ctaRow {
   padding: 48px;
   background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   border-radius: 24px;
   display: flex;
   justify-content: space-between;
@@ -136,7 +135,7 @@
 }
 
 .ctaText p {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.6;
 }
 
@@ -146,7 +145,7 @@
   background: rgba(255, 255, 255, 0.03);
   padding: 6px;
   border-radius: 14px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   min-width: 400px;
 }
 
@@ -160,7 +159,7 @@
 }
 
 .input::placeholder {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.5;
 }
 
@@ -188,8 +187,8 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 40px;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-main);
+  border-top: 1px solid var(--grey);
+  color: var(--white);
   opacity: 0.5;
   font-size: 14px;
 }
@@ -207,21 +206,21 @@
 }
 
 .legalLinks a {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .legalLinks a:hover {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 1;
 }
 
 .dot {
   width: 3px;
   height: 3px;
-  background: var(--text-main);
+  background: var(--white);
   opacity: 0.3;
   border-radius: 50%;
 }
@@ -238,7 +237,7 @@
 }
 
 .socialBtn {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   transition: all 0.2s;
 }
@@ -252,7 +251,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   cursor: pointer;
   position: relative;
@@ -262,8 +261,8 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: var(--bg-main);
-  border: 1px solid var(--border-color);
+  background: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 8px;
   padding: 8px 0;
   min-width: 120px;
@@ -277,7 +276,7 @@
 
 .languageOption {
   padding: 8px 16px;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   cursor: pointer;
   transition: all 0.2s;
@@ -343,7 +342,7 @@
 
   .input {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--grey);
     border-radius: 12px;
     margin-bottom: 8px;
   }

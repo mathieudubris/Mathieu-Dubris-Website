@@ -30,7 +30,7 @@
   object-fit: contain;
   border-radius: 50%;
   display: block;
-  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.05));
+
   /* Optimisation pour les animations */
   will-change: transform;
 }

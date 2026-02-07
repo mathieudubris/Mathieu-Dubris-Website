@@ -1,7 +1,7 @@
 .section {
   padding: 120px 20px;
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: var(--dark);
+  color: var(--white);
   font-family: var(--font-main);
   position: relative;
 }
@@ -24,7 +24,7 @@
   padding: 6px 16px;
   border-radius: 100px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -41,7 +41,7 @@
 }
 
 .subtitle {
-  color: #a0a0a0;
+  color: var(--grey);
   font-size: 18px;
   line-height: 1.6;
   margin-bottom: 32px;
@@ -88,7 +88,7 @@
   width: 56px;
   height: 56px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -105,7 +105,7 @@
   top: -10px;
   right: -10px;
   background: var(--primary);
-  color: black;
+  color: var(--dark);
   font-size: 12px;
   font-weight: 800;
   width: 24px;
@@ -114,13 +114,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 4px solid var(--bg-main);
+  border: 4px solid var(--dark);
 }
 
 .line {
   width: 2px;
   height: 100%;
-  background: linear-gradient(180deg, var(--border-color) 0%, transparent 100%);
+  background: linear-gradient(180deg, var(--grey) 0%, transparent 100%);
   margin-top: 10px;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .stepDescription {
-  color: #888;
+  color: var(--grey);
   font-size: 15px;
   line-height: 1.5;
 }

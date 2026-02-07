@@ -1,4 +1,4 @@
-/* ProjetDetail.module.css - AVEC CAROUSEL ET VUES */
+/* ProjetDetail.module.css - AVEC CAROUSEL ET VUES - RESPONSIVE AMÉLIORÉ */
 
 .modalOverlay {
   position: fixed;
@@ -8,20 +8,21 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.95);
+
   backdrop-filter: blur(20px);
   z-index: 3000;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  padding: 10px;
 }
 
 .modalContent {
   background: var(--dark);
-  width: 95vw;
+  width: 100%;
   max-width: 1400px;
-  height: 90vh;
+  height: 95vh;
   position: relative;
   display: flex;
   flex-direction: row;
@@ -37,7 +38,7 @@
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  color: var(--white);
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -59,6 +60,7 @@
   display: flex;
   width: 100%;
   height: 100%;
+  flex-direction: column;
 }
 
 /* Colonne de gauche */
@@ -67,7 +69,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
   overflow-y: auto;
 }
 
@@ -88,7 +89,7 @@
 .modalHeader {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 350px;
   overflow: hidden;
   flex-shrink: 0;
   background: #000;
@@ -122,7 +123,7 @@
 
 .carouselControls {
   position: absolute;
-  bottom: 20px;
+  bottom: 15px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -154,9 +155,9 @@
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  width: 44px;
-  height: 44px;
+  color: var(--white);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -173,11 +174,11 @@
 }
 
 .carouselArrow.prev {
-  left: 20px;
+  left: 15px;
 }
 
 .carouselArrow.next {
-  right: 20px;
+  right: 15px;
 }
 
 .imageOverlay {
@@ -198,8 +199,8 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 24px 0;
-  color: white;
+  padding: 20px 0;
+  color: var(--white);
   z-index: 2;
 }
 
@@ -207,24 +208,24 @@
   max-width: 100%;
   margin: 0 auto;
   width: 100%;
-  padding: 0 32px;
+  padding: 0 24px;
 }
 
 /* Vue counter */
 .viewsCounter {
   position: absolute;
-  top: 20px;
-  right: 80px;
+  top: 15px;
+  right: 70px;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--text-main);
-  padding: 8px 16px;
+  color: var(--white);
+  padding: 6px 12px;
   border-radius: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.8rem;
   font-weight: 600;
   z-index: 3;
 }
@@ -236,23 +237,24 @@
 /* Actions admin */
 .adminActions {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 15px;
   flex-wrap: wrap;
 }
 
 .editButton,
 .teamButton,
 .deleteButton {
-  padding: 10px 18px;
-  border-radius: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.8rem;
   font-weight: 700;
   transition: all 0.3s ease;
+  min-height: 36px;
 }
 
 .editButton {
@@ -269,8 +271,8 @@
 
 .teamButton {
   background: rgba(30, 30, 30, 0.8);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--white);
 }
 
 .teamButton:hover {
@@ -291,80 +293,157 @@
 
 /* Titre et meta */
 .projectTitle {
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-weight: 900;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   line-height: 1.1;
   letter-spacing: -0.5px;
-  color: white;
+  color: var(--white);
 }
 
 .projectMeta {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .metaItem {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* Corps du modal */
 .modalBody {
   flex: 1;
-  padding: 32px 0;
+  padding: 24px 0;
 }
 
 .descriptionSection {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .sectionTitle {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--primary);
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .projectDescription {
-  color: var(--text-main);
-  font-size: 1rem;
-  line-height: 1.7;
+  color: var(--white);
+  font-size: 0.95rem;
+  line-height: 1.6;
   white-space: pre-wrap;
   opacity: 0.9;
 }
 
 .softwareSection {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+}
+
+/* Logiciels avec vrais logos */
+.softwareGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.softwareItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 70px;
+  text-align: center;
+}
+
+.softwareLogo {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.softwareLogo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.softwareName {
+  font-size: 0.7rem;
+  color: var(--white);
+  opacity: 0.8;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.moreSoftware {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+}
+
+.moreSoftwareIcon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.moreSoftwareText {
+  font-size: 0.7rem;
+  color: var(--white);
+  opacity: 0.6;
+  text-align: center;
 }
 
 /* Actions profil */
 .profileActions {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 32px;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .editProfileButton {
   background: rgba(30, 30, 30, 0.7);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 14px 20px;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  padding: 12px 16px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
   width: 100%;
   justify-content: space-between;
@@ -379,22 +458,22 @@
 .callToAction {
   background: rgba(199, 255, 68, 0.1);
   border: 1px solid rgba(199, 255, 68, 0.3);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 10px;
+  padding: 16px;
 }
 
 .callToAction h3 {
   color: var(--primary);
-  font-size: 1.05rem;
-  margin: 0 0 10px 0;
+  font-size: 1rem;
+  margin: 0 0 8px 0;
   font-weight: 700;
 }
 
 .callToAction p {
-  color: var(--text-main);
-  font-size: 0.9rem;
+  color: var(--white);
+  font-size: 0.85rem;
   line-height: 1.5;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   opacity: 0.9;
 }
 
@@ -402,14 +481,14 @@
   background: var(--primary);
   color: var(--dark);
   border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   transition: all 0.3s ease;
 }
 
@@ -420,13 +499,14 @@
 
 /* Colonne de droite - Équipe */
 .rightColumn {
-  flex: 0 0 380px;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 24px;
+  padding: 20px;
   background: rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  max-height: 40vh;
 }
 
 .rightColumn::-webkit-scrollbar {
@@ -452,8 +532,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -461,8 +541,8 @@
   background: var(--primary);
   color: var(--dark);
   border: none;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
@@ -482,18 +562,18 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   padding-right: 8px;
 }
 
 .memberItem {
   background: rgba(30, 30, 30, 0.7);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   transition: all 0.3s ease;
 }
 
@@ -504,8 +584,8 @@
 }
 
 .memberAvatar {
-  width: 52px;
-  height: 52px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
@@ -533,7 +613,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 }
 
 .memberInfo {
@@ -542,56 +622,56 @@
 }
 
 .memberName {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  color: var(--text-main);
-  margin: 0 0 6px 0;
+  color: var(--white);
+  margin: 0 0 4px 0;
 }
 
 .memberDetails {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .detailItem {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--text-main);
+  gap: 5px;
+  color: var(--white);
   opacity: 0.7;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .memberRoles {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .roleTag {
   background: rgba(199, 255, 68, 0.1);
   color: var(--primary);
-  padding: 2px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
 }
 
 .moreRoles {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.5;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-style: italic;
 }
 
 .viewProfileButton {
   background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 8px;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  padding: 6px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -610,7 +690,7 @@
 /* État vide */
 .emptyTeam {
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 16px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -621,57 +701,105 @@
 .emptyIcon {
   color: var(--primary);
   opacity: 0.3;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .emptyTeam h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--text-main);
-  margin: 0 0 10px 0;
+  color: var(--white);
+  margin: 0 0 8px 0;
 }
 
 .emptyTeam p {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.6;
-  font-size: 0.9rem;
-  max-width: 280px;
+  font-size: 0.85rem;
+  max-width: 250px;
+  line-height: 1.4;
 }
 
-/* RESPONSIVE */
-@media (max-width: 1200px) {
+/* RESPONSIVE AMÉLIORÉ */
+@media (min-width: 1025px) {
   .modalContent {
-    flex-direction: column;
-    width: 95vw;
-    height: 95vh;
+    flex-direction: row;
+    height: 90vh;
   }
   
-  .leftColumn,
-  .rightColumn {
-    width: 100%;
-    border-right: none;
+  .modalMain {
+    flex-direction: row;
   }
   
   .leftColumn {
-    flex: 2;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto;
   }
   
   .rightColumn {
-    flex: 0 0 auto;
-    max-height: 40vh;
+    border-top: none;
+    max-height: none;
+    height: 100%;
+    flex: 0 0 380px;
+  }
+  
+  .modalHeader {
+    height: 400px;
+  }
+  
+  .container {
+    padding: 0 32px;
+  }
+  
+  .carouselArrow {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .carouselArrow.prev {
+    left: 20px;
+  }
+  
+  .carouselArrow.next {
+    right: 20px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .modalContent {
+    height: 95vh;
+    border-radius: 16px;
   }
   
   .modalHeader {
     height: 300px;
   }
+  
+  .projectTitle {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+  }
+  
+  .adminActions {
+    gap: 6px;
+  }
+  
+  .editButton,
+  .teamButton,
+  .deleteButton {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    min-height: 34px;
+  }
 }
 
 @media (max-width: 768px) {
   .modalContent {
-    width: 100vw;
     height: 100vh;
     border-radius: 0;
+    padding: 0;
+  }
+  
+  .modalOverlay {
+    padding: 0;
   }
   
   .closeBtn {
@@ -684,7 +812,7 @@
   .viewsCounter {
     top: 12px;
     right: 60px;
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 0.75rem;
   }
   
@@ -693,8 +821,8 @@
   }
   
   .carouselArrow {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
   }
   
   .carouselArrow.prev {
@@ -705,31 +833,50 @@
     right: 10px;
   }
   
+  .carouselControls {
+    bottom: 10px;
+  }
+  
   .container {
-    padding: 0 20px;
+    padding: 0 16px;
   }
   
   .projectTitle {
     font-size: 1.5rem;
+    margin-bottom: 10px;
   }
   
-  .adminActions {
+  .projectMeta {
+    flex-direction: column;
     gap: 8px;
   }
   
-  .editButton,
-  .teamButton,
-  .deleteButton {
-    padding: 8px 14px;
+  .metaItem {
     font-size: 0.8rem;
   }
   
   .modalBody {
-    padding: 24px 0;
+    padding: 20px 0;
+  }
+  
+  .descriptionSection,
+  .softwareSection {
+    margin-bottom: 20px;
+  }
+  
+  .sectionTitle {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+  
+  .projectDescription {
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
   
   .rightColumn {
     padding: 16px;
+    max-height: 35vh;
   }
   
   .memberItem {
@@ -737,8 +884,21 @@
   }
   
   .memberAvatar {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
+  }
+  
+  .memberName {
+    font-size: 0.9rem;
+  }
+  
+  .softwareItem {
+    width: 60px;
+  }
+  
+  .softwareLogo {
+    width: 45px;
+    height: 45px;
   }
 }
 
@@ -747,29 +907,115 @@
     height: 220px;
   }
   
-  .container {
-    padding: 0 16px;
+  .closeBtn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .viewsCounter {
+    right: 50px;
+    padding: 5px 8px;
+    font-size: 0.7rem;
+  }
+  
+  .adminActions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .editButton,
+  .teamButton,
+  .deleteButton {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+    font-size: 0.8rem;
   }
   
   .projectTitle {
     font-size: 1.3rem;
   }
   
-  .projectMeta {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .adminActions {
-    flex-direction: column;
-    align-items: stretch;
+  .container {
+    padding: 0 12px;
   }
   
   .modalBody {
-    padding: 20px 0;
+    padding: 16px 0;
   }
   
-  .sectionTitle {
-    font-size: 1rem;
+  .rightColumn {
+    padding: 12px;
+    max-height: 30vh;
+  }
+  
+  .teamList {
+    gap: 8px;
+  }
+  
+  .memberItem {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .memberAvatar {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .memberName {
+    font-size: 0.85rem;
+  }
+  
+  .detailItem {
+    font-size: 0.7rem;
+  }
+  
+  .softwareGrid {
+    gap: 8px;
+  }
+  
+  .softwareItem {
+    width: 55px;
+  }
+  
+  .softwareLogo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .softwareName {
+    font-size: 0.65rem;
+  }
+  
+  .emptyTeam {
+    padding: 30px 12px;
+  }
+  
+  .emptyTeam h3 {
+    font-size: 0.95rem;
+  }
+  
+  .emptyTeam p {
+    font-size: 0.8rem;
+  }
+}
+
+/* Portrait mobile */
+@media (max-height: 700px) and (max-width: 480px) {
+  .modalContent {
+    height: 100vh;
+  }
+  
+  .modalHeader {
+    height: 200px;
+  }
+  
+  .rightColumn {
+    max-height: 25vh;
+  }
+  
+  .modalBody {
+    padding: 12px 0;
   }
 }

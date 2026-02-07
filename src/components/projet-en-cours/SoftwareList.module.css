@@ -66,7 +66,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   width: 90vw;
-  max-width: 900px;
+  max-width: 1000px;
   height: 85vh;
   display: flex;
   flex-direction: column;
@@ -123,27 +123,88 @@
   transform: rotate(90deg);
 }
 
+/* Barre de recherche */
+.searchBar {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.searchInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-main);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px 12px 44px;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.05);
+  box-shadow: 0 0 0 2px rgba(199, 255, 68, 0.1);
+}
+
+.searchInput::placeholder {
+  color: var(--text-main);
+  opacity: 0.5;
+}
+
 /* Filtres de catégorie */
 .categoryFilters {
   padding: 16px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   background: rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.categoryFilters::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categoryFilters::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.categoryFilters::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
 }
 
 .categoryBtn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-main);
-  padding: 8px 16px;
+  padding: 6px 14px;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .categoryBtn:hover {
@@ -178,57 +239,67 @@
   border-radius: 4px;
 }
 
-/* Grille des logiciels */
+/* Grille des logiciels - PLUS COMPACTE */
 .softwareGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
 }
 
 .softwareCard {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   position: relative;
+  min-height: 90px;
 }
 
 .softwareCard:hover {
   background: rgba(199, 255, 68, 0.1);
   border-color: var(--primary);
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(199, 255, 68, 0.15);
 }
 
 .softwareCard.selected {
   background: rgba(199, 255, 68, 0.15);
   border-color: var(--primary);
-  border-width: 2px;
+  border-width: 1px;
 }
 
 .softwareIcon {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--primary);
+  height: 36px;
+  width: 36px;
 }
 
 .softwareName {
   color: var(--text-main);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-height: 2.4em;
 }
 
 .softwareCategory {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--text-main);
   opacity: 0.5;
   text-transform: uppercase;
@@ -237,18 +308,18 @@
 
 .selectedBadge {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   background: var(--primary);
   color: var(--dark);
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 
 /* Footer */
@@ -358,8 +429,13 @@
     font-size: 1.1rem;
   }
   
+  .searchBar {
+    padding: 12px 20px;
+  }
+  
   .categoryFilters {
     padding: 12px 20px;
+    max-height: 100px;
   }
   
   .modalBody {
@@ -367,16 +443,23 @@
   }
   
   .softwareGrid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
   }
   
   .softwareCard {
-    padding: 12px;
+    padding: 10px;
+    min-height: 80px;
   }
   
   .softwareIcon {
-    font-size: 2rem;
+    font-size: 1.5rem;
+    height: 30px;
+    width: 30px;
+  }
+  
+  .softwareName {
+    font-size: 0.75rem;
   }
   
   .modalFooter {
@@ -397,15 +480,27 @@
 
 @media (max-width: 480px) {
   .softwareGrid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
   
   .categoryFilters {
-    gap: 8px;
+    gap: 6px;
   }
   
   .categoryBtn {
-    padding: 6px 12px;
-    font-size: 0.75rem;
+    padding: 5px 10px;
+    font-size: 0.7rem;
+  }
+  
+  .searchInput {
+    padding: 10px 14px 10px 40px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mode compact supplémentaire pour plus de logiciels */
+@media (min-width: 1200px) {
+  .softwareGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 }

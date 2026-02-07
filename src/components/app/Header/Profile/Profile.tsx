@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { auth, signOut, User } from '@/utils/firebase-api';
+import { auth, signOut, User, saveUserPreferences, getUserPreferences, onAuthStateChanged } from '@/utils/firebase-api';
 import styles from './Profile.module.css';
 
 interface Props {
@@ -10,40 +10,70 @@ interface Props {
 }
 
 const ProfilContent: React.FC<Props> = ({ user, onClose }) => {
-  const [currentLang, setCurrentLang] = useState('en');
   const [activeTheme, setActiveTheme] = useState('dark');
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(user);
 
-  const translations: any = {
-    fr: { close: "Fermer", language: "Langue", theme: "Thème", dark: "Sombre", light: "Clair", logout: "Déconnexion" },
-    en: { close: "Close", language: "Language", theme: "Theme", dark: "Dark", light: "Light", logout: "Logout" }
-  };
-
+  // S'assurer que l'utilisateur est à jour
   useEffect(() => {
-    const lang = localStorage.getItem('lang') || 'en';
-    const theme = localStorage.getItem('theme') || 'dark';
-    setCurrentLang(lang);
-    setActiveTheme(theme);
-    applyTheme(theme);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    
+    return () => unsubscribe();
   }, []);
 
-  const t = (key: string) => translations[currentLang][key];
+  useEffect(() => {
+    if (currentUser) {
+      loadUserPreferences();
+    }
+  }, [currentUser]);
 
-  const changeLang = (lang: string) => {
-    setCurrentLang(lang);
-    localStorage.setItem('lang', lang);
-    document.documentElement.setAttribute('lang', lang);
+  const loadUserPreferences = async () => {
+    setIsLoading(true);
+    try {
+      let theme = 'dark';
+      
+      if (currentUser) {
+        const prefs = await getUserPreferences(currentUser.uid);
+        theme = prefs?.theme || 'dark';
+      } else {
+        const savedTheme = localStorage.getItem('theme');
+        theme = savedTheme || 'dark';
+      }
+      
+      setActiveTheme(theme);
+      applyTheme(theme);
+    } catch (error) {
+      console.error("Erreur lors du chargement des préférences:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const changeTheme = (theme: string) => {
+  const changeTheme = async (theme: string) => {
     setActiveTheme(theme);
-    localStorage.setItem('theme', theme);
     applyTheme(theme);
+    
+    // Sauvegarder dans localStorage
+    localStorage.setItem('theme', theme);
+    
+    // Sauvegarder dans Firestore pour les utilisateurs connectés
+    if (currentUser) {
+      try {
+        await saveUserPreferences(currentUser.uid, { theme: theme as 'dark' | 'light' });
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde du thème:", error);
+      }
+    }
   };
 
   const applyTheme = (theme: string) => {
     if (theme === 'light') {
+      document.documentElement.classList.add('light-theme');
       document.body.classList.add('light-theme');
     } else {
+      document.documentElement.classList.remove('light-theme');
       document.body.classList.remove('light-theme');
     }
   };
@@ -57,7 +87,17 @@ const ProfilContent: React.FC<Props> = ({ user, onClose }) => {
     }
   };
 
-  if (!user) return null;
+  if (!currentUser) return null;
+  
+  if (isLoading) {
+    return (
+      <div className={styles.profilOverlayWrapper}>
+        <div className={styles.profilCard}>
+          <p>Chargement des préférences...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.profilOverlayWrapper}>
@@ -70,30 +110,34 @@ const ProfilContent: React.FC<Props> = ({ user, onClose }) => {
 
       <div className={styles.profilCard}>
         <div className={styles.profilHeader}>
-          <img src={user.photoURL || ""} className={styles.largeAvatar} alt="Avatar" />
-          <h2 className={styles.userName}>{user.displayName}</h2>
-          <p className={styles.userEmail}>{user.email}</p>
+          <img src={currentUser.photoURL || ""} className={styles.largeAvatar} alt="Avatar" />
+          <h2 className={styles.userName}>{currentUser.displayName}</h2>
+          <p className={styles.userEmail}>{currentUser.email}</p>
         </div>
 
         <div className={styles.settingsSection}>
           <div className={styles.settingBlock}>
-            <label>{t('language')}</label>
+            <label>Thème</label>
             <div className={styles.toggleGroup}>
-              <button onClick={() => changeLang('fr')} className={currentLang === 'fr' ? styles.active : ''}>Français</button>
-              <button onClick={() => changeLang('en')} className={currentLang === 'en' ? styles.active : ''}>English</button>
-            </div>
-          </div>
-
-          <div className={styles.settingBlock}>
-            <label>{t('theme')}</label>
-            <div className={styles.toggleGroup}>
-              <button onClick={() => changeTheme('dark')} className={activeTheme === 'dark' ? styles.active : ''}>{t('dark')}</button>
-              <button onClick={() => changeTheme('light')} className={activeTheme === 'light' ? styles.active : ''}>{t('light')}</button>
+              <button 
+                onClick={() => changeTheme('dark')} 
+                className={activeTheme === 'dark' ? styles.active : ''}
+              >
+                Sombre
+              </button>
+              <button 
+                onClick={() => changeTheme('light')} 
+                className={activeTheme === 'light' ? styles.active : ''}
+              >
+                Clair
+              </button>
             </div>
           </div>
         </div>
 
-        <button onClick={handleLogout} className={styles.logoutBtn}>{t('logout')}</button>
+        <button onClick={handleLogout} className={styles.logoutBtn}>
+          Déconnexion
+        </button>
       </div>
     </div>
   );

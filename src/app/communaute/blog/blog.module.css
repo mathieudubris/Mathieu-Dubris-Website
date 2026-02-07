@@ -1,116 +1,118 @@
 .blogContainer {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 100px 20px 60px;
-    min-height: 100vh;
-    position: relative;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 100px 20px 60px;
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--dark);
+  color: var(--white);
 }
 
 /* Barre de filtres */
 .filtersBar {
-    margin-bottom: 30px;
-    margin-top: 20px;
+  margin-bottom: 30px;
+  margin-top: 20px;
 }
 
 .filterControls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 25px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 25px 0;
 }
 
 .filterBtn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 8px 16px;
-    border-radius: 100px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: 0.3s;
-    white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--grey);
+  color: var(--white);
+  padding: 8px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .filterBtn:hover {
-    background: rgba(179, 255, 0, 0.1);
-    color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
 }
 
 .filterBtn.active {
-    background: var(--primary);
-    color: var(--dark);
-    border-color: var(--primary);
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
 }
 
 /* Style pour le bouton de sauvegarde */
 .saveBtn {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--white);
-    padding: 6px 12px;
-    border-radius: 100px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    transition: 0.3s;
-    white-space: nowrap;
-    min-width: 40px;
-    justify-content: center;
+  background: transparent;
+  border: 1px solid var(--grey);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: 100px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 40px;
+  justify-content: center;
 }
 
 .saveBtn:hover {
-    background: #FFD700;
-    color: var(--dark);
-    border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.9);
+  color: var(--dark);
+  border-color: rgba(255, 215, 0, 0.9);
 }
 
 .saveBtn.activeSave {
-    background: #FFD700;
-    color: var(--dark);
-    border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.9);
+  color: var(--dark);
+  border-color: rgba(255, 215, 0, 0.9);
 }
 
 .categoryInput {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    max-width: 400px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  max-width: 400px;
 }
 
 .categoryInput input {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    color: var(--white);
-    padding: 10px 16px;
-    border-radius: 100px;
-    font-size: 0.9rem;
-    outline: none;
-    transition: 0.3s;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--grey);
+  color: var(--white);
+  padding: 10px 16px;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
 }
 
 .categoryInput input:focus {
-    border-color: var(--primary);
-    background: rgba(179, 255, 0, 0.05);
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.05);
 }
 
 .clearBtn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 10px 20px;
-    border-radius: 100px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: 0.3s;
-    white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--grey);
+  color: var(--white);
+  padding: 10px 20px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .clearBtn:hover {
-    background: rgba(179, 255, 0, 0.1);
-    color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary);
 }
 
 /* =========================== */
@@ -118,376 +120,409 @@
 /* =========================== */
 
 .blogGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-top: 20px;
-    align-items: start;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+  align-items: start;
 }
 
 /* Cartes par défaut (small) - 1x1 */
 .smallCard {
-    grid-column: span 1;
-    height: 320px;
+  grid-column: span 1;
+  height: 320px;
 }
 
 /* Cartes rectangulaires (medium) - 2x1 */
 .mediumCard {
-    grid-column: span 2;
-    height: 320px;
+  grid-column: span 2;
+  height: 320px;
 }
 
 /* Cartes grandes (large) - 2x2 */
 .largeCard {
-    grid-column: span 2;
-    grid-row: span 2;
-    height: 660px;
+  grid-column: span 2;
+  grid-row: span 2;
+  height: 660px;
 }
 
 /* Styles communs pour toutes les cartes */
 .blogCard {
-    background: var(--dark);
-    border: 1px solid var(--border-color);
-    border-radius: 15px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1), border-color 0.3s;
-    cursor: pointer;
-    position: relative;
-    width: 100%;
+  background: var(--dark);
+  border: 1px solid var(--grey);
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  width: 100%;
 }
 
 .blogCard:hover {
-    transform: translateY(-6px);
-    border-color: var(--primary);
+  transform: translateY(-6px);
+  border-color: var(--primary);
 }
 
 /* Contenu média - Réduit la hauteur */
 .mediaContent {
-    width: 100%;
-    height: 140px;
-    background: #000;
-    overflow: hidden;
-    position: relative;
-    flex-shrink: 0;
+  width: 100%;
+  height: 140px;
+  background: var(--dark);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
 }
 
 /* Ajustement pour les cartes rectangulaires */
 .mediumCard .mediaContent {
-    height: 140px;
+  height: 140px;
 }
 
 /* Ajustement pour les cartes grandes */
 .largeCard .mediaContent {
-    height: 280px;
+  height: 280px;
 }
 
 .categoryBadge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: var(--primary);
-    color: var(--dark);
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 0.6rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    z-index: 2;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--primary);
+  color: var(--dark);
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  z-index: 2;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 .blogImg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
 }
 
 .blogCard:hover .blogImg {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* Contenu de la carte */
 .cardBody {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden;
-    height: calc(100% - 140px);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  height: calc(100% - 140px);
 }
 
 .mediumCard .cardBody {
-    height: calc(100% - 140px);
+  height: calc(100% - 140px);
 }
 
 .largeCard .cardBody {
-    height: calc(100% - 280px);
+  height: calc(100% - 280px);
 }
 
 .cardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    gap: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 10px;
 }
 
 .date {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    color: #666;
-    letter-spacing: 0.5px;
-    line-height: 1.2;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--grey);
+  letter-spacing: 0.5px;
+  line-height: 1.2;
 }
 
 /* Titres adaptés à la taille */
 .smallCard .postTitle {
-    font-size: 1rem;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+  font-size: 1rem;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .mediumCard .postTitle {
-    font-size: 1.2rem;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+  font-size: 1.2rem;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .largeCard .postTitle {
-    font-size: 1.4rem;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+  font-size: 1.4rem;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .postTitle {
-    font-weight: 800;
-    color: var(--white);
-    margin-bottom: 10px;
-    line-height: 1.2;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 10px;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tagsContainer {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    min-height: 24px;
-    overflow: hidden;
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  min-height: 24px;
+  overflow: hidden;
 }
 
 .tag {
-    background: rgba(255,255,255,0.05);
-    color: #aaa;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    white-space: nowrap;
+  background: rgba(255,255,255,0.05);
+  color: var(--grey);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 /* Contenu adapté à la taille */
 .smallCard .postContent {
-    font-size: 0.8rem;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+  font-size: 0.8rem;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 .mediumCard .postContent {
-    font-size: 0.85rem;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
+  font-size: 0.85rem;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
 }
 
 .largeCard .postContent {
-    font-size: 0.9rem;
-    -webkit-line-clamp: 6;
-    line-clamp: 6;
-    line-height: 1.5;
+  font-size: 0.9rem;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  line-height: 1.5;
 }
 
 .postContent {
-    color: var(--text-main);
-    line-height: 1.4;
-    opacity: 0.8;
-    margin-bottom: 15px;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    flex-grow: 1;
+  color: var(--white);
+  line-height: 1.4;
+  opacity: 0.8;
+  margin-bottom: 15px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
 }
 
 .cardFooter {
-    margin-top: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-color);
-    gap: 10px;
-    flex-wrap: wrap;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--grey);
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .stats { 
-    display: flex; 
-    gap: 10px; 
-    align-items: center; 
-    flex-wrap: wrap;
-    flex: 1;
+  display: flex; 
+  gap: 10px; 
+  align-items: center; 
+  flex-wrap: wrap;
+  flex: 1;
 }
 
 .stat { 
-    display: flex; 
-    align-items: center; 
-    gap: 4px; 
-    color: #666; 
-    font-size: 0.75rem; 
-    white-space: nowrap;
+  display: flex; 
+  align-items: center; 
+  gap: 4px; 
+  color: var(--grey); 
+  font-size: 0.75rem; 
+  white-space: nowrap;
 }
 
 .actionBtns {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: nowrap;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 .likeBtn {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--white);
-    padding: 5px 10px;
-    border-radius: 100px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.75rem;
-    transition: 0.3s;
-    white-space: nowrap;
-    min-width: 50px;
-    justify-content: center;
+  background: transparent;
+  border: 1px solid var(--grey);
+  color: var(--white);
+  padding: 5px 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 50px;
+  justify-content: center;
 }
 
 .likeBtn:hover {
-    background: var(--primary);
-    color: var(--dark);
-    border-color: var(--primary);
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
 }
 
 .activeHeart { 
-    fill: currentColor; 
+  fill: currentColor; 
 }
 
 .adminControls { 
-    display: flex; 
-    gap: 5px; 
+  display: flex; 
+  gap: 5px; 
 }
 
 .controlBtn {
-    background: rgba(255,255,255,0.05);
-    border: none;
-    color: var(--white);
-    padding: 5px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  color: var(--white);
+  padding: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .controlBtn:hover { 
-    background: var(--primary); 
-    color: var(--dark); 
+  background: var(--primary); 
+  color: var(--dark); 
 }
 
 .confirmOverlay {
-    padding: 40px 20px;
-    text-align: center;
-    background: var(--dark);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--dark);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
 }
 
 .confirmBtns { 
-    display: flex; 
-    gap: 10px; 
-    margin-top: 20px; 
+  display: flex; 
+  gap: 10px; 
+  margin-top: 20px; 
 }
 
 .yesBtn { 
-    background: var(--primary); 
-    color: var(--dark); 
-    border: none; 
-    padding: 10px 25px; 
-    border-radius: 8px; 
-    font-weight: 800; 
-    cursor: pointer; 
+  background: var(--primary); 
+  color: var(--dark); 
+  border: none; 
+  padding: 10px 25px; 
+  border-radius: 8px; 
+  font-weight: 800; 
+  cursor: pointer; 
 }
 
 .noBtn { 
-    background: #222; 
-    color: white; 
-    border: none; 
-    padding: 10px 25px; 
-    border-radius: 8px; 
-    cursor: pointer; 
+  background: var(--grey); 
+  color: var(--white); 
+  border: none; 
+  padding: 10px 25px; 
+  border-radius: 8px; 
+  cursor: pointer; 
 }
 
 .floatingBtn {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--primary);
-    color: var(--dark);
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 8px 30px rgba(179, 255, 0, 0.4);
-    z-index: 1001;
-    transition: 0.3s;
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--dark);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(199, 255, 68, 0.4);
+  z-index: 1001;
+  transition: all 0.3s ease;
 }
 
 .floatingBtn:hover {
-    box-shadow: 0 12px 40px rgba(179, 255, 0, 0.6);
+  box-shadow: 0 12px 40px rgba(199, 255, 68, 0.6);
 }
 
 .rotated {
-    transform: rotate(45deg);
+  transform: rotate(45deg);
 }
 
 .editorOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    z-index: 2000;
-    display: flex;
-    align-items: flex-end;
-    overflow-y: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .editorOverlay::-webkit-scrollbar {
-    display: none;
+  display: none;
+}
+
+/* Support pour le thème clair */
+.light-theme .blogContainer,
+.light-theme .blogCard,
+.light-theme .confirmOverlay,
+.light-theme .mediaContent {
+  background-color: var(--dark);
+  color: var(--white);
+  transition: all 0.3s ease;
+}
+
+.light-theme .filterBtn,
+.light-theme .saveBtn,
+.light-theme .categoryInput input,
+.light-theme .clearBtn,
+.light-theme .likeBtn,
+.light-theme .blogCard,
+.light-theme .tag,
+.light-theme .controlBtn {
+  border-color: var(--grey);
+}
+
+.light-theme .date,
+.light-theme .tag,
+.light-theme .stat {
+  color: var(--grey);
+}
+
+.light-theme .postContent,
+.light-theme .postTitle {
+  color: var(--white);
 }
 
 /* =========================== */
@@ -496,319 +531,319 @@
 
 /* Tablette large */
 @media (max-width: 1200px) {
-    .blogContainer {
-        max-width: 95%;
-    }
-    
-    .blogGrid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
-    }
-    
-    .largeCard {
-        grid-column: span 3;
-        height: 320px;
-        grid-row: span 1;
-    }
-    
-    .largeCard .mediaContent {
-        height: 140px;
-    }
-    
-    .largeCard .cardBody {
-        height: calc(100% - 140px);
-    }
-    
-    .largeCard .postTitle {
-        font-size: 1.2rem;
-    }
-    
-    .largeCard .postContent {
-        font-size: 0.85rem;
-        -webkit-line-clamp: 4;
-        line-clamp: 4;
-    }
-    
-    .filterControls {
-        justify-content: center;
-    }
+  .blogContainer {
+    max-width: 95%;
+  }
+  
+  .blogGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  
+  .largeCard {
+    grid-column: span 3;
+    height: 320px;
+    grid-row: span 1;
+  }
+  
+  .largeCard .mediaContent {
+    height: 140px;
+  }
+  
+  .largeCard .cardBody {
+    height: calc(100% - 140px);
+  }
+  
+  .largeCard .postTitle {
+    font-size: 1.2rem;
+  }
+  
+  .largeCard .postContent {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+  
+  .filterControls {
+    justify-content: center;
+  }
 }
 
 /* Tablette */
 @media (max-width: 1024px) {
-    .blogContainer {
-        padding: 120px 15px 40px;
-    }
-    
-    .blogGrid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-    
-    .mediumCard {
-        grid-column: span 2;
-        height: 300px;
-    }
-    
-    .largeCard {
-        grid-column: span 2;
-        height: 300px;
-        grid-row: span 1;
-    }
-    
-    .largeCard .mediaContent {
-        height: 140px;
-    }
-    
-    .largeCard .cardBody {
-        height: calc(100% - 140px);
-    }
-    
-    .largeCard .postTitle {
-        font-size: 1.2rem;
-    }
-    
-    .largeCard .postContent {
-        font-size: 0.85rem;
-        -webkit-line-clamp: 4;
-        line-clamp: 4;
-    }
-    
-    .filterControls {
-        gap: 8px;
-    }
-    
-    .filterBtn {
-        padding: 7px 14px;
-        font-size: 0.8rem;
-    }
+  .blogContainer {
+    padding: 120px 15px 40px;
+  }
+  
+  .blogGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .mediumCard {
+    grid-column: span 2;
+    height: 300px;
+  }
+  
+  .largeCard {
+    grid-column: span 2;
+    height: 300px;
+    grid-row: span 1;
+  }
+  
+  .largeCard .mediaContent {
+    height: 140px;
+  }
+  
+  .largeCard .cardBody {
+    height: calc(100% - 140px);
+  }
+  
+  .largeCard .postTitle {
+    font-size: 1.2rem;
+  }
+  
+  .largeCard .postContent {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+  
+  .filterControls {
+    gap: 8px;
+  }
+  
+  .filterBtn {
+    padding: 7px 14px;
+    font-size: 0.8rem;
+  }
 }
 
 /* Mobile large */
 @media (max-width: 768px) {
-    .blogContainer { 
-        padding: 100px 12px 30px;
-    }
-    
-    .filtersBar {
-        margin-top: 10px;
-        margin-bottom: 20px;
-    }
-    
-    .categoryInput {
-        flex-direction: column;
-        align-items: stretch;
-        max-width: 100%;
-    }
-    
-    .clearBtn {
-        width: 100%;
-        text-align: center;
-        margin-top: 10px;
-    }
-    
-    .blogGrid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-    
-    .smallCard,
-    .mediumCard,
-    .largeCard {
-        grid-column: span 1;
-        grid-row: span 1;
-        height: 280px;
-    }
-    
-    .smallCard .mediaContent,
-    .mediumCard .mediaContent,
-    .largeCard .mediaContent {
-        height: 120px;
-    }
-    
-    .smallCard .cardBody,
-    .mediumCard .cardBody,
-    .largeCard .cardBody {
-        height: calc(100% - 120px);
-        padding: 12px;
-    }
-    
-    .smallCard .postTitle,
-    .mediumCard .postTitle,
-    .largeCard .postTitle {
-        font-size: 0.9rem;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-    }
-    
-    .smallCard .postContent,
-    .mediumCard .postContent,
-    .largeCard .postContent {
-        font-size: 0.75rem;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        margin-bottom: 12px;
-    }
-    
-    .cardHeader {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .adminControls {
-        align-self: flex-end;
-    }
-    
-    .date {
-        font-size: 0.65rem;
-    }
-    
-    .stats {
-        gap: 8px;
-        justify-content: space-between;
-        width: 100%;
-    }
-    
-    .stat {
-        font-size: 0.7rem;
-    }
-    
-    .actionBtns {
-        justify-content: flex-end;
-        width: 100%;
-    }
-    
-    .likeBtn, .saveBtn {
-        padding: 4px 8px;
-        font-size: 0.7rem;
-        min-width: 40px;
-    }
-    
-    .floatingBtn {
-        width: 50px;
-        height: 50px;
-        bottom: 20px;
-    }
+  .blogContainer { 
+    padding: 100px 12px 30px;
+  }
+  
+  .filtersBar {
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .categoryInput {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 100%;
+  }
+  
+  .clearBtn {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  .blogGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .smallCard,
+  .mediumCard,
+  .largeCard {
+    grid-column: span 1;
+    grid-row: span 1;
+    height: 280px;
+  }
+  
+  .smallCard .mediaContent,
+  .mediumCard .mediaContent,
+  .largeCard .mediaContent {
+    height: 120px;
+  }
+  
+  .smallCard .cardBody,
+  .mediumCard .cardBody,
+  .largeCard .cardBody {
+    height: calc(100% - 120px);
+    padding: 12px;
+  }
+  
+  .smallCard .postTitle,
+  .mediumCard .postTitle,
+  .largeCard .postTitle {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  
+  .smallCard .postContent,
+  .mediumCard .postContent,
+  .largeCard .postContent {
+    font-size: 0.75rem;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    margin-bottom: 12px;
+  }
+  
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .adminControls {
+    align-self: flex-end;
+  }
+  
+  .date {
+    font-size: 0.65rem;
+  }
+  
+  .stats {
+    gap: 8px;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .stat {
+    font-size: 0.7rem;
+  }
+  
+  .actionBtns {
+    justify-content: flex-end;
+    width: 100%;
+  }
+  
+  .likeBtn, .saveBtn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    min-width: 40px;
+  }
+  
+  .floatingBtn {
+    width: 50px;
+    height: 50px;
+    bottom: 20px;
+  }
 }
 
 /* Mobile petit */
 @media (max-width: 480px) {
-    .blogContainer {
-        padding: 90px 10px 20px;
-    }
-    
-    .blogGrid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .smallCard,
-    .mediumCard,
-    .largeCard {
-        height: 260px;
-        max-width: 100%;
-    }
-    
-    .smallCard .mediaContent,
-    .mediumCard .mediaContent,
-    .largeCard .mediaContent {
-        height: 110px;
-    }
-    
-    .smallCard .cardBody,
-    .mediumCard .cardBody,
-    .largeCard .cardBody {
-        height: calc(100% - 110px);
-        padding: 10px;
-    }
-    
-    .filterControls {
-        justify-content: center;
-        gap: 6px;
-    }
-    
-    .filterBtn {
-        padding: 6px 12px;
-        font-size: 0.75rem;
-        flex: 1;
-        min-width: calc(50% - 6px);
-        text-align: center;
-    }
-    
-    .postTitle {
-        font-size: 0.85rem;
-        margin-bottom: 6px;
-    }
-    
-    .tagsContainer {
-        margin-bottom: 6px;
-    }
-    
-    .tag {
-        font-size: 0.6rem;
-        padding: 2px 4px;
-    }
-    
-    .cardFooter {
-        padding-top: 10px;
-        flex-direction: column;
-        gap: 10px;
-        align-items: stretch;
-    }
-    
-    .stats {
-        justify-content: space-between;
-    }
-    
-    .actionBtns {
-        justify-content: space-between;
-    }
-    
-    .blogGrid > div:first-child {
-        padding: 40px 20px;
-        text-align: center;
-    }
+  .blogContainer {
+    padding: 90px 10px 20px;
+  }
+  
+  .blogGrid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .smallCard,
+  .mediumCard,
+  .largeCard {
+    height: 260px;
+    max-width: 100%;
+  }
+  
+  .smallCard .mediaContent,
+  .mediumCard .mediaContent,
+  .largeCard .mediaContent {
+    height: 110px;
+  }
+  
+  .smallCard .cardBody,
+  .mediumCard .cardBody,
+  .largeCard .cardBody {
+    height: calc(100% - 110px);
+    padding: 10px;
+  }
+  
+  .filterControls {
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .filterBtn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    flex: 1;
+    min-width: calc(50% - 6px);
+    text-align: center;
+  }
+  
+  .postTitle {
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+  
+  .tagsContainer {
+    margin-bottom: 6px;
+  }
+  
+  .tag {
+    font-size: 0.6rem;
+    padding: 2px 4px;
+  }
+  
+  .cardFooter {
+    padding-top: 10px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .stats {
+    justify-content: space-between;
+  }
+  
+  .actionBtns {
+    justify-content: space-between;
+  }
+  
+  .blogGrid > div:first-child {
+    padding: 40px 20px;
+    text-align: center;
+  }
 }
 
 /* Très petit mobile */
 @media (max-width: 360px) {
-    .blogContainer {
-        padding: 80px 8px 15px;
-    }
-    
-    .blogGrid {
-        gap: 10px;
-    }
-    
-    .smallCard,
-    .mediumCard,
-    .largeCard {
-        height: 240px;
-    }
-    
-    .smallCard .mediaContent,
-    .mediumCard .mediaContent,
-    .largeCard .mediaContent {
-        height: 100px;
-    }
-    
-    .filterBtn {
-        font-size: 0.7rem;
-        padding: 5px 10px;
-    }
-    
-    .cardBody {
-        padding: 8px;
-    }
-    
-    .postTitle {
-        font-size: 0.8rem;
-    }
-    
-    .postContent {
-        font-size: 0.7rem;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-    }
+  .blogContainer {
+    padding: 80px 8px 15px;
+  }
+  
+  .blogGrid {
+    gap: 10px;
+  }
+  
+  .smallCard,
+  .mediumCard,
+  .largeCard {
+    height: 240px;
+  }
+  
+  .smallCard .mediaContent,
+  .mediumCard .mediaContent,
+  .largeCard .mediaContent {
+    height: 100px;
+  }
+  
+  .filterBtn {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+  
+  .cardBody {
+    padding: 8px;
+  }
+  
+  .postTitle {
+    font-size: 0.8rem;
+  }
+  
+  .postContent {
+    font-size: 0.7rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
 }

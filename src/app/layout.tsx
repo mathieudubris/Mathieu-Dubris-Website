@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { ThemeProvider } from '@/components/ThemeProvider'; // Créez ce fichier
 
 export const metadata: Metadata = {
   title: {
@@ -30,7 +31,9 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body>
-        <div className="app-wrapper">{children}</div>
+        <ThemeProvider> {/* Ajoutez le ThemeProvider ici */}
+          <div className="app-wrapper">{children}</div>
+        </ThemeProvider>
         <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
       </body>
     </html>

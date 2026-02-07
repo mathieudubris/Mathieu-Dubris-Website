@@ -26,8 +26,8 @@
 }
 
 .section {
-  background: rgba(30, 30, 30, 0.5);
-  border: 1px solid var(--border-color);
+  background: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 0.75rem;
   padding: 1.25rem;
 }
@@ -38,13 +38,13 @@
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(199, 255, 68, 0.1);
 }
 
 .sectionTitle {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--white);
 }
 
 .formGroup {
@@ -54,7 +54,7 @@
 .label {
   display: block;
   font-size: 0.875rem;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.8;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -68,11 +68,11 @@
 
 .input {
   width: 100%;
-  background: rgba(40, 40, 40, 0.7);
-  border: 1px solid var(--border-color);
+  background: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 0.5rem;
   padding: 0.75rem;
-  color: var(--text-main);
+  color: var(--white);
   font-family: var(--font-main);
   font-size: 0.875rem;
   transition: all 0.3s ease;
@@ -92,10 +92,10 @@
 
 .internetButton {
   padding: 0.75rem 0.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   border-radius: 0.5rem;
   background: none;
-  color: var(--text-main);
+  color: var(--white);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -123,10 +123,10 @@
 
 .osButton {
   padding: 0.75rem 0.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   border-radius: 0.5rem;
   background: none;
-  color: var(--text-main);
+  color: var(--white);
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.75rem;
@@ -141,4 +141,29 @@
   border-color: var(--primary);
   background: rgba(199, 255, 68, 0.1);
   color: var(--primary);
+}
+
+/* Support pour le thème clair */
+.light-theme .sectionHeader {
+  border-bottom: 1px solid rgba(156, 223, 0, 0.1);
+}
+
+.light-theme .input:focus {
+  box-shadow: 0 0 0 2px rgba(156, 223, 0, 0.1);
+}
+
+.light-theme .internetButton:hover {
+  border-color: rgba(156, 223, 0, 0.5);
+}
+
+.light-theme .internetButton.active {
+  background: rgba(156, 223, 0, 0.1);
+}
+
+.light-theme .osButton:hover {
+  border-color: rgba(156, 223, 0, 0.5);
+}
+
+.light-theme .osButton.active {
+  background: rgba(156, 223, 0, 0.1);
 }

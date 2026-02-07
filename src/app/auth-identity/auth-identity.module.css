@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: var(--bg-main);
+  background-color: var(--dark);
   padding: 20px;
   position: relative;
 }
@@ -85,8 +85,8 @@
 
 /* Popup d'information */
 .infoPopup {
-  background: var(--bg-main);
-  border: 1px solid var(--border-color);
+  background: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 16px;
   width: 100%;
   max-width: 500px;
@@ -110,7 +110,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 25px 25px 15px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--grey);
 }
 
 .popupHeader h3 {
@@ -123,7 +123,7 @@
 .closeButton {
   background: none;
   border: none;
-  color: var(--text-main);
+  color: var(--white);
   font-size: 2rem;
   cursor: pointer;
   padding: 0;
@@ -146,7 +146,7 @@
 }
 
 .popupContent p {
-  color: var(--text-main);
+  color: var(--white);
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0 0 15px 0;
@@ -159,7 +159,7 @@
 
 .popupActions {
   padding: 20px 25px 25px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--grey);
   display: flex;
   justify-content: center;
 }
@@ -185,7 +185,7 @@
 /* Formulaire */
 .form {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   border-radius: 12px;
   padding: 30px;
 }
@@ -200,7 +200,7 @@
   font-size: 1.1rem;
   letter-spacing: 2px;
   font-family: 'Courier New', monospace;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--dark);
   border: 2px solid rgba(199, 255, 68, 0.2);
   border-radius: 8px;
   color: var(--white);
@@ -232,13 +232,13 @@
 }
 
 .errorContainer.visible {
-  height: 80px; /* Taille fixe pour éviter le déplacement */
+  height: 80px;
 }
 
 .errorMessage {
   background: rgba(255, 68, 68, 0.1);
   border: 1px solid rgba(255, 68, 68, 0.3);
-  color: #ff4444;
+  color: rgba(255, 68, 68, 0.9);
   padding: 12px 20px;
   border-radius: 6px;
   font-size: 0.95rem;
@@ -295,7 +295,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: var(--bg-main);
+  background-color: var(--dark);
   color: var(--white);
   padding: 20px;
   text-align: center;
@@ -309,7 +309,39 @@
 
 .portfolioContainer p {
   font-size: 1.2rem;
-  color: var(--text-main);
+  color: var(--white);
+  opacity: 0.9;
+}
+
+/* Support pour le thème clair */
+.light-theme .pageContainer,
+.light-theme .portfolioContainer,
+.light-theme .infoPopup,
+.light-theme .form {
+  background-color: var(--dark);
+  color: var(--white);
+  transition: all 0.3s ease;
+}
+
+.light-theme .input {
+  background-color: var(--dark);
+  color: var(--white);
+}
+
+.light-theme .popupContent p,
+.light-theme .portfolioContainer p {
+  color: var(--white);
+}
+
+.light-theme .infoPopup,
+.light-theme .form,
+.light-theme .popupHeader,
+.light-theme .popupActions {
+  border-color: var(--grey);
+}
+
+.light-theme .input {
+  border-color: rgba(156, 223, 0, 0.2);
 }
 
 /* Responsive */
@@ -378,7 +410,7 @@
   }
   
   .errorContainer.visible {
-    height: 90px; /* Un peu plus grand sur mobile */
+    height: 90px;
   }
   
   .errorMessage {

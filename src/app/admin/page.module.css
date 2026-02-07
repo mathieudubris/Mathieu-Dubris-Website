@@ -2,13 +2,15 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: sans-serif;
-  color: #333;
+  font-family: var(--font-main);
+  background-color: var(--dark);
+  color: var(--white);
+  min-height: 100vh;
 }
 
 .header {
   margin-bottom: 2rem;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid var(--grey);
   padding-bottom: 1rem;
 }
 
@@ -18,7 +20,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #1a1a1a;
+  color: var(--white);
 }
 
 .grid {
@@ -33,27 +35,28 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 1.5rem;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
+  background: var(--dark);
+  border: 1px solid var(--grey);
   border-radius: 12px;
   text-decoration: none;
-  color: inherit;
+  color: var(--white);
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .card:hover {
-  border-color: #2563eb;
+  border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 4px 12px var(--primary);
+  opacity: 0.8;
 }
 
 .iconWrapper {
-  background: #f0f7ff;
+  background: rgba(199, 255, 68, 0.1); /* Utilisation de var(--primary) avec transparence */
   padding: 0.75rem;
   border-radius: 8px;
   margin-bottom: 1rem;
-  color: #2563eb;
+  color: var(--primary);
 }
 
 .cardTitle {
@@ -64,16 +67,31 @@
 
 .cardDesc {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--grey);
 }
 
 .badge {
-  background: #e11d48;
-  color: white;
+  background: var(--primary);
+  color: var(--dark);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.7rem;
   margin-top: 0.5rem;
   text-transform: uppercase;
   font-weight: bold;
+}
+
+/* Support pour le thème clair */
+.light-theme .card {
+  background: var(--dark);
+  border-color: var(--grey);
+}
+
+.light-theme .iconWrapper {
+  background: rgba(156, 223, 0, 0.1); /* Utilisation de var(--primary) en thème clair avec transparence */
+  color: var(--primary);
+}
+
+.light-theme .header {
+  border-bottom-color: var(--grey);
 }

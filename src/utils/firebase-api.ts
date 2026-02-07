@@ -471,3 +471,90 @@ export const getUserTeamProfile = async (userId: string): Promise<any> => {
 // Exporter les fonctions d'authentification
 export { signInWithPopup, signOut, onAuthStateChanged };
 export type { User };
+
+// Dans firebase-api.ts, ajoutez cette interface et ces fonctions
+
+// Interface pour les préférences utilisateur
+export interface UserPreferences {
+  uid: string;
+  theme: 'dark' | 'light';
+  language?: string;
+  createdAt: any;
+  updatedAt: any;
+}
+
+// Fonction pour récupérer les préférences utilisateur
+export const getUserPreferences = async (userId: string): Promise<UserPreferences | null> => {
+  try {
+    const prefRef = doc(db, 'userPreferences', userId);
+    const prefDoc = await getDoc(prefRef);
+    
+    if (prefDoc.exists()) {
+      return prefDoc.data() as UserPreferences;
+    }
+    return null;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des préférences:', error);
+    return null;
+  }
+};
+
+// Fonction pour sauvegarder les préférences utilisateur
+export const saveUserPreferences = async (userId: string, preferences: Partial<UserPreferences>): Promise<void> => {
+  try {
+    const prefRef = doc(db, 'userPreferences', userId);
+    const prefDoc = await getDoc(prefRef);
+    
+    const prefData = {
+      uid: userId,
+      theme: preferences.theme || 'dark',
+      ...preferences,
+      updatedAt: Timestamp.now()
+    };
+    
+    if (!prefDoc.exists()) {
+      await setDoc(prefRef, {
+        ...prefData,
+        createdAt: Timestamp.now()
+      });
+    } else {
+      await updateDoc(prefRef, prefData);
+    }
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde des préférences:', error);
+    throw error;
+  }
+};
+
+// Fonction pour appliquer le thème immédiatement
+export const applyTheme = (theme: string) => {
+  if (theme === 'light') {
+    document.documentElement.classList.add('light-theme');
+    document.body.classList.add('light-theme');
+  } else {
+    document.documentElement.classList.remove('light-theme');
+    document.body.classList.remove('light-theme');
+  }
+};
+
+// Fonction pour initialiser le thème au chargement
+export const initializeTheme = async (user: User | null) => {
+  let theme = 'dark';
+  
+  if (user) {
+    // Essayer de récupérer depuis Firestore
+    const prefs = await getUserPreferences(user.uid);
+    if (prefs?.theme) {
+      theme = prefs.theme;
+    }
+  } else {
+    // Sinon utiliser localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      theme = savedTheme;
+    }
+  }
+  
+  applyTheme(theme);
+  return theme;
+};

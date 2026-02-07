@@ -23,7 +23,7 @@
 }
 
 .editorPanel {
-    background: #0d0d0d;
+    background: var(--dark);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0;
     width: 100vw;
@@ -42,7 +42,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #0d0d0d;
+    background: var(--dark);
     flex-shrink: 0;
     gap: 20px;
 }
@@ -58,14 +58,14 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #b3ff00;
+    color: var(--primary);
     font-size: 0.9rem;
     white-space: nowrap;
 }
 
 .publishBtnTop {
-    background: #b3ff00;
-    color: #000;
+    background: var(--primary);
+    color: var(--dark);
     border: none;
     padding: 10px 25px;
     border-radius: 8px;
@@ -86,13 +86,13 @@
 
 .publishBtnTop:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(179, 255, 0, 0.3);
+    box-shadow: 0 5px 15px var(--primary);
 }
 
 .closeBtn {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    color: var(--white);
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -141,14 +141,14 @@
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
     font-size: 1.5rem;
     font-weight: 700;
-    color: white;
+    color: var(--white);
     padding: 12px 0;
     outline: none;
     width: 100%;
 }
 
 .titleInput:focus {
-    border-color: #b3ff00;
+    border-color: var(--primary);
 }
 
 .metaRow {
@@ -158,9 +158,9 @@
 
 .categoryInput {
     flex: 1;
-    background: #151515;
+    background: var(--dark);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    color: var(--white);
     border-radius: 10px;
     padding: 10px 14px;
     outline: none;
@@ -168,7 +168,7 @@
 }
 
 .categoryInput:focus {
-    border-color: #b3ff00;
+    border-color: var(--primary);
 }
 
 .tagInputWrapper {
@@ -176,7 +176,7 @@
     padding: 0 10px;
     flex: 2;
     align-items: center;
-    background: #151515;
+    background: var(--dark);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 }
@@ -184,7 +184,7 @@
 .tagInputWrapper input {
     background: transparent;
     border: none;
-    color: white;
+    color: var(--white);
     padding: 10px;
     width: 100%;
     outline: none;
@@ -192,7 +192,7 @@
 }
 
 .plusBtn {
-    background: #b3ff00;
+    background: var(--primary);
     border: none;
     border-radius: 6px;
     width: 30px;
@@ -225,29 +225,29 @@
 }
 
 .tagBadge {
-    background: rgba(179, 255, 0, 0.08);
-    color: #b3ff00;
+    background: rgba(199, 255, 68, 0.08);
+    color: var(--primary);
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 0.8rem;
     display: flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid rgba(179, 255, 0, 0.15);
+    border: 1px solid rgba(199, 255, 68, 0.15);
     cursor: pointer;
     height: fit-content;
 }
 
 .tagBadge:hover {
-    background: rgba(179, 255, 0, 0.15);
+    background: rgba(199, 255, 68, 0.15);
 }
 
 .contentInput {
-    background: #111;
+    background: var(--dark);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     padding: 15px;
-    color: #eee;
+    color: var(--white);
     flex: 1;
     font-family: inherit;
     font-size: 1rem;
@@ -288,7 +288,7 @@
 .sidebarSection label {
     font-size: 0.75rem;
     text-transform: uppercase;
-    color: #666;
+    color: var(--grey);
     font-weight: 700;
 }
 
@@ -300,9 +300,9 @@
 }
 
 .sizeOption {
-    background: #151515;
+    background: var(--dark);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #888;
+    color: var(--grey);
     padding: 10px 8px;
     border-radius: 8px;
     cursor: pointer;
@@ -315,20 +315,20 @@
 }
 
 .sizeOption:hover {
-    background: #1a1a1a;
-    border-color: rgba(179, 255, 0, 0.3);
+    background: var(--dark);
+    border-color: rgba(199, 255, 68, 0.3);
 }
 
 .sizeOption.activeSize {
-    background: rgba(179, 255, 0, 0.1);
-    border-color: #b3ff00;
-    color: #b3ff00;
+    background: rgba(199, 255, 68, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .featuredUpload {
     width: 100%;
     aspect-ratio: 16/9;
-    background: #151515;
+    background: var(--dark);
     border: 2px dashed rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     display: flex;
@@ -340,8 +340,8 @@
 }
 
 .featuredUpload:hover {
-    border-color: #b3ff00;
-    background: #1a1a1a;
+    border-color: var(--primary);
+    background: var(--dark);
 }
 
 .featuredUpload img {
@@ -351,9 +351,9 @@
 }
 
 .mediaBtn {
-    background: #151515;
+    background: var(--dark);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    color: var(--white);
     padding: 12px;
     border-radius: 10px;
     display: flex;
@@ -366,8 +366,8 @@
 }
 
 .mediaBtn:hover {
-    background: #1a1a1a;
-    border-color: rgba(179, 255, 0, 0.3);
+    background: var(--dark);
+    border-color: rgba(199, 255, 68, 0.3);
 }
 
 .miniPreview {
@@ -391,7 +391,7 @@
     right: 8px;
     background: rgba(255, 0, 0, 0.8);
     border: none;
-    color: white;
+    color: var(--white);
     width: 28px;
     height: 28px;
     border-radius: 50%;

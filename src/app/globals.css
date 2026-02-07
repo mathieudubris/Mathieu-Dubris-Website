@@ -1,29 +1,34 @@
 :root {
-  --primary: #c7ff44; 
-  --dark: #0f0f0f;
-  --white: #dddddd;
-  --text-main: #e0e0e0;
-  --bg-main: #141414;
+  --primary: #c7ff44;
+  --dark-red: #c01414; 
+  --dark: #1b1b1b;
+  --white: #e0e0e0;
+  --grey: #929292;
   --font-main: 'Inter', sans-serif;
-  --nav-bg: rgba(17, 17, 17, 0.85);
-  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+.light-theme {
+  --primary: #9cdf00;
+  --dark-red: #c01414; 
+  --dark: #e0e0e0;
+  --white: #1b1b1b;
+  --grey: #474747;
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: var(--dark);
+  color: var(--white);
   font-family: var(--font-main);
   overflow-x: hidden;
   min-height: 100vh;
-  /* Scroll personnalisé */
   scroll-behavior: smooth;
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Masquer la scrollbar par défaut */
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   display: none;
@@ -44,10 +49,9 @@ img, a, button, input, textarea, [role="button"] {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  background-color: var(--bg-main);
+  background-color: var(--dark);
 }
 
-/* Scrollbar personnalisée pour les conteneurs avec scroll */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -67,4 +71,90 @@ img, a, button, input, textarea, [role="button"] {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
   opacity: 0.5;
+}
+
+.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+}
+
+body {
+  top: 0 !important;
+  position: static !important;
+}
+
+.goog-te-gadget {
+  display: none !important;
+}
+
+.goog-te-combo {
+  display: none !important;
+}
+
+.goog-logo-link {
+  display: none !important;
+}
+
+.goog-te-gadget span {
+  display: none !important;
+}
+
+iframe.goog-te-menu-frame,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+.goog-tooltip {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.goog-trans-control {
+  display: none !important;
+}
+
+body * {
+  font-family: var(--font-main) !important;
+}
+
+.translated-rtl,
+.translated-ltr {
+  color: var(--white) !important;
+  background-color: var(--dark) !important;
+}
+
+[class*="translated"] {
+  font-family: var(--font-main) !important;
+  line-height: normal !important;
+}
+
+.light-theme body,
+.light-theme .app-wrapper,
+.light-theme * {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .goog-te-banner-frame,
+  .goog-te-menu-frame {
+    display: none !important;
+    max-width: 100vw !important;
+  }
+  
+  body {
+    overflow-x: hidden !important;
+  }
 }

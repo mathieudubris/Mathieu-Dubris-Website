@@ -7,6 +7,7 @@
   padding: 2rem;
   box-sizing: border-box;
   overflow: hidden;
+  background-color: var(--dark);
 }
 
 .textWrapper {
@@ -23,7 +24,7 @@
   line-height: 1.1;
   margin-bottom: 15px;
   text-transform: uppercase;
-  color: var( --text-main);
+  color: var(--white);
 }
 
 .line {
@@ -33,10 +34,10 @@
 .quote {
   font-style: italic;
   font-size: clamp(0.8rem, 1.2vw, 0.95rem);
-  color: #b0b0b0;
+  color: var(--white);
   margin-bottom: 25px;
   line-height: 1.4;
-  border-left: 2px solid var(--border-color, #444);
+  border-left: 2px solid var(--grey);
   padding-left: 12px;
 }
 
@@ -56,18 +57,28 @@
   white-space: nowrap;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .btnDiscover {
   background-color: transparent;
-  color: #ffffff;
-  border: 1px solid #444;
+  color: var(--white);
+  border: 1px solid var(--white);
 }
 
 .btnContact {
   background-color: var(--primary);
-  color: #1a1a1a;
+  color: var(--dark);
+}
+
+.btnDiscover:hover {
+  background-color: var(--white);
+  color: var(--dark);
+}
+
+.btnContact:hover {
+  background-color: var(--white);
+  color: var(--dark);
 }
 
 @media (max-width: 992px) {
@@ -83,6 +94,7 @@
     padding-left: 0;
     margin-bottom: 15px;
     font-size: 0.8rem;
+    color: var(--white);
   }
   .actions {
     justify-content: center;
@@ -91,7 +103,10 @@
 }
 
 @media (max-height: 670px) and (max-width: 992px) {
-  .title { font-size: 1.2rem; }
+  .title { 
+    font-size: 1.2rem; 
+    color: var(--white);
+  }
   .quote {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -99,6 +114,9 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: 10px;
+    color: var(--white);
   }
-  .btn { padding: 6px 12px; }
+  .btn { 
+    padding: 6px 12px; 
+  }
 }

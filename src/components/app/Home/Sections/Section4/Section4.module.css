@@ -1,6 +1,6 @@
 .section {
   padding: 100px 0;
-  background-color: var(--bg-main);
+  background-color: var(--dark);
   overflow: hidden;
   font-family: var(--font-main);
 }
@@ -25,7 +25,7 @@
 }
 
 .title {
-  color: var(--main-text);
+  color: var(--white);
   font-size: clamp(28px, 5vw, 42px);
   font-weight: 800;
   letter-spacing: -1px;
@@ -57,12 +57,12 @@
 
 .fadeLeft {
   left: 0;
-  background: linear-gradient(to right, var(--bg-main) 15%, transparent 100%);
+  background: linear-gradient(to right, var(--dark) 15%, transparent 100%);
 }
 
 .fadeRight {
   right: 0;
-  background: linear-gradient(to left, var(--bg-main) 15%, transparent 100%);
+  background: linear-gradient(to left, var(--dark) 15%, transparent 100%);
 }
 
 .partnerCard {
@@ -70,7 +70,7 @@
   align-items: center;
   gap: 14px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--white);
   padding: 14px 28px;
   border-radius: 16px;
   text-decoration: none;
@@ -95,7 +95,7 @@
 }
 
 .partnerName {
-  color: #efefef;
+  color: var(--white);
   font-weight: 600;
   font-size: 17px;
   letter-spacing: -0.3px;
@@ -121,15 +121,15 @@
   display: block;
   font-size: 42px;
   font-weight: 800;
-  color: #fff;
+  color: var(--white);
   margin-bottom: 8px;
-  background: linear-gradient(180deg, #fff 0%, #666 100%);
+  background: linear-gradient(180deg, var(--white) 0%, var(--grey) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .statLabel {
-  color: #555;
+  color: var(--grey);
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;

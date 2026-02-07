@@ -123,7 +123,7 @@
 .projectTitle {
   font-size: 1.15rem;
   font-weight: 900;
-  color: var(--text-main);
+  color: var(--white);
   margin: 0;
   line-height: 1.35;
   letter-spacing: -0.3px;
@@ -132,14 +132,14 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 3em; /* Pour s'assurer que le titre occupe 2 lignes */
+  min-height: 3em;
   font-family: inherit;
   text-transform: none;
 }
 
 /* Description plus compacte comme dans maquette */
 .projectDescription {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   font-size: 0.8rem;
   line-height: 1.5;
@@ -191,7 +191,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-main);
+  color: var(--white);
   font-size: 0.65rem;
   font-weight: 700;
   opacity: 0.7;
@@ -260,7 +260,7 @@
 }
 
 .avatarPlaceholder {
-  color: white;
+  color: var(--white);
   font-size: 0.7rem;
   font-weight: 700;
 }
@@ -271,7 +271,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
   border: 2px solid var(--dark);
-  color: var(--text-main);
+  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -282,7 +282,7 @@
 
 /* Date alignée à droite comme dans maquette */
 .projectDate {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.6;
   font-size: 0.75rem;
   font-weight: 500;
@@ -321,12 +321,12 @@
 .deleteTitle {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--white);
   margin: 0 0 12px 0;
 }
 
 .deleteMessage {
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.7;
   font-size: 0.9rem;
   margin: 0 0 24px 0;
@@ -340,7 +340,7 @@
 
 .deleteConfirmBtn {
   background: #ef4444;
-  color: white;
+  color: var(--white);
   border: none;
   padding: 10px 24px;
   border-radius: 10px;
@@ -358,8 +358,8 @@
 
 .deleteCancelBtn {
   background: rgba(30, 30, 30, 0.9);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 10px 24px;
   border-radius: 10px;
   cursor: pointer;

@@ -5,13 +5,13 @@
   object-fit: cover;
   transition: 0.3s;
   cursor: pointer;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
 }
 
 .userAvatar:hover {
   transform: scale(1.05);
   border-color: var(--primary);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+  box-shadow: 0 0 15px rgba(199, 255, 68, 0.2);
 }
 
 .iconBtn {
@@ -21,6 +21,7 @@
   display: flex;
   align-items: center;
 }
+
 .avatarContainer {
   position: relative;
   width: 40px;
@@ -48,11 +49,11 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--white);
   font-weight: bold;
   font-size: 18px;
   border-radius: 50%;

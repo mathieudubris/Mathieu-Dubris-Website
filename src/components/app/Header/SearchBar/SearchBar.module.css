@@ -7,7 +7,7 @@
 .searchBar {
   display: flex;
   align-items: center;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--grey);
   padding: 0 18px;
   border-radius: 50px;
   height: 42px;
@@ -23,7 +23,7 @@
 .searchBar input {
   background: none;
   border: none;
-  color: var(--text-main);
+  color: var(--white);
   outline: none;
   width: 100%;
   font-size: 0.85rem;
@@ -31,7 +31,7 @@
 
 .searchIcon {
   display: flex;
-  color: var(--text-main);
+  color: var(--white);
   opacity: 0.5;
   transition: 0.3s;
 }
