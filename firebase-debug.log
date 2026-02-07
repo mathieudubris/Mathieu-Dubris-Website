@@ -1,0 +1,89 @@
+[debug] [2026-02-07T09:45:00.333Z] ----------------------------------------------------------------------
+[debug] [2026-02-07T09:45:00.340Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MIARANTSOA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-02-07T09:45:00.340Z] CLI Version:   15.0.0
+[debug] [2026-02-07T09:45:00.341Z] Platform:      win32
+[debug] [2026-02-07T09:45:00.341Z] Node Version:  v25.2.1
+[debug] [2026-02-07T09:45:00.341Z] Time:          Sat Feb 07 2026 10:45:00 GMT+0100 (heure normale d’Europe centrale)
+[debug] [2026-02-07T09:45:00.342Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-07T09:45:00.346Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-02-07T09:46:08.854Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-07T09:46:08.855Z] > authorizing via signed-in user (mathieudubris@gmail.com)
+[debug] [2026-02-07T09:46:08.855Z] [iam] checking project mathieu-dubris for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-02-07T09:46:08.856Z] Checked if tokens are valid: false, expires at: 1770075396355
+[debug] [2026-02-07T09:46:08.856Z] Checked if tokens are valid: false, expires at: 1770075396355
+[debug] [2026-02-07T09:46:08.856Z] > refreshing access token with scopes: []
+[debug] [2026-02-07T09:46:08.858Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-07T09:46:08.858Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-07T09:46:09.562Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-07T09:46:09.563Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-07T09:46:09.714Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions [none]
+[debug] [2026-02-07T09:46:09.714Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions x-goog-quota-user=projects/mathieu-dubris
+[debug] [2026-02-07T09:46:09.714Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-07T09:46:09.719Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-02-07T09:46:09.719Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-02-07T09:46:11.870Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions 200
+[debug] [2026-02-07T09:46:11.871Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-07T09:46:11.871Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:11.872Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:11.872Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris [none]
+[debug] [2026-02-07T09:46:12.970Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris 200
+[debug] [2026-02-07T09:46:12.970Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris {"projectId":"mathieu-dubris","projectNumber":"1008303076758","displayName":"Mathieu Dubris","name":"projects/mathieu-dubris","resources":{"hostingSite":"mathieu-dubris"},"state":"ACTIVE","etag":"1_cb766782-97d6-46a8-8822-1dfd2f430ecc"}
+[debug] [2026-02-07T09:46:32.390Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:32.390Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:32.390Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites pageToken=&pageSize=10
+[debug] [2026-02-07T09:46:41.961Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites 200
+[debug] [2026-02-07T09:46:41.961Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites {"sites":[{"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}]}
+[debug] [2026-02-07T09:46:41.961Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:41.961Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:41.962Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config [none]
+[debug] [2026-02-07T09:46:42.945Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config 200
+[debug] [2026-02-07T09:46:42.945Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config {"projectId":"mathieu-dubris","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","storageBucket":"mathieu-dubris.firebasestorage.app","apiKey":"AIzaSyBrHGF359udLSaLuuCCarl4ovzCMYD-HDg","authDomain":"mathieu-dubris.firebaseapp.com","messagingSenderId":"1008303076758","measurementId":"G-B3ZL2MHVVN","projectNumber":"1008303076758","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-02-07T09:46:52.848Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:52.849Z] Checked if tokens are valid: true, expires at: 1770461168563
+[debug] [2026-02-07T09:46:52.849Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris [none]
+[debug] [2026-02-07T09:46:54.803Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris 200
+[debug] [2026-02-07T09:46:54.803Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris {"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 18.8s
+
+[info]   Running TypeScript ...
+
+[info] Failed to compile.
+
+
+[info] ./src/components/projet-en-cours/ProjetEditor.tsx:152:29
+Type error: Argument of type 'Omit<Project, "id">' is not assignable to parameter of type 'Omit<import("D:/PROJET/PROJET REACT/Mathieu Dubris/src/utils/firebase-api").Project, "id">'.
+  Types of property 'views' are incompatible.
+    Type 'number | undefined' is not assignable to type 'number'.
+      Type 'undefined' is not assignable to type 'number'.
+
+  150 |         await updateProject(project.id, projectData);
+  151 |       } else {
+> 152 |         await createProject(projectData);
+      |                             ^
+  153 |       }
+  154 |
+  155 |       onSave();
+
+[info] Next.js build worker exited with code: 1 and signal: null
+
+[debug] [2026-02-07T09:47:34.047Z] Error: ENOENT: no such file or directory, open 'D:\PROJET\PROJET REACT\Mathieu Dubris\.next\export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.

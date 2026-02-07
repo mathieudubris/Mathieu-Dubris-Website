@@ -70,12 +70,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     );
   };
 
-  // Afficher les avatars des membres (max 5 + compteur)
+  // Afficher les avatars des membres comme dans la maquette - MAX 5 et pas de +X
   const renderMemberAvatars = () => {
     const members = project.members || [];
     const maxVisible = 5;
     const visibleMembers = members.slice(0, maxVisible);
-    const remaining = members.length - maxVisible;
     
     return (
       <div className={styles.memberAvatars}>
@@ -90,11 +89,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             )}
           </div>
         ))}
-        {remaining > 0 && (
-          <div className={styles.moreMembers} title={`+${remaining} autres membres`}>
-            +{remaining}
-          </div>
-        )}
       </div>
     );
   };
@@ -148,7 +142,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       transition={{ duration: 0.3 }}
       onClick={() => onClick(project)}
     >
-      {/* Header avec badge membre et actions admin */}
+      {/* Header avec badge membre et actions admin - COMME MAQUETTE */}
       <div className={styles.cardHeader}>
         {isMember && (
           <div className={styles.memberBadge}>
@@ -158,7 +152,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )}
 
         {isAdmin && (
-          <div className={styles.adminActions} style={{ marginLeft: isMember ? 'auto' : '0' }}>
+          <div className={styles.adminActions} style={{ 
+            marginLeft: isMember ? 'auto' : '0',
+            marginTop: isMember ? '0' : '0'
+          }}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -195,14 +192,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         />
       </div>
 
-      {/* Contenu */}
+      {/* Contenu - STRUCTURE COMME MAQUETTE */}
       <div className={styles.cardContent}>
+        {/* Titre en gras avec effet multiligne + ellipsis */}
         <h3 className={styles.projectTitle}>
-          {project.title}
+          {project.title || "Titre du projet"}
         </h3>
 
+        {/* Description avec ellipsis */}
         <p className={styles.projectDescription}>
-          {project.description}
+          {project.description || "Description du projet. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum."}
         </p>
 
         {/* Icônes des logiciels */}
@@ -216,10 +215,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           ></div>
         </div>
 
-        {/* Footer avec avatars et date */}
+        {/* Footer avec avatars et date - COMME MAQUETTE */}
         <div className={styles.cardFooter}>
           {renderMemberAvatars()}
-          <span className={styles.projectDate}>{formatDate(project.createdAt)}</span>
+          <span className={styles.projectDate}>{formatDate(project.createdAt) || "22/01/2025"}</span>
         </div>
       </div>
     </motion.div>

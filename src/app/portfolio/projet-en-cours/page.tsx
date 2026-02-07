@@ -279,51 +279,47 @@ export default function ProjetEnCoursPage() {
           ) : (
             /* Vue LISTE des projets */
             <>
-              {/* En-tête de page COMPACT */}
+              {/* En-tête de page avec tous les éléments sur la même ligne */}
               <div className={styles.pageHeader}>
-                <div className={styles.headerTop}>
-                  <h1 className={styles.pageTitle}>Projets en cours</h1>
-                  
-                  <div className={styles.headerControls}>
-                    {/* Barre de recherche */}
-                    <div className={styles.searchContainer}>
-                      <Search size={18} className={styles.searchIcon} />
-                      <input
-                        type="text"
-                        placeholder="Rechercher un projet..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className={styles.searchInput}
-                      />
-                    </div>
-                    
-                    {/* Bouton créer (admin seulement) */}
-                    {currentUser && isAdmin(currentUser.email) && (
+                <div className={styles.headerRow}>
+                  {/* Filtres à gauche */}
+                  <div className={styles.filtersContainer}>
+                    <button
+                      className={`${styles.filterBtn} ${activeFilter === 'all' ? styles.active : ''}`}
+                      onClick={() => setActiveFilter('all')}
+                    >
+                      Tous les projets
+                    </button>
+                    {currentUser && (
                       <button
-                        onClick={handleCreateProject}
-                        className={styles.createButton}
+                        className={`${styles.filterBtn} ${activeFilter === 'joined' ? styles.active : ''}`}
+                        onClick={() => setActiveFilter('joined')}
                       >
-                        <Plus size={16} />
-                        <span>Nouveau projet</span>
+                        Projets rejoints
                       </button>
                     )}
                   </div>
-                </div>
-                
-                {/* Filtres */}
-                <div className={styles.filterBar}>
-                  <button
-                    className={`${styles.filterBtn} ${activeFilter === 'all' ? styles.active : ''}`}
-                    onClick={() => setActiveFilter('all')}
-                  >
-                    Tous les projets
-                  </button>
-                  {currentUser && (
+                  
+                  {/* Barre de recherche au centre */}
+                  <div className={styles.searchContainer}>
+                    <Search size={18} className={styles.searchIcon} />
+                    <input
+                      type="text"
+                      placeholder="Rechercher un projet..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className={styles.searchInput}
+                    />
+                  </div>
+                  
+                  {/* Bouton créer à droite (admin seulement) */}
+                  {currentUser && isAdmin(currentUser.email) && (
                     <button
-                      className={`${styles.filterBtn} ${activeFilter === 'joined' ? styles.active : ''}`}
-                      onClick={() => setActiveFilter('joined')}
+                      onClick={handleCreateProject}
+                      className={styles.createButton}
                     >
-                      Projets rejoints
+                      <Plus size={16} />
+                      <span>Nouveau projet</span>
                     </button>
                   )}
                 </div>
@@ -406,7 +402,7 @@ export default function ProjetEnCoursPage() {
         )}
       </AnimatePresence>
 
-      {/* Liste des utilisateurs pour ajouter à l'équipe */}
+      {/* Liste des utilisateurs pour ajouter à l'équipe - MODAL PLEIN ÉCRAN */}
       <AnimatePresence>
         {showUserList && selectedProject && (
           <UserList

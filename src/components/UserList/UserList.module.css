@@ -1,167 +1,130 @@
+/* UserList.module.css - MODAL PLEIN ÉCRAN */
+
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(20px);
+  z-index: 5000;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
-  padding: 0;
   overflow: hidden;
 }
 
 .modal {
-  background: var(--bg-main);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 700px;
-  max-height: 85vh;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  width: 90vw;
+  max-width: 900px;
+  height: 85vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
-  margin: 1rem;
 }
 
 /* Header */
 .header {
-  padding: 0.75rem 1.25rem; /* Réduit le padding */
-  border-bottom: 1px solid var(--border-color);
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  background: rgba(0, 0, 0, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.headerContent {
-  flex: 1;
-  min-width: 0;
-}
-
-.title {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.1rem;
+  background: rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.headerContent h2 {
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--primary);
-  margin: 0 0 0.15rem 0; /* Réduit la marge */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.title span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.title svg {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-}
-
-.subtitle {
+.headerContent p {
   color: var(--text-main);
   opacity: 0.7;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   margin: 0;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
-.closeButton {
+.closeBtn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
-  margin-left: 0.5rem;
-  padding: 0;
 }
 
-.closeButton:hover {
+.closeBtn:hover {
   background: #ef4444;
   border-color: #ef4444;
   color: white;
   transform: rotate(90deg);
 }
 
-.closeButton svg {
-  width: 16px;
-  height: 16px;
-}
-
 /* Search section */
 .searchSection {
-  padding: 0.6rem 1.25rem; /* Réduit le padding */
-  border-bottom: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 60px; /* Ajusté selon la nouvelle hauteur du header */
-  z-index: 9;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .searchContainer {
   position: relative;
-  margin-bottom: 0.5rem; /* Réduit la marge */
+  margin-bottom: 12px;
 }
 
 .searchIcon {
   position: absolute;
-  left: 0.75rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-main);
   opacity: 0.5;
   z-index: 1;
-  width: 16px;
-  height: 16px;
 }
 
 .searchInput {
   width: 100%;
-  padding: 0.5rem 0.75rem 0.5rem 2.5rem; /* Réduit le padding vertical */
+  padding: 0.75rem 1rem 0.75rem 3rem;
   background: rgba(30, 30, 30, 0.8);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--text-main);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.3s ease;
-  min-height: 36px; /* Réduit la hauteur */
 }
 
 .searchInput:focus {
   outline: none;
   border-color: var(--primary);
   background: rgba(30, 30, 30, 0.9);
-  box-shadow: 0 0 0 2px rgba(199, 255, 68, 0.1);
+  box-shadow: 0 0 0 3px rgba(199, 255, 68, 0.1);
 }
 
 .clearSearch {
   position: absolute;
-  right: 0.75rem;
+  right: 1rem;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -184,47 +147,39 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.clearSearch svg {
-  width: 14px;
-  height: 14px;
-}
-
 .selectionInfo {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.4rem; /* Réduit l'espace */
+  gap: 10px;
 }
 
 .selectionCount {
   background: rgba(199, 255, 68, 0.1);
   color: var(--primary);
-  padding: 0.3rem 0.6rem; /* Réduit le padding */
+  padding: 6px 12px;
   border-radius: 10px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   border: 1px solid rgba(199, 255, 68, 0.3);
-  white-space: nowrap;
 }
 
 .selectionActions {
   display: flex;
-  gap: 0.4rem; /* Réduit l'espace */
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .selectAllButton,
 .deselectAllButton {
-  padding: 0.3rem 0.6rem; /* Réduit le padding */
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
-  min-height: 26px; /* Réduit la hauteur */
-  white-space: nowrap;
 }
 
 .selectAllButton {
@@ -252,9 +207,20 @@
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 0.5rem 1.25rem; /* Réduit le padding */
-  min-height: 150px;
-  -webkit-overflow-scrolling: touch;
+  padding: 24px;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
 }
 
 /* Loading, Error, Empty states */
@@ -265,7 +231,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 3rem 1rem;
   text-align: center;
   color: var(--text-main);
   opacity: 0.7;
@@ -273,13 +239,13 @@
 }
 
 .spinner {
-  width: 30px;
-  height: 30px;
-  border: 2px solid rgba(199, 255, 68, 0.1);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(199, 255, 68, 0.1);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -287,19 +253,19 @@
 }
 
 .savingSpinner {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-right: 0.5rem;
+  margin-right: 8px;
 }
 
 .errorText {
   color: #ef4444;
-  margin-bottom: 0.75rem;
-  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
   text-align: center;
 }
 
@@ -307,13 +273,12 @@
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
   color: #3b82f6;
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  min-height: 32px;
 }
 
 .retryButton:hover {
@@ -321,15 +286,15 @@
 }
 
 .emptyIcon {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   opacity: 0.5;
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
 }
 
 .emptyText {
-  font-size: 0.85rem;
-  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
@@ -337,12 +302,11 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   transition: all 0.3s ease;
-  min-height: 28px;
 }
 
 .clearSearchButton:hover {
@@ -351,64 +315,59 @@
   color: var(--primary);
 }
 
-/* Users list - PLUS COMPACT */
+/* Users list */
 .usersList {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem; /* Réduit l'espace entre les cartes */
+  gap: 10px;
 }
 
 .userCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem; /* Réduit le padding */
-  background: rgba(30, 30, 30, 0.5);
+  padding: 16px;
+  background: rgba(30, 30, 30, 0.7);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   position: relative;
-  gap: 0.6rem;
-  min-height: 48px; /* Réduit la hauteur minimale */
+  gap: 12px;
 }
 
 .userCard:hover {
-  background: rgba(30, 30, 30, 0.7);
+  background: rgba(30, 30, 30, 0.9);
   border-color: rgba(199, 255, 68, 0.3);
 }
 
 .userCard.selected {
   background: rgba(199, 255, 68, 0.05);
   border-color: var(--primary);
-  border-left: 2px solid var(--primary);
-  padding-left: 0.5rem;
+  border-left: 3px solid var(--primary);
+  padding-left: 13px;
 }
 
 .userInfo {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* Réduit l'espace */
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
 
-.avatarContainer {
-  position: relative;
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
 
-.avatar {
-  width: 34px; /* Réduit la taille */
-  height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .avatarPlaceholder {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary) 0%, rgba(199, 255, 68, 0.8) 100%);
   display: flex;
@@ -416,12 +375,9 @@
   justify-content: center;
   color: var(--dark);
   font-weight: 700;
-  font-size: 0.85rem; /* Réduit la taille de police */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.hidden {
-  display: none;
+  font-size: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .userDetails {
@@ -431,24 +387,23 @@
 }
 
 .userName {
-  font-size: 0.8rem; /* Réduit la taille */
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 0.1rem; /* Réduit la marge */
+  margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.2;
 }
 
 .userEmail {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 6px;
   color: var(--text-main);
   opacity: 0.6;
-  font-size: 0.7rem; /* Réduit la taille */
-  margin-bottom: 0.1rem; /* Réduit la marge */
+  font-size: 0.85rem;
+  margin-bottom: 4px;
   overflow: hidden;
 }
 
@@ -458,21 +413,14 @@
   white-space: nowrap;
 }
 
-.userEmail svg {
-  flex-shrink: 0;
-  opacity: 0.6;
-  width: 10px;
-  height: 10px;
-}
-
 .userMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem; /* Réduit l'espace */
+  gap: 8px;
 }
 
 .metaItem {
-  font-size: 0.6rem; /* Réduit la taille */
+  font-size: 0.75rem;
   color: var(--text-main);
   opacity: 0.5;
   white-space: nowrap;
@@ -485,69 +433,59 @@
 .selectedIndicator {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 6px;
   background: var(--primary);
   color: var(--dark);
-  padding: 0.2rem 0.4rem; /* Réduit le padding */
-  border-radius: 8px;
-  font-size: 0.65rem; /* Réduit la taille */
-  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
   white-space: nowrap;
-}
-
-.selectedIndicator svg {
-  width: 9px; /* Réduit la taille */
-  height: 9px;
 }
 
 .notSelectedIndicator {
   color: var(--text-main);
   opacity: 0.4;
-  font-size: 0.65rem; /* Réduit la taille */
-  padding: 0.2rem 0.4rem; /* Réduit le padding */
+  font-size: 0.8rem;
+  padding: 6px 12px;
   white-space: nowrap;
 }
 
 /* Footer */
 .footer {
-  padding: 0.6rem 1.25rem; /* Réduit le padding */
-  border-top: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.2);
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }
 
 .errorMessage {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  padding: 12px 16px;
+  border-radius: 8px;
   border: 1px solid rgba(239, 68, 68, 0.3);
-  font-size: 0.75rem;
-  margin-bottom: 0.5rem; /* Réduit la marge */
+  font-size: 0.85rem;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .footerActions {
   display: flex;
-  gap: 0.5rem;
+  gap: 12px;
   justify-content: flex-end;
-  margin-bottom: 0.5rem;
 }
 
 .cancelButton {
   background: rgba(30, 30, 30, 0.7);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 0.45rem 0.75rem; /* Réduit le padding */
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.85rem;
   transition: all 0.3s ease;
-  min-height: 34px; /* Réduit la hauteur */
-  flex: 1;
 }
 
 .cancelButton:hover {
@@ -560,23 +498,20 @@
   background: var(--primary);
   color: var(--dark);
   border: none;
-  padding: 0.45rem 0.75rem; /* Réduit le padding */
-  border-radius: 6px;
+  padding: 10px 24px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
   font-size: 0.85rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
   transition: all 0.3s ease;
-  min-height: 34px; /* Réduit la hauteur */
-  flex: 1;
 }
 
 .saveButton:hover:not(:disabled) {
   background: #d4ff5e;
-  box-shadow: 0 2px 8px rgba(199, 255, 68, 0.3);
+  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
 }
 
 .saveButton:disabled {
@@ -585,143 +520,60 @@
 }
 
 .footerInfo {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-main);
   opacity: 0.6;
   text-align: center;
-  margin: 0;
-  line-height: 1.2;
+  margin: 12px 0 0 0;
 }
 
-/* ========== RESPONSIVE MOBILE ========== */
+/* Responsive */
 @media (max-width: 768px) {
   .overlay {
     align-items: flex-end;
-    justify-content: center;
   }
   
   .modal {
-    max-width: 100vw; /* Utilise la largeur totale de la vue */
-    max-height: 90vh;
-    margin: 0;
-    border-radius: 16px 16px 0 0;
-    border: none;
-    border-top: 1px solid var(--border-color);
-    height: auto;
-    width: 100%; /* Assure la largeur à 100% */
+    width: 100vw;
+    height: 90vh;
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
   }
   
   .header {
-    padding: 0.6rem 1rem;
+    padding: 16px 20px;
+  }
+  
+  .headerContent h2 {
+    font-size: 1.1rem;
   }
   
   .searchSection {
-    padding: 0.5rem 1rem;
-    top: 55px; /* Ajusté selon la nouvelle hauteur */
+    padding: 12px 20px;
   }
   
   .content {
-    padding: 0.4rem 1rem; /* Réduit le padding sur mobile */
+    padding: 20px;
   }
   
   .footer {
-    padding: 0.5rem 1rem;
-  }
-  
-  .title {
-    font-size: 1rem;
-  }
-  
-  .title svg {
-    width: 18px;
-    height: 18px;
-  }
-  
-  .subtitle {
-    font-size: 0.75rem;
-    -webkit-line-clamp: 1;
-  }
-  
-  .closeButton {
-    width: 30px;
-    height: 30px;
-  }
-  
-  .closeButton svg {
-    width: 14px;
-    height: 14px;
-  }
-  
-  .searchInput {
-    padding: 0.5rem 0.6rem 0.5rem 2.25rem;
-    font-size: 0.8rem;
-    min-height: 34px;
-  }
-  
-  .searchIcon {
-    left: 0.6rem;
-    width: 14px;
-    height: 14px;
+    padding: 12px 20px;
   }
   
   .selectionInfo {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.4rem;
   }
   
   .selectionActions {
     width: 100%;
+    justify-content: space-between;
   }
   
   .selectAllButton,
   .deselectAllButton {
     flex: 1;
     text-align: center;
-    font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
-    min-height: 26px;
-  }
-  
-  .userCard {
-    padding: 0.4rem; /* Réduit encore plus sur mobile */
-    gap: 0.5rem;
-    min-height: 46px;
-  }
-  
-  .avatar,
-  .avatarPlaceholder {
-    width: 30px;
-    height: 30px;
-    font-size: 0.75rem;
-  }
-  
-  .userName {
-    font-size: 0.75rem;
-  }
-  
-  .userEmail {
-    font-size: 0.65rem;
-  }
-  
-  .userEmail svg {
-    width: 8px;
-    height: 8px;
-  }
-  
-  .metaItem {
-    font-size: 0.55rem;
-  }
-  
-  .selectedIndicator,
-  .notSelectedIndicator {
-    font-size: 0.6rem;
-    padding: 0.15rem 0.35rem;
-  }
-  
-  .selectedIndicator svg {
-    width: 7px;
-    height: 7px;
   }
   
   .footerActions {
@@ -731,87 +583,5 @@
   .cancelButton,
   .saveButton {
     width: 100%;
-    padding: 0.4rem;
-    font-size: 0.8rem;
-    min-height: 32px;
-  }
-  
-  .footerInfo {
-    font-size: 0.65rem;
-  }
-}
-
-/* Très petits écrans (iPhone SE, etc.) */
-@media (max-width: 360px) {
-  .modal {
-    max-height: 95vh;
-  }
-  
-  .header {
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .searchSection {
-    padding: 0.4rem 0.75rem;
-    top: 50px;
-  }
-  
-  .content {
-    padding: 0.3rem 0.75rem;
-  }
-  
-  .footer {
-    padding: 0.4rem 0.75rem;
-  }
-  
-  .userCard {
-    flex-direction: row; /* Garde la direction horizontale même sur très petit écran */
-    align-items: center;
-    gap: 0.4rem;
-    min-height: 44px;
-  }
-  
-  .userInfo {
-    flex-direction: row;
-    text-align: left;
-  }
-  
-  .userDetails {
-    text-align: left;
-  }
-  
-  .userName {
-    text-align: left;
-  }
-  
-  .userEmail {
-    justify-content: flex-start;
-  }
-  
-  .userMeta {
-    justify-content: flex-start;
-  }
-  
-  .selectionIndicator {
-    align-self: center;
-    margin-top: 0;
-  }
-  
-  .modal {
-    border-radius: 12px 12px 0 0;
-    width: 100%;
-  }
-}
-
-/* Desktop uniquement */
-@media (min-width: 769px) {
-  .modal {
-    max-height: 80vh;
-    margin: 2rem;
-  }
-  
-  .overlay {
-    align-items: center;
-    justify-content: center;
   }
 }

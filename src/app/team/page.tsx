@@ -524,7 +524,7 @@ function EquipePageContent() {
                 )}
                 
                 <button
-                  onClick={() => router.push('/projet-en-cours')}
+                  onClick={() => router.push('/portfolio/projet-en-cours')}
                   className={styles.viewTeamButton}
                 >
                   <FolderKanban size={16} />

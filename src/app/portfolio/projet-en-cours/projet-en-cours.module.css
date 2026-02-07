@@ -17,43 +17,67 @@
 }
 
 .pageContainer {
-  max-width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
   width: 100%;
 }
 
-/* En-tête compact */
+/* En-tête compact avec tous les éléments sur une ligne */
 .pageHeader {
   margin-bottom: 2rem;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 1rem;
+  padding-bottom: 1.5rem;
 }
 
-.headerTop {
+.headerRow {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+  gap: 1.5rem;
+  width: 100%;
 }
 
-.pageTitle {
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: var(--primary);
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.headerControls {
+/* Conteneur des filtres (à gauche) */
+.filtersContainer {
   display: flex;
+  gap: 0.75rem;
   align-items: center;
-  gap: 1rem;
+  flex-shrink: 0;
 }
 
+.filterBtn {
+  background: rgba(30, 30, 30, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.625rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.filterBtn:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.1);
+}
+
+.filterBtn.active {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+/* Barre de recherche (au centre) */
 .searchContainer {
   position: relative;
-  width: 300px;
+  flex: 1;
+  max-width: 500px;
+  min-width: 200px;
+  margin: 0 1rem;
 }
 
 .searchIcon {
@@ -84,6 +108,7 @@
   box-shadow: 0 0 0 3px rgba(199, 255, 68, 0.1);
 }
 
+/* Bouton créer (à droite) */
 .createButton {
   background: var(--primary);
   color: var(--dark);
@@ -97,42 +122,14 @@
   font-weight: 700;
   font-size: 0.95rem;
   transition: all 0.3s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .createButton:hover {
   background: #d4ff5e;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
-}
-
-/* Filtres */
-.filterBar {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.filterBtn {
-  background: rgba(30, 30, 30, 0.5);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.filterBtn:hover {
-  border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.1);
-}
-
-.filterBtn.active {
-  background: var(--primary);
-  color: var(--dark);
-  border-color: var(--primary);
-  font-weight: 600;
 }
 
 /* Grille de projets */
@@ -230,39 +227,57 @@
   }
 }
 
+@media (max-width: 992px) {
+  .headerRow {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .filtersContainer {
+    order: 1;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .searchContainer {
+    order: 2;
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .createButton {
+    order: 3;
+    margin-left: auto;
+  }
+}
+
 @media (max-width: 768px) {
   .pageContainer {
     padding: 1.5rem 1rem;
   }
   
-  .headerTop {
+  .headerRow {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
   
-  .pageTitle {
-    font-size: 1.8rem;
-    text-align: center;
-  }
-  
-  .headerControls {
-    flex-direction: column;
-    align-items: stretch;
+  .filtersContainer {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
   }
   
   .searchContainer {
     width: 100%;
+    max-width: 100%;
+    margin: 0;
   }
   
   .createButton {
     width: 100%;
     justify-content: center;
-  }
-  
-  .filterBar {
-    justify-content: center;
-    flex-wrap: wrap;
+    margin-left: 0;
   }
   
   .projectsGrid {
@@ -276,7 +291,18 @@
     grid-template-columns: 1fr;
   }
   
-  .pageTitle {
-    font-size: 1.5rem;
+  .filterBtn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .searchInput {
+    padding: 0.625rem 0.875rem 0.625rem 2.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .createButton {
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
   }
 }

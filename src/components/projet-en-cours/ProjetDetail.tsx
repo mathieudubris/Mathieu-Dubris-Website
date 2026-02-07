@@ -1,4 +1,4 @@
-// ProjetDetail.tsx - AVEC CAROUSEL ET VUES
+// ProjetDetail.tsx - AVEC CAROUSEL ET VUES - LECTURE SEULE
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -17,7 +17,8 @@ import {
   Settings,
   ChevronRight,
   ChevronLeft,
-  Eye
+  Eye,
+  Wrench
 } from 'lucide-react';
 import { 
   isAdmin, 
@@ -26,7 +27,6 @@ import {
   TeamMember as FirebaseTeamMember,
   updateProject
 } from '@/utils/firebase-api';
-import SoftwareList from '@/components/projet-en-cours/SoftwareList';
 import styles from './ProjetDetail.module.css';
 
 type Project = FirebaseProject;
@@ -125,6 +125,107 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
 
   const handleViewProfile = (userId: string) => {
     router.push(`/team?userId=${userId}&project=${project.id || ''}`);
+  };
+
+  // Afficher les logiciels utilisés - LECTURE SEULE
+  const renderSoftwareList = () => {
+    const softwareList = project.software || [];
+    
+    if (softwareList.length === 0) {
+      return (
+        <div style={{ 
+          color: 'var(--text-main)', 
+          opacity: 0.6,
+          fontStyle: 'italic',
+          fontSize: '0.9rem'
+        }}>
+          Aucun logiciel spécifié
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ 
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '8px',
+        marginTop: '8px'
+      }}>
+        {softwareList.slice(0, 10).map((soft: any, index: number) => (
+          <div 
+            key={index} 
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px',
+              width: '60px'
+            }}
+            title={soft.name}
+          >
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--primary)',
+              fontSize: '1.2rem'
+            }}>
+              {soft.icon || '📦'}
+            </div>
+            <span style={{
+              fontSize: '0.7rem',
+              color: 'var(--text-main)',
+              opacity: 0.8,
+              textAlign: 'center',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              width: '100%'
+            }}>
+              {soft.name}
+            </span>
+          </div>
+        ))}
+        {softwareList.length > 10 && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '60px'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--text-main)',
+              fontSize: '0.8rem',
+              fontWeight: 700
+            }}>
+              +{softwareList.length - 10}
+            </div>
+            <span style={{
+              fontSize: '0.7rem',
+              color: 'var(--text-main)',
+              opacity: 0.6,
+              textAlign: 'center'
+            }}>
+              Plus
+            </span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -246,16 +347,13 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                   <p className={styles.projectDescription}>{project.description}</p>
                 </div>
 
-                {/* Logiciels utilisés */}
+                {/* Logiciels utilisés - LECTURE SEULE */}
                 <div className={styles.softwareSection}>
-                  <SoftwareList 
-                    projectId={project.id || ''}
-                    isAdmin={currentUser && isAdmin(currentUser.email)}
-                    compact={false}
-                    selectedSoftware={project.software || []}
-                    onClose={() => {}}
-                    onSave={() => {}}
-                  />
+                  <h2 className={styles.sectionTitle}>
+                    <Wrench size={20} />
+                    <span>Logiciels utilisés</span>
+                  </h2>
+                  {renderSoftwareList()}
                 </div>
 
                 {/* Actions pour les membres */}

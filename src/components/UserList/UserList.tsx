@@ -136,34 +136,32 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
     <div className={styles.overlay} onClick={handleOverlayClick}>
       <motion.div 
         className={styles.modal}
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25 }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
           <div className={styles.headerContent}>
-            <h2 className={styles.title}>
-              <Users size={20} />
-              <span>Gérer l'équipe du projet</span>
+            <h2>
+              <Users size={24} />
+              <span>Gérer l'équipe</span>
             </h2>
-            <p className={styles.subtitle}>
-              Ajoutez ou retirez des membres de l'équipe
-            </p>
+            <p>Ajoutez ou retirez des membres de l'équipe ({projectMembers.length} sélectionné{projectMembers.length > 1 ? 's' : ''})</p>
           </div>
           <button 
             onClick={onClose} 
-            className={styles.closeButton}
+            className={styles.closeBtn}
             aria-label="Fermer"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
         
         <div className={styles.searchSection}>
           <div className={styles.searchContainer}>
-            <Search size={16} className={styles.searchIcon} />
+            <Search size={18} className={styles.searchIcon} />
             <input
               type="text"
               placeholder="Rechercher un utilisateur..."
@@ -185,7 +183,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
           
           <div className={styles.selectionInfo}>
             <div className={styles.selectionCount}>
-              {projectMembers.length} membre{projectMembers.length > 1 ? 's' : ''}
+              {projectMembers.length} membre{projectMembers.length > 1 ? 's' : ''} sélectionné{projectMembers.length > 1 ? 's' : ''}
             </div>
             <div className={styles.selectionActions}>
               <button 
@@ -216,7 +214,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className={styles.emptyState}>
-              <Users size={40} className={styles.emptyIcon} />
+              <Users size={48} className={styles.emptyIcon} />
               <h3>Aucun utilisateur trouvé</h3>
               <p className={styles.emptyText}>
                 {searchQuery ? 'Essayez avec d\'autres termes de recherche' : 'Aucun utilisateur inscrit'}
@@ -252,27 +250,25 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
                     aria-label={`${isMember ? 'Retirer' : 'Ajouter'} ${user.displayName || 'utilisateur'}`}
                   >
                     <div className={styles.userInfo}>
-                      <div className={styles.avatarContainer}>
-                        {user.photoURL ? (
-                          <img 
-                            src={user.photoURL} 
-                            alt={user.displayName || 'User'} 
-                            className={styles.avatar}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className={styles.avatarPlaceholder}>
-                            {user.displayName?.[0]?.toUpperCase() || '?'}
-                          </div>
-                        )}
-                      </div>
+                      {user.photoURL ? (
+                        <img 
+                          src={user.photoURL} 
+                          alt={user.displayName || 'User'} 
+                          className={styles.avatar}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className={styles.avatarPlaceholder}>
+                          {user.displayName?.[0]?.toUpperCase() || '?'}
+                        </div>
+                      )}
                       
                       <div className={styles.userDetails}>
                         <h3 className={styles.userName}>
                           {user.displayName || 'Utilisateur sans nom'}
                         </h3>
                         <div className={styles.userEmail}>
-                          <Mail size={10} />
+                          <Mail size={12} />
                           <span title={user.email || ''}>
                             {user.email}
                           </span>
@@ -290,7 +286,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
                         <div className={styles.savingSpinner} aria-label="Chargement"></div>
                       ) : isMember ? (
                         <div className={styles.selectedIndicator}>
-                          <Check size={12} />
+                          <Check size={14} />
                           <span>Ajouté</span>
                         </div>
                       ) : (
@@ -319,21 +315,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
               className={styles.cancelButton}
               disabled={processingUser !== null}
             >
-              Annuler
-            </button>
-            <button 
-              onClick={handleSave} 
-              className={styles.saveButton}
-              disabled={processingUser !== null}
-            >
-              {processingUser ? (
-                <>
-                  <div className={styles.savingSpinner}></div>
-                  Enregistrement...
-                </>
-              ) : (
-                'Enregistrer'
-              )}
+              Fermer
             </button>
           </div>
           
