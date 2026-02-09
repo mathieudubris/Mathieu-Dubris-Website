@@ -24,39 +24,40 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
     {
       title: 'Accueil',
       links: [
-        { label: 'Bienvenue', path: '#section1' },
-        { label: 'Nouveauté', path: '#section2' },
-        { label: 'Pourquoi nous', path: '#section3' },
-        { label: 'Partenaire', path: '#section4' },
+        { label: "Bienvenue", path: "#section1" },
+        { label: "Nouveauté", path: "#section2" },
+        { label: "Nos Services", path: "#section3" },
+        { label: "Pourquoi nous", path: "#section4" },
+        { label: "Partenaire", path: "#section5" }
       ]
     },
     { 
       title: 'Services', 
       links: [
-        { label: 'Developper', path: '/pending' },
-        { label: '3D Designer', path: '/pending' },
-        { label: 'UI/UX Designer', path: '/pending' },
-        { label: 'Content Creation', path: '/pending' },
-        { label: 'Formation', path: '/pending' }
+        { label: 'Developper', path: '/services/pending' },
+        { label: '3D Designer', path: '/services/pending' },
+        { label: 'UI/UX Designer', path: '/services/pending' },
+        { label: 'Content Creation', path: '/services/pending' },
+        { label: 'Formation', path: '/services/pending' }
       ]
     },
     { 
       title: 'Portfolio', 
       links: [
-        { label: 'Projets Réalisés', path: '/auth-identity' },
+        { label: 'Projets Réalisés', path: '/security/access' },
         { label: 'Travaux en Cours', path: '/portfolio/projet-en-cours' },
-        { label: 'Galerie Créative', path: '/auth-identity' },
-        { label: 'Expertises', path: '/auth-identity' },
-        { label: 'Diplômes', path: '/auth-identity' }
+        { label: 'Galerie Créative', path: '/security/access' },
+        { label: 'Expertises', path: '/security/access' },
+        { label: 'Diplômes', path: '/security/access' }
       ]
     },
     { 
       title: 'Communauté', 
       links: [
-        { label: 'Événements', path: '/communaute/evenements' },
-        { label: 'Actualités', path: '/communaute/actualites' },
+        { label: 'Événements', path: '/security/access' },
+        { label: 'Actualités', path: '/security/access' },
         { label: 'Blog', path: '/communaute/blog' },
-        { label: 'Entraides', path: '/communaute/entraides' }
+        { label: 'Entraides', path: '/security/access' }
       ]
     }
   ];
@@ -122,9 +123,9 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
           ))}
           <li className={styles.quoteItem}>
             {isAdmin ? (
-              <button className={styles.quoteBtn} onClick={() => router.push('/admin')}>Admin</button>
+              <button className={styles.quoteBtn} onClick={() => router.push('/security/admin')}>Admin</button>
             ) : (
-              <button className={styles.quoteBtn} onClick={() => handleNav('/quote')}>Free Quote</button>
+              <button className={styles.quoteBtn} onClick={() => handleNav('/services/pending')}>Free Quote</button>
             )}
           </li>
         </ul>

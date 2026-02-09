@@ -8,8 +8,7 @@ import {
   X, 
   Users, 
   Calendar, 
-  Edit2, 
-  Trash2,
+  Edit2,
   ExternalLink,
   UserPlus,
   Mail,
@@ -18,7 +17,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Eye,
-  Wrench
+  Wrench,
+  ChevronDown
 } from 'lucide-react';
 import { 
   isAdmin, 
@@ -40,7 +40,6 @@ interface ProjetDetailProps {
   onBack: () => void;
   onEditProject: () => void;
   onManageTeam: () => void;
-  onDeleteProject: () => void;
   onEditProfile: () => void;
 }
 
@@ -52,13 +51,13 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
   onBack,
   onEditProject,
   onManageTeam,
-  onDeleteProject,
   onEditProfile
 }) => {
   const router = useRouter();
   const [isInTeam, setIsInTeam] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [views, setViews] = useState(project.views || 0);
+  const [showAllMembers, setShowAllMembers] = useState(false);
 
   // Images du carousel: image principale + carouselImages
   const carouselImages = [
@@ -123,8 +122,8 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     }
   };
 
-  const handleViewProfile = (userId: string) => {
-    router.push(`/team?userId=${userId}&project=${project.id || ''}`);
+  const handleViewAllMembers = () => {
+    router.push(`/team/view?project=${project.id || ''}`);
   };
 
   // Afficher les logiciels utilisés - LECTURE SEULE
@@ -133,93 +132,34 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     
     if (softwareList.length === 0) {
       return (
-        <div style={{ 
-          color: 'var(--text-main)', 
-          opacity: 0.6,
-          fontStyle: 'italic',
-          fontSize: '0.9rem'
-        }}>
+        <div className={styles.noSoftware}>
           Aucun logiciel spécifié
         </div>
       );
     }
 
     return (
-      <div style={{ 
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '8px',
-        marginTop: '8px'
-      }}>
+      <div className={styles.softwareGrid}>
         {softwareList.slice(0, 10).map((soft: any, index: number) => (
           <div 
             key={index} 
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '4px',
-              width: '60px'
-            }}
+            className={styles.softwareItem}
             title={soft.name}
           >
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'rgba(0, 0, 0, 0.5)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--primary)',
-              fontSize: '1.2rem'
-            }}>
+            <div className={styles.softwareLogo}>
               {soft.icon || '📦'}
             </div>
-            <span style={{
-              fontSize: '0.7rem',
-              color: 'var(--text-main)',
-              opacity: 0.8,
-              textAlign: 'center',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              width: '100%'
-            }}>
+            <span className={styles.softwareName}>
               {soft.name}
             </span>
           </div>
         ))}
         {softwareList.length > 10 && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '60px'
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-main)',
-              fontSize: '0.8rem',
-              fontWeight: 700
-            }}>
+          <div className={styles.moreSoftware}>
+            <div className={styles.moreSoftwareIcon}>
               +{softwareList.length - 10}
             </div>
-            <span style={{
-              fontSize: '0.7rem',
-              color: 'var(--text-main)',
-              opacity: 0.6,
-              textAlign: 'center'
-            }}>
+            <span className={styles.moreSoftwareText}>
               Plus
             </span>
           </div>
@@ -238,12 +178,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Compteur de vues */}
-        <div className={styles.viewsCounter}>
-          <Eye size={16} />
-          <span>{views} vues</span>
-        </div>
-
         {/* Bouton de fermeture */}
         <button className={styles.closeBtn} onClick={onBack}>
           <X size={24} />
@@ -309,15 +243,11 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                     <div className={styles.adminActions}>
                       <button onClick={onEditProject} className={styles.editButton}>
                         <Edit2 size={16} />
-                        <span>Modifier</span>
+                        <span>Modifier projet</span>
                       </button>
                       <button onClick={onManageTeam} className={styles.teamButton}>
                         <UserPlus size={16} />
                         <span>Gérer l'équipe</span>
-                      </button>
-                      <button onClick={onDeleteProject} className={styles.deleteButton}>
-                        <Trash2 size={16} />
-                        <span>Supprimer</span>
                       </button>
                     </div>
                   )}
@@ -328,6 +258,10 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                     <div className={styles.metaItem}>
                       <Calendar size={16} />
                       <span>{formatDate(project.createdAt)}</span>
+                    </div>
+                    <div className={styles.metaItem}>
+                      <Eye size={16} />
+                      <span>{views} vues</span>
                     </div>
                     <div className={styles.metaItem}>
                       <Users size={16} />
@@ -355,30 +289,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                   </h2>
                   {renderSoftwareList()}
                 </div>
-
-                {/* Actions pour les membres */}
-                {isInTeam && (
-                  <div className={styles.profileActions}>
-                    <button onClick={onEditProfile} className={styles.editProfileButton}>
-                      <Settings size={16} />
-                      <span>Gérer mes informations</span>
-                      <ChevronRight size={16} />
-                    </button>
-                    
-                    {!userTeamProfile && (
-                      <div className={styles.callToAction}>
-                        <h3>Complétez votre profil d'équipe</h3>
-                        <p>
-                          Vous êtes membre de ce projet mais n'avez pas encore complété votre profil.
-                        </p>
-                        <button onClick={onEditProfile} className={styles.ctaButton}>
-                          <Settings size={16} />
-                          Compléter mon profil
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -391,21 +301,15 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                   <Users size={20} />
                   <span>Équipe</span>
                 </h2>
-                {currentUser && isAdmin(currentUser.email) && (
-                  <button onClick={onManageTeam} className={styles.addMemberButton}>
-                    <UserPlus size={16} />
-                  </button>
-                )}
               </div>
 
               {teamMembers.length > 0 ? (
                 <div className={styles.teamList}>
-                  {teamMembers.map((member) => (
+                  {teamMembers
+                    .slice(0, showAllMembers ? teamMembers.length : 5)
+                    .map((member) => (
                     <div key={member.id || member.userId} className={styles.memberItem}>
-                      <div 
-                        className={styles.memberAvatar}
-                        onClick={() => handleViewProfile(member.userId)}
-                      >
+                      <div className={styles.memberAvatar}>
                         {member.image ? (
                           <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
                         ) : (
@@ -451,13 +355,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                           )}
                         </div>
                       </div>
-                      
-                      <button
-                        onClick={() => handleViewProfile(member.userId)}
-                        className={styles.viewProfileButton}
-                      >
-                        <ExternalLink size={14} />
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -466,10 +363,45 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                   <Users size={48} className={styles.emptyIcon} />
                   <h3>Aucun membre</h3>
                   <p>
-                    {currentUser && isAdmin(currentUser.email)
-                      ? 'Ajoutez des membres pour constituer l\'équipe.'
-                      : 'Aucun membre n\'a encore été ajouté.'}
+                    Aucun membre n'a encore été ajouté.
                   </p>
+                </div>
+              )}
+
+              {/* Bouton voir tous les membres */}
+              {teamMembers.length > 5 && (
+                <div className={styles.viewAllContainer}>
+                  <button 
+                    onClick={handleViewAllMembers}
+                    className={styles.viewAllButton}
+                  >
+                    <span>Voir tous les membres</span>
+                    <ChevronDown size={16} />
+                  </button>
+                </div>
+              )}
+
+              {/* Bouton Gérer mes informations */}
+              {isInTeam && (
+                <div className={styles.profileActions}>
+                  <button onClick={onEditProfile} className={styles.editProfileButton}>
+                    <Settings size={16} />
+                    <span>Gérer mes informations</span>
+                    <ChevronRight size={16} />
+                  </button>
+                  
+                  {!userTeamProfile && (
+                    <div className={styles.callToAction}>
+                      <h3>Complétez votre profil d'équipe</h3>
+                      <p>
+                        Vous êtes membre de ce projet mais n'avez pas encore complété votre profil.
+                      </p>
+                      <button onClick={onEditProfile} className={styles.ctaButton}>
+                        <Settings size={16} />
+                        Compléter mon profil
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

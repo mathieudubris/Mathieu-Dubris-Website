@@ -1,4 +1,4 @@
-// ProjetEditor.tsx - AVEC CAROUSEL, SOFTWARE ET MEMBERS EN MODAL
+// ProjetEditor.tsx - AVEC CAROUSEL, SOFTWARE ET MEMBERS EN MODAL - CORRIGÉ
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,6 +7,7 @@ import { X, Save, Image as ImageIcon, Send, Plus, Wrench, Users as UsersIcon } f
 import { createProject, updateProject, isAdmin, Project as FirebaseProject } from '@/utils/firebase-api';
 import { Timestamp } from 'firebase/firestore';
 import SoftwareList from '@/components/projet-en-cours/SoftwareList';
+import UserList from '@/components/UserList/UserList'; // IMPORT CORRIGÉ
 import styles from './ProjetEditor.module.css';
 
 // Utiliser l'interface importée de Firebase
@@ -151,6 +152,17 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
   const handleSoftwareSave = (selectedSoftware: any[]) => {
     setSoftware(selectedSoftware);
     setShowSoftwareModal(false);
+  };
+
+  const handleUserAdded = () => {
+    // Rafraîchir les données si nécessaire
+    // Cette fonction peut être appelée quand des utilisateurs sont ajoutés/supprimés
+  };
+
+  const handleMembersSave = () => {
+    // Les modifications sont appliquées immédiatement dans UserList
+    // donc on peut juste fermer le modal
+    setShowMembersModal(false);
   };
 
   return (
@@ -324,207 +336,14 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Modal Members - MODAL PLEIN ÉCRAN */}
+      {/* Modal Members - UTILISATION DU COMPOSANT UserList */}
       <AnimatePresence>
-        {showMembersModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.95)',
-            backdropFilter: 'blur(20px)',
-            zIndex: 5000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <div style={{
-              background: '#0d0d0d',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              width: '90vw',
-              maxWidth: '900px',
-              height: '85vh',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                padding: '20px 24px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: 'rgba(0, 0, 0, 0.3)'
-              }}>
-                <div>
-                  <h2 style={{
-                    fontSize: '1.3rem',
-                    fontWeight: 700,
-                    color: 'var(--primary)',
-                    margin: '0 0 6px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }}>
-                    <UsersIcon size={24} />
-                    <span>Gérer les membres</span>
-                  </h2>
-                  <p style={{
-                    color: 'var(--text-main)',
-                    opacity: 0.7,
-                    fontSize: '0.85rem',
-                    margin: 0
-                  }}>
-                    Sélectionnez les membres de l'équipe ({teamMembers.length} sélectionné{teamMembers.length > 1 ? 's' : ''})
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setShowMembersModal(false)}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid var(--border-color)',
-                    color: 'var(--text-main)',
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: '24px'
-              }}>
-                <p style={{
-                  color: 'var(--text-main)',
-                  opacity: 0.7,
-                  fontSize: '0.9rem',
-                  marginBottom: '20px'
-                }}>
-                  La gestion complète des membres se fait via le bouton "Gérer l'équipe" dans la vue détail du projet.
-                  Ici, vous pouvez seulement voir les membres actuels.
-                </p>
-                
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px'
-                }}>
-                  {teamMembers.length > 0 ? (
-                    teamMembers.map((memberId, index) => (
-                      <div key={index} style={{
-                        background: 'rgba(30, 30, 30, 0.7)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '12px',
-                        padding: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px'
-                      }}>
-                        <div style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: '50%',
-                          background: 'linear-gradient(135deg, var(--primary) 0%, rgba(199, 255, 68, 0.8) 100%)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'var(--dark)',
-                          fontWeight: 700,
-                          fontSize: '1rem'
-                        }}>
-                          {String.fromCharCode(65 + index)}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <h3 style={{
-                            fontSize: '1rem',
-                            fontWeight: 700,
-                            color: 'var(--text-main)',
-                            margin: '0 0 4px 0'
-                          }}>
-                            Membre {index + 1}
-                          </h3>
-                          <p style={{
-                            color: 'var(--text-main)',
-                            opacity: 0.6,
-                            fontSize: '0.85rem',
-                            margin: 0
-                          }}>
-                            ID: {memberId.substring(0, 8)}...
-                          </p>
-                        </div>
-                        <div style={{
-                          background: 'rgba(199, 255, 68, 0.1)',
-                          color: 'var(--primary)',
-                          padding: '4px 12px',
-                          borderRadius: '20px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600
-                        }}>
-                          Membre
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{
-                      textAlign: 'center',
-                      padding: '40px 20px',
-                      color: 'var(--text-main)',
-                      opacity: 0.6
-                    }}>
-                      <UsersIcon size={48} style={{ opacity: 0.4, marginBottom: '16px' }} />
-                      <h3 style={{
-                        fontSize: '1.1rem',
-                        fontWeight: 700,
-                        margin: '0 0 8px 0'
-                      }}>
-                        Aucun membre
-                      </h3>
-                      <p style={{ fontSize: '0.9rem', margin: 0 }}>
-                        Ajoutez des membres via "Gérer l'équipe"
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div style={{
-                padding: '16px 24px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(0, 0, 0, 0.3)',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                gap: '12px'
-              }}>
-                <button
-                  onClick={() => setShowMembersModal(false)}
-                  style={{
-                    background: 'rgba(30, 30, 30, 0.7)',
-                    border: '1px solid var(--border-color)',
-                    color: 'var(--text-main)',
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  Fermer
-                </button>
-              </div>
-            </div>
-          </div>
+        {showMembersModal && project?.id && (
+          <UserList
+            projectId={project.id}
+            onClose={() => setShowMembersModal(false)}
+            onUserAdded={handleUserAdded}
+          />
         )}
       </AnimatePresence>
     </>

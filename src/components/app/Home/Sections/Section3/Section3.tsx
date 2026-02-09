@@ -1,119 +1,125 @@
 "use client";
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Lightbulb, 
-  Layers, 
-  Code2, 
   Rocket, 
-  CheckCircle2 
+  Wrench, 
+  FileText, 
+  Users, 
+  FileSpreadsheet, 
+  Diamond,
+  LucideIcon 
 } from 'lucide-react';
 import styles from './Section3.module.css';
 
-interface StepProps {
-  number: string;
+interface ServiceProps {
   title: string;
   description: string;
-  Icon: any;
+  Icon: LucideIcon;
   index: number;
 }
 
-const StepCard = ({ number, title, description, Icon, index }: StepProps) => {
+const ServiceCard = ({ title, description, Icon, index }: ServiceProps) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setMousePos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+  };
+
   return (
-    <motion.div 
-      className={styles.stepCard}
-      initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-      whileInView={{ opacity: 1, x: 0 }}
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.2 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className={styles.card}
+      style={{ 
+        '--x': `${mousePos.x}px`, 
+        '--y': `${mousePos.y}px` 
+      } as any}
     >
-      <div className={styles.stepHeader}>
-        <div className={styles.iconContainer}>
-          <Icon size={28} className={styles.stepIcon} />
-          <span className={styles.stepNumber}>{number}</span>
-        </div>
-        <div className={styles.line} />
+      <div className={styles.glow} />
+      <div className={styles.iconWrapper}>
+        <Icon size={24} color="white" strokeWidth={2} />
       </div>
-      <div className={styles.stepContent}>
-        <h3 className={styles.stepTitle}>{title}</h3>
-        <p className={styles.stepDescription}>{description}</p>
-      </div>
+      <h3 className={styles.cardTitle}>{title}</h3>
+      <p className={styles.cardDescription}>{description}</p>
     </motion.div>
   );
 };
 
-const Section3 = () => {
-  const steps = [
+const Section2 = () => {
+  const services = [
     {
-      number: "01",
-      title: "Stratégie & Analyse",
-      description: "Nous définissons ensemble vos objectifs pour établir une feuille de route claire et efficace.",
-      icon: Lightbulb
-    },
-    {
-      number: "02",
-      title: "Design & UX",
-      description: "Conception d'interfaces intuitives et modernes centrées sur l'expérience utilisateur.",
-      icon: Layers
-    },
-    {
-      number: "03",
-      title: "Développement",
-      description: "Codage propre, performant et évolutif utilisant les dernières technologies du marché.",
-      icon: Code2
-    },
-    {
-      number: "04",
-      title: "Lancement",
-      description: "Déploiement optimisé et tests rigoureux pour garantir un produit final impeccable.",
+      title: "Services & Expertise",
+      description: "Des solutions sur mesure pour vos projets web et mobiles, alliant performance et design moderne.",
       icon: Rocket
+    },
+    {
+      title: "Outils & Ressources",
+      description: "Accédez à une bibliothèque d'outils exclusifs pour booster votre productivité au quotidien.",
+      icon: Wrench
+    },
+    {
+      title: "Blog & Insights",
+      description: "Articles techniques et retours d'expérience sur les dernières technologies du marché.",
+      icon: FileText
+    },
+    {
+      title: "Communauté & Échanges",
+      description: "Rejoignez un espace d'entraide dédié aux passionnés et professionnels du secteur.",
+      icon: Users
+    },
+    {
+      title: "Demande de Devis",
+      description: "Un projet en tête ? Obtenez une estimation précise et personnalisée en moins de 24h.",
+      icon: FileSpreadsheet
+    },
+    {
+      title: "Portfolio",
+      description: "Découvrez mes réalisations les plus ambitieuses et les défis techniques relevés.",
+      icon: Diamond
     }
   ];
 
   return (
     <section className={styles.section}>
       <div className={styles.container}>
-        <div className={styles.grid}>
-          <motion.div 
-            className={styles.textSide}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <span className={styles.badge}>Méthodologie</span>
-            <h2 className={styles.title}>Un processus pensé pour la réussite</h2>
-            <p className={styles.subtitle}>
-              De l'idée initiale à la mise en ligne, chaque étape est optimisée pour transformer votre vision en réalité numérique.
-            </p>
-            <div className={styles.features}>
-              <div className={styles.featureItem}>
-                <CheckCircle2 size={18} className={styles.checkIcon} />
-                <span>Accompagnement personnalisé</span>
-              </div>
-              <div className={styles.featureItem}>
-                <CheckCircle2 size={18} className={styles.checkIcon} />
-                <span>Transparence totale sur l'avancement</span>
-              </div>
-            </div>
-          </motion.div>
+        <motion.div 
+          className={styles.header}
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className={styles.badge}>Écosystème Digital</span>
+          <h2 className={styles.title}>Une plateforme, des possibilités infinies</h2>
+        </motion.div>
 
-          <div className={styles.stepsSide}>
-            {steps.map((step, index) => (
-              <StepCard 
-                key={index}
-                index={index}
-                number={step.number}
-                title={step.title}
-                description={step.description}
-                Icon={step.icon}
-              />
-            ))}
-          </div>
+        <div className={styles.grid}>
+          {services.map((service, index) => (
+            <ServiceCard 
+              key={index}
+              index={index}
+              title={service.title}
+              description={service.description}
+              Icon={service.icon}
+            />
+          ))}
         </div>
       </div>
     </section>
   );
 };
 
-export default Section3;
+export default Section2;

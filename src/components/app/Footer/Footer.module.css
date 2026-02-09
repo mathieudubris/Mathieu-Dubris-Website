@@ -10,15 +10,17 @@
   margin: 0 auto;
 }
 
-/* Grille principale */
+/* Grille principale - CORRIGÉ */
 .mainGrid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 80px;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 40px;
   margin-bottom: 80px;
 }
 
+/* La colonne de marque occupe 2 colonnes */
 .brandColumn {
+  grid-column: span 2;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -77,11 +79,16 @@
   font-weight: 500;
 }
 
-/* Liens */
+/* Liens - CORRIGÉ */
 .linksWrapper {
+  grid-column: span 3;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 40px;
+}
+
+.linkGroup {
+  /* Ajout de cette classe manquante */
 }
 
 .groupTitle {
@@ -288,12 +295,22 @@
   opacity: 1;
 }
 
-/* RESPONSIVITÉ */
+
 
 @media (max-width: 1024px) {
   .mainGrid {
     grid-template-columns: 1fr;
     gap: 60px;
+  }
+  
+  .brandColumn {
+    grid-column: span 1;
+  }
+  
+  .linksWrapper {
+    grid-column: span 1;
+    grid-template-columns: repeat(2, 1fr); /* Déjà en 2 colonnes sur tablette */
+    gap: 40px;
   }
   
   .ctaRow {
@@ -308,9 +325,36 @@
 }
 
 @media (max-width: 768px) {
-  .linksWrapper {
-    grid-template-columns: repeat(2, 1fr);
+  .footer {
+    padding: 80px 20px 40px;
   }
+  
+  .mainGrid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .brandColumn {
+    grid-column: span 1;
+  }
+  
+  .linksWrapper {
+    grid-column: span 1;
+    /* RESTE EN 2 COLONNES sur mobile */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    /* Ajout de l'ordre visuel */
+    display: grid;
+    grid-template-areas:
+      "accueil services"
+      "portfolio communaute";
+  }
+  
+  /* Optionnel: on peut assigner des zones spécifiques si besoin */
+  .linkGroup:nth-child(1) { grid-area: accueil; }
+  .linkGroup:nth-child(2) { grid-area: services; }
+  .linkGroup:nth-child(3) { grid-area: portfolio; }
+  .linkGroup:nth-child(4) { grid-area: communaute; }
 
   .bottomBar {
     flex-direction: column-reverse;
@@ -325,10 +369,15 @@
 }
 
 @media (max-width: 480px) {
+  /* SUR TRÈS PETIT MOBILE: les 2 colonnes restent */
   .linksWrapper {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "accueil services"
+      "portfolio communaute";
+    gap: 20px;
   }
-
+  
   .ctaRow {
     padding: 32px 20px;
   }

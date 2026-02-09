@@ -1,8 +1,8 @@
 /* ProjectCard.module.css - VERSION EXACTE SELON MAQUETTE */
 
 .projectCard {
-  background: rgba(30, 30, 30, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--grey);
+  border: 3px solid var(--white);
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
@@ -12,13 +12,11 @@
   flex-direction: column;
   height: 100%;
   min-height: 420px;
-  backdrop-filter: blur(10px);
+
 }
 
 .projectCard:hover {
-  transform: translateY(-5px);
   border-color: var(--primary);
-  box-shadow: 0 10px 30px rgba(199, 255, 68, 0.2);
 }
 
 /* Header avec badge membre et actions admin */
@@ -34,7 +32,7 @@
 }
 
 .memberBadge {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--white);
   color: var(--dark);
   padding: 6px 14px;
   border-radius: 20px;
@@ -67,8 +65,8 @@
 }
 
 .actionBtn {
-  background: rgba(0, 0, 0, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--dark);
+  border: 1px solid rgba(var(--white-rgb, 255, 255, 255), 0.2);
   color: var(--white);
   width: 32px;
   height: 32px;
@@ -91,18 +89,23 @@
 
 /* Image de couverture - carrée comme dans la maquette */
 .coverImageContainer {
-  width: 100%;
+  width:100%;
   height: 180px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
-  background: rgba(20, 20, 20, 0.9);
+
+  /* Ajouts */
+  padding: 5px; /* espace intérieur */
+  border-radius: 10px; /* arrondi */
+  
 }
 
 .coverImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 12px; /* arrondi de l'image aussi */
   transition: transform 0.6s ease;
 }
 
@@ -165,8 +168,8 @@
 .softwareIcon {
   width: 32px;
   height: 32px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--grey);
+  border: 1px solid rgba(var(--white-rgb, 255, 255, 255), 0.15);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -178,15 +181,15 @@
 
 .softwareIcon:hover {
   border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.1);
+  background: var(--dark);
   transform: translateY(-2px);
 }
 
 .moreSoftware {
   width: 32px;
   height: 32px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--grey);
+  border: 1px solid rgba(var(--dark), 0.1);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -201,7 +204,7 @@
 .progressBar {
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--white-rgb, 255, 255, 255), 0.1);
   border-radius: 3px;
   overflow: hidden;
   margin: 8px 0;
@@ -209,7 +212,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, #a8ff78 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, rgba(var(--primary-rgb, 168, 255, 120), 0.8) 100%);
   border-radius: 3px;
   transition: width 0.6s ease;
 }
@@ -221,7 +224,7 @@
   align-items: center;
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--white-rgb, 255, 255, 255), 0.08);
 }
 
 .memberAvatars {
@@ -234,7 +237,6 @@
   height: 28px;
   border-radius: 50%;
   border: 2px solid var(--dark);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +271,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(var(--white-rgb, 255, 255, 255), 0.15);
   border: 2px solid var(--dark);
   color: var(--white);
   display: flex;
@@ -297,7 +299,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 15, 15, 0.98);
+  background: var(--white);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -316,17 +318,18 @@
   font-size: 3rem;
   margin-bottom: 16px;
   opacity: 0.8;
+  color: var(--dark-red);
 }
 
 .deleteTitle {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--dark);
   margin: 0 0 12px 0;
 }
 
 .deleteMessage {
-  color: var(--white);
+  color: var(--dark);
   opacity: 0.7;
   font-size: 0.9rem;
   margin: 0 0 24px 0;
@@ -339,8 +342,8 @@
 }
 
 .deleteConfirmBtn {
-  background: #ef4444;
-  color: var(--white);
+  background: var(--dark-red);
+  color: var(--dark);
   border: none;
   padding: 10px 24px;
   border-radius: 10px;
@@ -351,15 +354,16 @@
 }
 
 .deleteConfirmBtn:hover {
-  background: #dc2626;
+  background: var(--dark);
+  color: var(--white);
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
 }
 
 .deleteCancelBtn {
-  background: rgba(30, 30, 30, 0.9);
-  color: var(--white);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--white);
+  color: var(--dark);
+  border: 1px solid var(--dark);
   padding: 10px 24px;
   border-radius: 10px;
   cursor: pointer;
@@ -369,7 +373,7 @@
 
 .deleteCancelBtn:hover {
   border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.1);
+  background: rgba(var(--primary-rgb, 199, 255, 68), 0.1);
 }
 
 /* Responsive */

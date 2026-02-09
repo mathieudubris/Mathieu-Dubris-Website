@@ -15,11 +15,8 @@ interface Contact {
 
 interface ContactsProps {
   teamMember: {
-    phone?: string;
-    email: string;
     contacts: Contact[];
   };
-  onUpdate: (field: string, value: any) => void;
   onAddContact: (contact: Omit<Contact, 'isPublic'>) => void;
   onRemoveContact: (index: number) => void;
   onUpdateContactPrivacy: (index: number, isPublic: boolean) => void;
@@ -38,7 +35,6 @@ const contactTypes = [
 
 export default function Contacts({ 
   teamMember, 
-  onUpdate, 
   onAddContact, 
   onRemoveContact,
   onUpdateContactPrivacy 
@@ -67,30 +63,8 @@ export default function Contacts({
         <span>Contacts</span>
       </h2>
       
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Téléphone</label>
-        <input
-          type="tel"
-          value={teamMember.phone || ''}
-          onChange={(e) => onUpdate('phone', e.target.value)}
-          className={styles.input}
-          placeholder="+261 34 00 000 00"
-        />
-      </div>
-      
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Email</label>
-        <input
-          type="email"
-          value={teamMember.email || ''}
-          onChange={(e) => onUpdate('email', e.target.value)}
-          className={styles.input}
-          placeholder="email@exemple.com"
-        />
-      </div>
-      
       <div className={styles.addContactSection}>
-        <h3 className={styles.subtitle}>Réseaux sociaux</h3>
+        <h3 className={styles.subtitle}>Ajouter un réseau social</h3>
         
         <div className={styles.contactInputs}>
           <select

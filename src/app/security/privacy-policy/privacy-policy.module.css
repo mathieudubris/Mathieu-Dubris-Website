@@ -1,0 +1,262 @@
+/* privacy-policy.module.css */
+.container {
+  min-height: 100vh;
+  background-color: var(--dark);
+  color: var(--white);
+  padding: 3rem 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-main);
+}
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem;
+  background-color: transparent;
+}
+
+.title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 1rem;
+  letter-spacing: -0.5px;
+}
+
+.lastUpdated {
+  color: var(--grey);
+  margin-bottom: 4rem;
+  font-size: 0.95rem;
+  font-style: italic;
+  text-align: left;
+}
+
+.section {
+  margin-bottom: 3rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(147, 255, 68, 0.15);
+}
+
+.section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.subsection {
+  margin-bottom: 2rem;
+}
+
+.subsectionTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+}
+
+.text {
+  color: var(--white);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  font-size: 1.05rem;
+}
+
+.emphasis {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.definition {
+  background-color: rgba(147, 255, 68, 0.05);
+  border-left: 3px solid var(--primary);
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.definitionTitle {
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.list {
+  margin: 1.5rem 0;
+  padding-left: 2rem;
+}
+
+.listItem {
+  color: var(--white);
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
+  position: relative;
+}
+
+.listItem::before {
+  content: "•";
+  color: var(--primary);
+  font-weight: bold;
+  font-size: 1.2rem;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+  vertical-align: middle;
+}
+
+.nestedList {
+  margin: 0.5rem 0 0.5rem 1.5rem;
+  padding-left: 1rem;
+}
+
+.nestedListItem {
+  color: var(--white);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.nestedListItem::before {
+  content: "–";
+  color: var(--grey);
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin: 2rem 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.tableHeader {
+  background-color: rgba(147, 255, 68, 0.1);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.tableCell {
+  padding: 1rem;
+  border: 1px solid rgba(147, 255, 68, 0.15);
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.highlight {
+  background-color: rgba(147, 255, 68, 0.08);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: monospace;
+  color: var(--primary);
+}
+
+.footerNote {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(147, 255, 68, 0.15);
+  color: var(--grey);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.legalReference {
+  color: var(--grey);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.contactSection {
+  background-color: rgba(147, 255, 68, 0.05);
+  padding: 2rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  border: 1px solid rgba(147, 255, 68, 0.15);
+}
+
+.contactTitle {
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.contactInfo {
+  color: var(--white);
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem 1rem;
+  }
+  
+  .main {
+    padding: 1.5rem;
+  }
+  
+  .title {
+    font-size: 2.2rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.4rem;
+  }
+  
+  .subsectionTitle {
+    font-size: 1.1rem;
+  }
+  
+  .text {
+    font-size: 1rem;
+  }
+  
+  .contactSection {
+    padding: 1.5rem;
+  }
+  
+  .tableCell {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 1rem;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+  
+  .section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+  }
+  
+  .list {
+    padding-left: 1.5rem;
+  }
+}

@@ -558,3 +558,5 @@ export const initializeTheme = async (user: User | null) => {
   applyTheme(theme);
   return theme;
 };
+
+

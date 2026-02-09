@@ -420,7 +420,6 @@ function EquipePageContent() {
         return (
           <Contacts
             teamMember={teamMember}
-            onUpdate={updateTeamMember}
             onAddContact={addContact}
             onRemoveContact={removeContact}
             onUpdateContactPrivacy={updateContactPrivacy}

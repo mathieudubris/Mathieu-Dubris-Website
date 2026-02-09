@@ -7,6 +7,7 @@ import Section1 from '@/components/app/Home/Sections/Section1/Section1';
 import Section2 from '@/components/app/Home/Sections/Section2/Section2';
 import Section3 from '@/components/app/Home/Sections/Section3/Section3';
 import Section4 from '@/components/app/Home/Sections/Section4/Section4';
+import Section5 from '@/components/app/Home/Sections/Section5/Section5';
 
 export default function HomePage() {
   return (
@@ -19,6 +20,7 @@ export default function HomePage() {
         <div id="section2"><Section2 /></div>
         <div id="section3"><Section3 /></div>
         <div id="section4"><Section4 /></div>
+        <div id="section5"><Section5 /></div>
       </main>
 
       <Footer />

@@ -29,11 +29,11 @@ const Right: React.FC = () => {
   };
 
   const handleContactClick = () => {
-    router.push('/contact');
+    router.push('/services/contact');
   };
 
   const handleDiscoverClick = () => {
-    router.push('/pending');
+    router.push('/services/pending');
   };
 
   return (

@@ -2,18 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { X, User, Check, Search, Users, Mail } from 'lucide-react';
-import { getAllUsers, addMemberToProject, removeMemberFromProject, getProject } from '@/utils/firebase-api';
+import { X, User, Check, Search, Users, Mail, Save } from 'lucide-react';
+import { addMemberToProject, removeMemberFromProject, getProject, updateProject } from '@/utils/firebase-api';
+import { useUsers } from '@/utils/UserContext';
 import styles from './UserList.module.css';
-
-interface UserData {
-  uid: string;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-  createdAt: string;
-  lastLogin: string;
-}
 
 interface UserListProps {
   projectId: string;
@@ -22,16 +14,18 @@ interface UserListProps {
 }
 
 const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) => {
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
+  const { users, loading, refreshUsers } = useUsers();
+  
+  const [filteredUsers, setFilteredUsers] = useState(users);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const [projectMembers, setProjectMembers] = useState<string[]>([]);
-  const [processingUser, setProcessingUser] = useState<string | null>(null);
+  const [pendingMembers, setPendingMembers] = useState<string[]>([]); // Nouvel état pour les modifications en attente
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [originalMembers, setOriginalMembers] = useState<string[]>([]);
 
   useEffect(() => {
-    loadData();
+    loadProjectMembers();
   }, [projectId]);
 
   useEffect(() => {
@@ -48,70 +42,100 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
     }
   }, [searchQuery, users]);
 
-  const loadData = async () => {
+  const loadProjectMembers = async () => {
     try {
-      setLoading(true);
-      setError('');
-      
-      const [allUsers, project] = await Promise.all([
-        getAllUsers(),
-        getProject(projectId)
-      ]);
-      
-      setUsers(allUsers);
-      setFilteredUsers(allUsers);
-      
+      const project = await getProject(projectId);
       if (project) {
-        setProjectMembers(project.teamMembers || []);
+        const members = project.teamMembers || [];
+        setProjectMembers(members);
+        setPendingMembers(members); // Initialiser avec les membres actuels
+        setOriginalMembers(members); // Sauvegarder l'état original
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
-      setError('Erreur lors du chargement des utilisateurs');
-    } finally {
-      setLoading(false);
+      console.error('Erreur lors du chargement des membres du projet:', error);
+      setError('Erreur lors du chargement des membres');
     }
   };
 
-  const toggleUserInProject = async (userId: string) => {
-    if (processingUser) return;
+  const toggleUserInProject = (userId: string) => {
+    if (pendingMembers.includes(userId)) {
+      // Retirer l'utilisateur
+      setPendingMembers(prev => prev.filter(id => id !== userId));
+    } else {
+      // Ajouter l'utilisateur
+      setPendingMembers(prev => [...prev, userId]);
+    }
+  };
+
+  const handleSave = async () => {
+    if (isSaving) return;
     
-    setProcessingUser(userId);
+    setIsSaving(true);
+    setError('');
+    
     try {
-      if (projectMembers.includes(userId)) {
-        await removeMemberFromProject(projectId, userId);
-        setProjectMembers(prev => prev.filter(id => id !== userId));
-      } else {
+      // Appliquer les modifications
+      const membersToAdd = pendingMembers.filter(id => !originalMembers.includes(id));
+      const membersToRemove = originalMembers.filter(id => !pendingMembers.includes(id));
+      
+      // Ajouter les nouveaux membres
+      for (const userId of membersToAdd) {
         await addMemberToProject(projectId, userId);
-        setProjectMembers(prev => [...prev, userId]);
       }
       
+      // Retirer les membres supprimés
+      for (const userId of membersToRemove) {
+        await removeMemberFromProject(projectId, userId);
+      }
+      
+      // Mettre à jour l'état local
+      setProjectMembers(pendingMembers);
+      setOriginalMembers(pendingMembers);
+      
+      // Notifier le parent
       onUserAdded();
+      
+      // Fermer le modal
+      onClose();
+      
     } catch (error) {
-      console.error('Erreur lors de la modification:', error);
-      alert('Erreur lors de la modification des membres');
+      console.error('Erreur lors de la sauvegarde:', error);
+      setError('Erreur lors de la sauvegarde des modifications');
     } finally {
-      setProcessingUser(null);
+      setIsSaving(false);
     }
   };
 
   const handleSelectAll = useCallback(() => {
     const allUserIds = users.map(user => user.uid);
-    setProjectMembers([...new Set([...projectMembers, ...allUserIds])]);
-  }, [users, projectMembers]);
+    setPendingMembers([...new Set([...pendingMembers, ...allUserIds])]);
+  }, [users, pendingMembers]);
 
   const handleDeselectAll = useCallback(() => {
-    setProjectMembers([]);
+    setPendingMembers([]);
   }, []);
 
-  const handleSave = useCallback(() => {
+  const handleCancel = () => {
+    // Revenir à l'état original
+    setPendingMembers(originalMembers);
     onClose();
-  }, [onClose]);
+  };
+
+  const hasChanges = () => {
+    if (pendingMembers.length !== originalMembers.length) return true;
+    
+    // Vérifier si les tableaux sont identiques
+    const sortedPending = [...pendingMembers].sort();
+    const sortedOriginal = [...originalMembers].sort();
+    
+    return !sortedPending.every((id, index) => id === sortedOriginal[index]);
+  };
 
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      handleCancel();
     }
-  }, [onClose]);
+  }, [handleCancel]);
 
   if (loading) {
     return (
@@ -148,10 +172,10 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
               <Users size={24} />
               <span>Gérer l'équipe</span>
             </h2>
-            <p>Ajoutez ou retirez des membres de l'équipe ({projectMembers.length} sélectionné{projectMembers.length > 1 ? 's' : ''})</p>
+            <p>Sélectionnez les membres de l'équipe ({pendingMembers.length} sélectionné{pendingMembers.length > 1 ? 's' : ''})</p>
           </div>
           <button 
-            onClick={onClose} 
+            onClick={handleCancel} 
             className={styles.closeBtn}
             aria-label="Fermer"
           >
@@ -183,20 +207,25 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
           
           <div className={styles.selectionInfo}>
             <div className={styles.selectionCount}>
-              {projectMembers.length} membre{projectMembers.length > 1 ? 's' : ''} sélectionné{projectMembers.length > 1 ? 's' : ''}
+              {pendingMembers.length} membre{pendingMembers.length > 1 ? 's' : ''} sélectionné{pendingMembers.length > 1 ? 's' : ''}
+              {hasChanges() && (
+                <span style={{ color: 'var(--primary)', fontWeight: '700', marginLeft: '8px' }}>
+                  ● Modifications non enregistrées
+                </span>
+              )}
             </div>
             <div className={styles.selectionActions}>
               <button 
                 onClick={handleSelectAll} 
                 className={styles.selectAllButton}
-                disabled={processingUser !== null}
+                disabled={isSaving}
               >
                 Tout sélectionner
               </button>
               <button 
                 onClick={handleDeselectAll} 
                 className={styles.deselectAllButton}
-                disabled={processingUser !== null}
+                disabled={isSaving}
               >
                 Tout désélectionner
               </button>
@@ -208,7 +237,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
           {error ? (
             <div className={styles.errorState}>
               <p className={styles.errorText}>{error}</p>
-              <button onClick={loadData} className={styles.retryButton}>
+              <button onClick={loadProjectMembers} className={styles.retryButton}>
                 Réessayer
               </button>
             </div>
@@ -231,8 +260,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
           ) : (
             <div className={styles.usersList}>
               {filteredUsers.map((user) => {
-                const isMember = projectMembers.includes(user.uid);
-                const isProcessing = processingUser === user.uid;
+                const isMember = pendingMembers.includes(user.uid);
                 
                 return (
                   <div 
@@ -247,7 +275,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
                         toggleUserInProject(user.uid);
                       }
                     }}
-                    aria-label={`${isMember ? 'Retirer' : 'Ajouter'} ${user.displayName || 'utilisateur'}`}
+                    aria-label={`${isMember ? 'Désélectionner' : 'Sélectionner'} ${user.displayName || 'utilisateur'}`}
                   >
                     <div className={styles.userInfo}>
                       {user.photoURL ? (
@@ -282,16 +310,14 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
                     </div>
                     
                     <div className={styles.selectionIndicator}>
-                      {isProcessing ? (
-                        <div className={styles.savingSpinner} aria-label="Chargement"></div>
-                      ) : isMember ? (
+                      {isMember ? (
                         <div className={styles.selectedIndicator}>
                           <Check size={14} />
-                          <span>Ajouté</span>
+                          <span>Sélectionné</span>
                         </div>
                       ) : (
                         <div className={styles.notSelectedIndicator}>
-                          Ajouter
+                          Non sélectionné
                         </div>
                       )}
                     </div>
@@ -311,16 +337,35 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
           
           <div className={styles.footerActions}>
             <button 
-              onClick={onClose} 
+              onClick={handleCancel} 
               className={styles.cancelButton}
-              disabled={processingUser !== null}
+              disabled={isSaving}
             >
-              Fermer
+              Annuler
+            </button>
+            <button 
+              onClick={handleSave} 
+              className={styles.saveButton}
+              disabled={isSaving || !hasChanges()}
+            >
+              {isSaving ? (
+                <>
+                  <div className={styles.savingSpinner}></div>
+                  Enregistrement...
+                </>
+              ) : (
+                <>
+                  <Save size={16} />
+                  Enregistrer
+                </>
+              )}
             </button>
           </div>
           
           <p className={styles.footerInfo}>
-            Les modifications sont appliquées immédiatement
+            {hasChanges() 
+              ? 'Vous avez des modifications non enregistrées' 
+              : 'Les modifications sont sauvegardées lorsque vous cliquez sur Enregistrer'}
           </p>
         </div>
       </motion.div>

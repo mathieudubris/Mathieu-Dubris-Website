@@ -1,174 +1,157 @@
 .section {
-  padding: 100px 0;
+  padding: 120px 20px;
   background-color: var(--dark);
-  overflow: hidden;
+  color: var(--white);
   font-family: var(--font-main);
+  position: relative;
 }
 
 .container {
-  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 70px;
-  padding: 0 24px;
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
 }
 
-.tagline {
-  color: var(--primary);
+/* Coté texte */
+.badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--grey);
+  font-size: 14px;
   text-transform: uppercase;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 2.5px;
-  margin-bottom: 16px;
+  letter-spacing: 1px;
+  color: var(--primary);
+  margin-bottom: 24px;
 }
 
 .title {
-  color: var(--white);
-  font-size: clamp(28px, 5vw, 42px);
+  font-size: clamp(32px, 5vw, 44px);
   font-weight: 800;
-  letter-spacing: -1px;
+  margin-bottom: 24px;
+  line-height: 1.2;
+  color: var(--white);
 }
 
-.marqueeWrapper {
-  position: relative;
-  width: 100%;
+.subtitle {
+  color: var(--grey);
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.features {
   display: flex;
-  overflow: hidden;
-  padding: 30px 0;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.marqueeContent {
-  display: flex;
-  gap: 30px;
-  white-space: nowrap;
-  will-change: transform;
-}
-
-.fadeLeft, .fadeRight {
-  position: absolute;
-  top: 0;
-  width: 200px;
-  height: 100%;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.fadeLeft {
-  left: 0;
-  background: linear-gradient(to right, var(--dark) 15%, transparent 100%);
-}
-
-.fadeRight {
-  right: 0;
-  background: linear-gradient(to left, var(--dark) 15%, transparent 100%);
-}
-
-.partnerCard {
+.featureItem {
   display: flex;
   align-items: center;
-  gap: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--white);
-  padding: 14px 28px;
-  border-radius: 16px;
-  text-decoration: none;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  gap: 12px;
+  color: var(--white);
+  font-weight: 500;
 }
 
-.partnerCard:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--primary);
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-}
-
-.partnerIcon {
+.checkIcon {
   color: var(--primary);
-  opacity: 0.8;
-  transition: transform 0.3s ease;
 }
 
-.partnerCard:hover .partnerIcon {
-  transform: scale(1.1);
-}
-
-.partnerName {
-  color: var(--white);
-  font-weight: 600;
-  font-size: 17px;
-  letter-spacing: -0.3px;
-}
-
-.statsRow {
-  max-width: 1100px;
-  margin: 100px auto 0;
+/* Coté étapes */
+.stepsSide {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.stepCard {
+  display: flex;
+  gap: 24px;
+}
+
+.stepHeader {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.01);
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-.statItem {
-  text-align: center;
+.iconContainer {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--grey);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.statNumber {
-  display: block;
-  font-size: 42px;
+.stepIcon {
+  color: var(--primary);
+}
+
+.stepNumber {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--primary);
+  color: var(--dark);
+  font-size: 12px;
   font-weight: 800;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid var(--dark);
+}
+
+.line {
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--grey) 0%, transparent 100%);
+  margin-top: 10px;
+}
+
+.stepCard:last-child .line {
+  display: none;
+}
+
+.stepTitle {
+  font-size: 20px;
+  font-weight: 600;
   color: var(--white);
   margin-bottom: 8px;
-  background: linear-gradient(180deg, var(--white) 0%, var(--grey) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
-.statLabel {
+.stepDescription {
   color: var(--grey);
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
-.divider {
-  width: 1px;
-  height: 60px;
-  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
+/* Mobile */
 @media (max-width: 968px) {
-  .statsRow {
-    flex-wrap: wrap;
-    gap: 40px;
-    margin: 60px 20px 0;
-    padding: 30px;
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 60px;
   }
   
-  .divider {
-    display: none;
-  }
-  
-  .fadeLeft, .fadeRight {
-    width: 100px;
-  }
-}
-
-@media (max-width: 480px) {
-  .statItem {
-    width: 100%;
-  }
-  
-  .statNumber {
-    font-size: 32px;
-  }
-
-  .partnerCard {
-    padding: 10px 20px;
+  .textSide {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 }

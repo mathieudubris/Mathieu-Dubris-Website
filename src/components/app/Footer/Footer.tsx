@@ -1,8 +1,6 @@
-
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Linkedin, 
   Github, 
@@ -24,16 +22,43 @@ const Footer = () => {
 
   const footerLinks = [
     {
-      title: "Produit",
-      links: ["Fonctionnalités", "Solutions", "Tarifs", "Mises à jour"]
+      title: "Accueil",
+      links: [
+        { label: "Bienvenue", path: "#section1" },
+        { label: "Nouveauté", path: "#section2" },
+        { label: "Nos Services", path: "#section3" },
+        { label: "Pourquoi nous", path: "#section4" },
+        { label: "Partenaire", path: "#section5" }
+      ]
     },
     {
-      title: "Société",
-      links: ["À propos", "Carrières", "Contact", "Presse"]
+      title: "Services",
+      links: [
+        { label: "Développeur", path: "/services/pending" },
+        { label: "3D Designer", path: "/services/pending" },
+        { label: "UI/UX Designer", path: "/services/pending" },
+        { label: "Content Creation", path: "/services/pending" },
+        { label: "Formation", path: "/services/pending" }
+      ]
     },
     {
-      title: "Ressources",
-      links: ["Blog", "Newsletter", "Événements", "Centre d'aide"]
+      title: "Portfolio",
+      links: [
+        { label: "Projets Réalisés", path: "/security/access" },
+        { label: "Travaux en Cours", path: "/portfolio/projet-en-cours" },
+        { label: "Galerie Créative", path: "/security/access" },
+        { label: "Expertises", path: "/security/access" },
+        { label: "Diplômes", path: "/security/access" }
+      ]
+    },
+    {
+      title: "Communauté",
+      links: [
+        { label: "Événements", path: "/security/access" },
+        { label: "Actualités", path: "/security/access" },
+        { label: "Blog", path: "/communaute/blog" },
+        { label: "Entraides", path: "/security/access" }
+      ]
     }
   ];
 
@@ -48,11 +73,23 @@ const Footer = () => {
     setShowLanguageDropdown(false);
   };
 
+  const handleLinkClick = (path: string) => {
+    if (path.startsWith('#')) {
+      const element = document.querySelector(path);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+      return;
+    }
+    
+    window.location.href = path;
+  };
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
         
-        {/* Section Principale */}
+        {/* Section Principale - CORRIGÉ */}
         <div className={styles.mainGrid}>
           
           {/* Colonne Marque */}
@@ -75,7 +112,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Colonnes de Liens */}
+          {/* Colonnes de Liens - CORRIGÉ (4 colonnes alignées) */}
           <div className={styles.linksWrapper}>
             {footerLinks.map((group, idx) => (
               <div key={idx} className={styles.linkGroup}>
@@ -83,8 +120,15 @@ const Footer = () => {
                 <ul className={styles.list}>
                   {group.links.map((link, lIdx) => (
                     <li key={lIdx}>
-                      <a href="#" className={styles.linkItem}>
-                        {link}
+                      <a 
+                        href={link.path} 
+                        className={styles.linkItem}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleLinkClick(link.path);
+                        }}
+                      >
+                        {link.label}
                       </a>
                     </li>
                   ))}
@@ -113,15 +157,14 @@ const Footer = () => {
           <div className={styles.bottomLeft}>
             <span>© {currentYear} Mathieu Dubris. Tous droits réservés.</span>
             <div className={styles.legalLinks}>
-              <a href="/confidentialite">Confidentialité</a>
+              <a href="/security/privacy-policy">Confidentialité</a>
               <span className={styles.dot} />
-              <a href="/conditions">Conditions</a>
+              <a href="/security/terms-of-service">Conditions</a>
             </div>
           </div>
           
           <div className={styles.bottomRight}>
             <div className={styles.socialIcons}>
-              {/* Ordre professionnel : plus professionnel → moins professionnel */}
               <a href="https://www.linkedin.com/in/fanampy-nirinah-%E2%80%8Emiarintsoa-5061313a3?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="LinkedIn">
                 <Linkedin size={18} />
               </a>
