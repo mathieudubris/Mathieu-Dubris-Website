@@ -2,7 +2,7 @@
 .container {
   min-height: 100vh;
   background-color: var(--dark);
-  color: var(--white);
+  color: var(--light);
   padding: 3rem 1rem;
   transition: background-color 0.3s ease, color 0.3s ease;
   font-family: var(--font-main);
@@ -19,7 +19,7 @@
 .title {
   font-size: 2.8rem;
   font-weight: 800;
-  color: var(--white);
+  color: var(--light);
   margin-bottom: 0.75rem;
   text-align: left;
   letter-spacing: -0.5px;
@@ -50,7 +50,7 @@
 .sectionTitle {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--light);
   margin-bottom: 1.5rem;
   line-height: 1.4;
   position: relative;
@@ -84,13 +84,13 @@
 .subsubsectionTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--white);
+  color: var(--light);
   margin: 1rem 0 0.75rem 0;
   padding-left: 0.5rem;
 }
 
 .text {
-  color: var(--white);
+  color: var(--light);
   line-height: 1.7;
   margin-bottom: 1.5rem;
   font-size: 1.05rem;
@@ -131,7 +131,7 @@
 }
 
 .listItem {
-  color: var(--white);
+  color: var(--light);
   line-height: 1.7;
   margin-bottom: 0.75rem;
   font-size: 1.05rem;
@@ -156,7 +156,7 @@
 }
 
 .romanListItem {
-  color: var(--white);
+  color: var(--light);
   line-height: 1.6;
   margin-bottom: 0.5rem;
   font-size: 1rem;
@@ -168,7 +168,7 @@
 }
 
 .nestedListItem {
-  color: var(--white);
+  color: var(--light);
   line-height: 1.6;
   margin-bottom: 0.5rem;
   font-size: 1rem;

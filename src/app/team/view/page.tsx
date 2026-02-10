@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { auth, setupAuthListener, getTeamMembers } from '@/utils/firebase-api';
-import { User, Mail, Phone, MapPin, Monitor, Laptop } from 'lucide-react';
+import { auth, setupAuthListener, getTeamMembers, getProject } from '@/utils/firebase-api';
+import { User, Mail, Phone, MapPin, Monitor, Laptop, FolderKanban } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
 import styles from './view.module.css';
@@ -77,19 +77,27 @@ const normalizeMemberData = (member: any): TeamMember => {
   };
 };
 
-export default function TeamViewPage() {
+// Create a component that uses useSearchParams
+function TeamViewContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
+  
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showLogin, setShowLogin] = useState(false);
-  const router = useRouter();
+  const [projectTitle, setProjectTitle] = useState<string>('');
 
   useEffect(() => {
     const unsubscribe = setupAuthListener(async (user) => {
       if (user) {
         setCurrentUser(user);
         await loadTeamMembers();
+        if (projectId) {
+          await loadProjectInfo();
+        }
       } else {
         setCurrentUser(null);
       }
@@ -97,14 +105,39 @@ export default function TeamViewPage() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [projectId]);
+
+  const loadProjectInfo = async () => {
+    if (!projectId) return;
+    
+    try {
+      const project = await getProject(projectId);
+      if (project) {
+        setProjectTitle(project.title);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du projet:', error);
+    }
+  };
 
   const loadTeamMembers = async () => {
     try {
       const members = await getTeamMembers();
       
+      // Filtrer par projet si projectId existe
+      let filteredMembers = members;
+      if (projectId) {
+        // Récupérer le projet pour obtenir les membres
+        const project = await getProject(projectId);
+        if (project && project.teamMembers) {
+          filteredMembers = members.filter(member => 
+            project.teamMembers.includes(member.userId)
+          );
+        }
+      }
+      
       // Normaliser les données de chaque membre
-      const formattedMembers = members.map(member => 
+      const formattedMembers = filteredMembers.map(member => 
         normalizeMemberData(member)
       );
       
@@ -130,28 +163,28 @@ export default function TeamViewPage() {
 
   const handleEditProfile = () => {
     if (currentUser) {
-      router.push('/team');
+      const url = projectId ? `/team?project=${projectId}` : '/team';
+      router.push(url);
     } else {
       setShowLogin(true);
     }
   };
 
+  const handleBackToProjects = () => {
+    router.push('/portfolio/projet-en-cours');
+  };
+
   if (loading) {
     return (
-      <div className={styles.mainContainer}>
-        <Header />
-        <div className={styles.loadingContainer}>
-          <div className={styles.loadingSpinner}></div>
-          <div className={styles.loadingText}>Chargement de l'équipe...</div>
-        </div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <div className={styles.loadingText}>Chargement de l'équipe...</div>
       </div>
     );
   }
 
   return (
-    <div className={styles.mainContainer}>
-      <Header />
-      
+    <>
       <main className={styles.content}>
         <div className={styles.viewContainer}>
           {!currentUser ? (
@@ -168,20 +201,38 @@ export default function TeamViewPage() {
             <>
               <div className={styles.pageHeader}>
                 <div>
-                  <h1 className={styles.pageTitle}>Notre Équipe</h1>
+                  <h1 className={styles.pageTitle}>
+                    {projectTitle ? `Équipe - ${projectTitle}` : 'Notre Équipe'}
+                  </h1>
                   <p className={styles.pageSubtitle}>
                     {teamMembers.length} membre{teamMembers.length > 1 ? 's' : ''} dans l'équipe
                   </p>
                 </div>
                 
-                <button
-                  onClick={handleEditProfile}
-                  className={styles.editProfileButton}
-                >
-                  <User size={16} />
-                  Mon Profil
-                </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={handleBackToProjects}
+                    className={styles.editProfileButton}
+                  >
+                    <FolderKanban size={16} />
+                    Projets
+                  </button>
+                  
+                  <button
+                    onClick={handleEditProfile}
+                    className={styles.editProfileButton}
+                  >
+                    <User size={16} />
+                    Mon Profil
+                  </button>
+                </div>
               </div>
+              
+              {projectTitle && (
+                <div className={styles.projectTitle}>
+                  📁 Projet en cours : {projectTitle}
+                </div>
+              )}
               
               {teamMembers.length > 0 ? (
                 <div className={styles.teamGrid}>
@@ -256,16 +307,23 @@ export default function TeamViewPage() {
               ) : (
                 <div className={styles.emptyState}>
                   <User size={48} className={styles.emptyStateIcon} />
-                  <h3 className={styles.emptyStateTitle}>Aucun membre dans l'équipe</h3>
+                  <h3 className={styles.emptyStateTitle}>
+                    {projectTitle ? 'Aucun membre dans ce projet' : 'Aucun membre dans l\'équipe'}
+                  </h3>
                   <p className={styles.emptyStateText}>
-                    Créez votre profil pour être le premier membre de l'équipe
+                    {projectTitle 
+                      ? 'Les membres apparaîtront ici une fois ajoutés au projet'
+                      : 'Créez votre profil pour être le premier membre de l\'équipe'
+                    }
                   </p>
-                  <button
-                    onClick={handleEditProfile}
-                    className={styles.emptyStateButton}
-                  >
-                    Créer mon profil
-                  </button>
+                  {!projectTitle && (
+                    <button
+                      onClick={handleEditProfile}
+                      className={styles.emptyStateButton}
+                    >
+                      Créer mon profil
+                    </button>
+                  )}
                 </div>
               )}
             </>
@@ -394,6 +452,23 @@ export default function TeamViewPage() {
       )}
 
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
+    </>
+  );
+}
+
+// Main component with Suspense boundary
+export default function TeamViewPage() {
+  return (
+    <div className={styles.mainContainer}>
+      <Header />
+      <Suspense fallback={
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}></div>
+          <div className={styles.loadingText}>Chargement...</div>
+        </div>
+      }>
+        <TeamViewContent />
+      </Suspense>
     </div>
   );
 }

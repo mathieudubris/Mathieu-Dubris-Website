@@ -3,30 +3,50 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { X, User, Check, Search, Users, Mail, Save } from 'lucide-react';
-import { addMemberToProject, removeMemberFromProject, getProject, updateProject } from '@/utils/firebase-api';
+import { addMemberToProject, removeMemberFromProject, getProject, updateProject, getAllUsers } from '@/utils/firebase-api';
 import { useUsers } from '@/utils/UserContext';
 import styles from './UserList.module.css';
 
 interface UserListProps {
   projectId: string;
   onClose: () => void;
-  onUserAdded: () => void;
+  onUserAdded?: () => void;
+  // Nouvelle prop : mode de fonctionnement
+  mode?: 'standalone' | 'integrated';
+  // Nouvelles props pour le mode intégré
+  initialSelectedUsers?: string[];
+  onSelectionChange?: (selectedUserIds: string[]) => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) => {
+const UserList: React.FC<UserListProps> = ({ 
+  projectId, 
+  onClose, 
+  onUserAdded,
+  mode = 'standalone',
+  initialSelectedUsers = [],
+  onSelectionChange
+}) => {
   const { users, loading, refreshUsers } = useUsers();
   
   const [filteredUsers, setFilteredUsers] = useState(users);
   const [searchQuery, setSearchQuery] = useState('');
   const [projectMembers, setProjectMembers] = useState<string[]>([]);
-  const [pendingMembers, setPendingMembers] = useState<string[]>([]); // Nouvel état pour les modifications en attente
+  const [pendingMembers, setPendingMembers] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [originalMembers, setOriginalMembers] = useState<string[]>([]);
 
+  // Initialiser selon le mode
   useEffect(() => {
-    loadProjectMembers();
-  }, [projectId]);
+    if (mode === 'standalone') {
+      loadProjectMembers();
+    } else {
+      // Mode intégré : utiliser les membres initiaux fournis
+      setProjectMembers(initialSelectedUsers);
+      setPendingMembers(initialSelectedUsers);
+      setOriginalMembers(initialSelectedUsers);
+    }
+  }, [projectId, mode, initialSelectedUsers]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -48,8 +68,8 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
       if (project) {
         const members = project.teamMembers || [];
         setProjectMembers(members);
-        setPendingMembers(members); // Initialiser avec les membres actuels
-        setOriginalMembers(members); // Sauvegarder l'état original
+        setPendingMembers(members);
+        setOriginalMembers(members);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des membres du projet:', error);
@@ -58,12 +78,18 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
   };
 
   const toggleUserInProject = (userId: string) => {
+    let newPendingMembers;
     if (pendingMembers.includes(userId)) {
-      // Retirer l'utilisateur
-      setPendingMembers(prev => prev.filter(id => id !== userId));
+      newPendingMembers = pendingMembers.filter(id => id !== userId);
     } else {
-      // Ajouter l'utilisateur
-      setPendingMembers(prev => [...prev, userId]);
+      newPendingMembers = [...pendingMembers, userId];
+    }
+    
+    setPendingMembers(newPendingMembers);
+    
+    // Notifier le parent des changements (mode intégré seulement)
+    if (mode === 'integrated' && onSelectionChange) {
+      onSelectionChange(newPendingMembers);
     }
   };
 
@@ -74,29 +100,36 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
     setError('');
     
     try {
-      // Appliquer les modifications
-      const membersToAdd = pendingMembers.filter(id => !originalMembers.includes(id));
-      const membersToRemove = originalMembers.filter(id => !pendingMembers.includes(id));
-      
-      // Ajouter les nouveaux membres
-      for (const userId of membersToAdd) {
-        await addMemberToProject(projectId, userId);
+      if (mode === 'standalone') {
+        // Mode standalone : modifier directement Firestore
+        const membersToAdd = pendingMembers.filter(id => !originalMembers.includes(id));
+        const membersToRemove = originalMembers.filter(id => !pendingMembers.includes(id));
+        
+        // Ajouter les nouveaux membres
+        for (const userId of membersToAdd) {
+          await addMemberToProject(projectId, userId);
+        }
+        
+        // Retirer les membres supprimés
+        for (const userId of membersToRemove) {
+          await removeMemberFromProject(projectId, userId);
+        }
+        
+        // Mettre à jour l'état local
+        setProjectMembers(pendingMembers);
+        setOriginalMembers(pendingMembers);
+        
+        // Notifier le parent
+        if (onUserAdded) {
+          onUserAdded();
+        }
+        
+        // Fermer le modal
+        onClose();
+      } else {
+        // Mode intégré : juste fermer, les changements sont déjà transmis via onSelectionChange
+        onClose();
       }
-      
-      // Retirer les membres supprimés
-      for (const userId of membersToRemove) {
-        await removeMemberFromProject(projectId, userId);
-      }
-      
-      // Mettre à jour l'état local
-      setProjectMembers(pendingMembers);
-      setOriginalMembers(pendingMembers);
-      
-      // Notifier le parent
-      onUserAdded();
-      
-      // Fermer le modal
-      onClose();
       
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
@@ -108,23 +141,35 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
 
   const handleSelectAll = useCallback(() => {
     const allUserIds = users.map(user => user.uid);
-    setPendingMembers([...new Set([...pendingMembers, ...allUserIds])]);
-  }, [users, pendingMembers]);
+    const newPendingMembers = [...new Set([...pendingMembers, ...allUserIds])];
+    setPendingMembers(newPendingMembers);
+    
+    if (mode === 'integrated' && onSelectionChange) {
+      onSelectionChange(newPendingMembers);
+    }
+  }, [users, pendingMembers, mode, onSelectionChange]);
 
   const handleDeselectAll = useCallback(() => {
     setPendingMembers([]);
-  }, []);
+    if (mode === 'integrated' && onSelectionChange) {
+      onSelectionChange([]);
+    }
+  }, [mode, onSelectionChange]);
 
   const handleCancel = () => {
     // Revenir à l'état original
     setPendingMembers(originalMembers);
+    
+    if (mode === 'integrated' && onSelectionChange) {
+      onSelectionChange(originalMembers);
+    }
+    
     onClose();
   };
 
   const hasChanges = () => {
     if (pendingMembers.length !== originalMembers.length) return true;
     
-    // Vérifier si les tableaux sont identiques
     const sortedPending = [...pendingMembers].sort();
     const sortedOriginal = [...originalMembers].sort();
     
@@ -137,7 +182,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
     }
   }, [handleCancel]);
 
-  if (loading) {
+  if (loading && mode === 'standalone') {
     return (
       <div className={styles.overlay} onClick={handleOverlayClick}>
         <motion.div 
@@ -170,9 +215,16 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
           <div className={styles.headerContent}>
             <h2>
               <Users size={24} />
-              <span>Gérer l'équipe</span>
+              <span>
+                {mode === 'standalone' ? 'Gérer l\'équipe' : 'Sélectionner les membres'}
+              </span>
             </h2>
-            <p>Sélectionnez les membres de l'équipe ({pendingMembers.length} sélectionné{pendingMembers.length > 1 ? 's' : ''})</p>
+            <p>
+              {mode === 'standalone' 
+                ? `Sélectionnez les membres de l'équipe (${pendingMembers.length} sélectionné${pendingMembers.length > 1 ? 's' : ''})`
+                : `Sélectionnez les membres pour ce projet (${pendingMembers.length} sélectionné${pendingMembers.length > 1 ? 's' : ''})`
+              }
+            </p>
           </div>
           <button 
             onClick={handleCancel} 
@@ -346,7 +398,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
             <button 
               onClick={handleSave} 
               className={styles.saveButton}
-              disabled={isSaving || !hasChanges()}
+              disabled={isSaving || (!hasChanges() && mode === 'standalone')}
             >
               {isSaving ? (
                 <>
@@ -356,7 +408,7 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
               ) : (
                 <>
                   <Save size={16} />
-                  Enregistrer
+                  {mode === 'standalone' ? 'Enregistrer' : 'Confirmer'}
                 </>
               )}
             </button>
@@ -365,7 +417,9 @@ const UserList: React.FC<UserListProps> = ({ projectId, onClose, onUserAdded }) 
           <p className={styles.footerInfo}>
             {hasChanges() 
               ? 'Vous avez des modifications non enregistrées' 
-              : 'Les modifications sont sauvegardées lorsque vous cliquez sur Enregistrer'}
+              : mode === 'standalone' 
+                ? 'Les modifications sont sauvegardées lorsque vous cliquez sur Enregistrer'
+                : 'Sélectionnez les membres et cliquez sur Confirmer'}
           </p>
         </div>
       </motion.div>

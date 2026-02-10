@@ -1,16 +1,14 @@
-// ProjetEditor.tsx - AVEC CAROUSEL, SOFTWARE ET MEMBERS EN MODAL - CORRIGÉ
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Image as ImageIcon, Send, Plus, Wrench, Users as UsersIcon } from 'lucide-react';
-import { createProject, updateProject, isAdmin, Project as FirebaseProject } from '@/utils/firebase-api';
+import { createProject, updateProject, isAdmin, Project as FirebaseProject, getAllUsers } from '@/utils/firebase-api';
 import { Timestamp } from 'firebase/firestore';
 import SoftwareList from '@/components/projet-en-cours/SoftwareList';
-import UserList from '@/components/UserList/UserList'; // IMPORT CORRIGÉ
+import UserList from '@/components/UserList/UserList';
 import styles from './ProjetEditor.module.css';
 
-// Utiliser l'interface importée de Firebase
 type Project = FirebaseProject;
 
 interface ProjetEditorProps {
@@ -38,8 +36,21 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
   const [error, setError] = useState('');
   const [showSoftwareModal, setShowSoftwareModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
 
   useEffect(() => {
+    // Charger tous les utilisateurs
+    const loadUsers = async () => {
+      try {
+        const users = await getAllUsers();
+        setAllUsers(users);
+      } catch (error) {
+        console.error('Erreur lors du chargement des utilisateurs:', error);
+      }
+    };
+    
+    loadUsers();
+    
     if (project) {
       setTitle(project.title);
       setDescription(project.description);
@@ -60,6 +71,19 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
       setTeamMembers(currentUser?.uid ? [currentUser.uid] : []);
     }
   }, [project, currentUser]);
+
+  // Fonction pour enrichir les membres avec leurs données
+  const enrichMembers = (userIds: string[]) => {
+    return userIds.map(userId => {
+      const user = allUsers.find(u => u.uid === userId);
+      return user ? {
+        userId: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL
+      } : null;
+    }).filter(Boolean);
+  };
 
   const handleImageUpload = () => {
     if (typeof window !== "undefined" && (window as any).cloudinary) {
@@ -118,6 +142,9 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
     setError('');
 
     try {
+      // Enrichir les membres avant sauvegarde
+      const enrichedMembers = enrichMembers(teamMembers);
+      
       const projectData: Omit<Project, 'id'> = {
         title: title.trim(),
         description: description.trim(),
@@ -125,12 +152,11 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
         carouselImages: carouselImages,
         progress: progress,
         software: software,
-        members: members,
+        members: enrichedMembers, // Utiliser les membres enrichis
         createdBy: currentUser.uid,
         createdAt: project ? project.createdAt : Timestamp.now(),
         updatedAt: Timestamp.now(),
         teamMembers: teamMembers,
-        // Assurer que views est toujours un nombre
         views: project?.views || 0
       };
 
@@ -154,14 +180,11 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
     setShowSoftwareModal(false);
   };
 
-  const handleUserAdded = () => {
-    // Rafraîchir les données si nécessaire
-    // Cette fonction peut être appelée quand des utilisateurs sont ajoutés/supprimés
+  const handleMembersChange = (selectedUserIds: string[]) => {
+    setTeamMembers(selectedUserIds);
   };
 
-  const handleMembersSave = () => {
-    // Les modifications sont appliquées immédiatement dans UserList
-    // donc on peut juste fermer le modal
+  const handleMembersModalClose = () => {
     setShowMembersModal(false);
   };
 
@@ -315,6 +338,32 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
                     <span><UsersIcon size={16} style={{ display: 'inline', marginRight: '8px' }} />Membres</span>
                     <span className={styles.selectedCount}>{teamMembers.length} sélectionné{teamMembers.length > 1 ? 's' : ''}</span>
                   </button>
+                  
+                  {/* Affichage des membres sélectionnés */}
+                  {teamMembers.length > 0 && (
+                    <div className={styles.selectedMembersPreview}>
+                      {allUsers
+                        .filter(user => teamMembers.includes(user.uid))
+                        .slice(0, 3)
+                        .map(user => (
+                          <div key={user.uid} className={styles.memberPreview}>
+                            {user.photoURL ? (
+                              <img src={user.photoURL} alt={user.displayName || 'Membre'} />
+                            ) : (
+                              <div className={styles.avatarPreview}>
+                                {user.displayName?.[0]?.toUpperCase() || '?'}
+                              </div>
+                            )}
+                            <span>{user.displayName?.split(' ')[0] || 'Membre'}</span>
+                          </div>
+                        ))}
+                      {teamMembers.length > 3 && (
+                        <div className={styles.moreMembers}>
+                          +{teamMembers.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -336,13 +385,15 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Modal Members - UTILISATION DU COMPOSANT UserList */}
+      {/* Modal Members - MODE INTÉGRÉ */}
       <AnimatePresence>
-        {showMembersModal && project?.id && (
+        {showMembersModal && (
           <UserList
-            projectId={project.id}
-            onClose={() => setShowMembersModal(false)}
-            onUserAdded={handleUserAdded}
+            projectId={project?.id || 'new-project'}
+            onClose={handleMembersModalClose}
+            mode="integrated"
+            initialSelectedUsers={teamMembers}
+            onSelectionChange={handleMembersChange}
           />
         )}
       </AnimatePresence>

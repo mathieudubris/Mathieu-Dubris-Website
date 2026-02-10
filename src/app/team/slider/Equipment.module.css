@@ -44,7 +44,7 @@
 .sectionTitle {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--white);
+  color: var(--light);
 }
 
 .formGroup {
@@ -54,7 +54,7 @@
 .label {
   display: block;
   font-size: 0.875rem;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.8;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -72,7 +72,7 @@
   border: 1px solid var(--grey);
   border-radius: 0.5rem;
   padding: 0.75rem;
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
   font-size: 0.875rem;
   transition: all 0.3s ease;
@@ -95,7 +95,7 @@
   border: 1px solid var(--grey);
   border-radius: 0.5rem;
   background: none;
-  color: var(--white);
+  color: var(--light);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -126,7 +126,7 @@
   border: 1px solid var(--grey);
   border-radius: 0.5rem;
   background: none;
-  color: var(--white);
+  color: var(--light);
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.75rem;
@@ -141,29 +141,4 @@
   border-color: var(--primary);
   background: rgba(199, 255, 68, 0.1);
   color: var(--primary);
-}
-
-/* Support pour le thème clair */
-.light-theme .sectionHeader {
-  border-bottom: 1px solid rgba(156, 223, 0, 0.1);
-}
-
-.light-theme .input:focus {
-  box-shadow: 0 0 0 2px rgba(156, 223, 0, 0.1);
-}
-
-.light-theme .internetButton:hover {
-  border-color: rgba(156, 223, 0, 0.5);
-}
-
-.light-theme .internetButton.active {
-  background: rgba(156, 223, 0, 0.1);
-}
-
-.light-theme .osButton:hover {
-  border-color: rgba(156, 223, 0, 0.5);
-}
-
-.light-theme .osButton.active {
-  background: rgba(156, 223, 0, 0.1);
 }

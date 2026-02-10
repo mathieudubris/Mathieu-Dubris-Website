@@ -1,4 +1,4 @@
-// ProjetDetail.tsx - AVEC CAROUSEL ET VUES - LECTURE SEULE
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -8,9 +8,6 @@ import {
   X, 
   Users, 
   Calendar, 
-  Edit2,
-  ExternalLink,
-  UserPlus,
   Mail,
   MapPin,
   Settings,
@@ -18,10 +15,10 @@ import {
   ChevronLeft,
   Eye,
   Wrench,
-  ChevronDown
+  ChevronDown,
+  User
 } from 'lucide-react';
 import { 
-  isAdmin, 
   isUserInProject, 
   Project as FirebaseProject,
   TeamMember as FirebaseTeamMember,
@@ -38,8 +35,6 @@ interface ProjetDetailProps {
   currentUser: any;
   userTeamProfile: any;
   onBack: () => void;
-  onEditProject: () => void;
-  onManageTeam: () => void;
   onEditProfile: () => void;
 }
 
@@ -49,8 +44,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
   currentUser,
   userTeamProfile,
   onBack,
-  onEditProject,
-  onManageTeam,
   onEditProfile
 }) => {
   const router = useRouter();
@@ -238,20 +231,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
 
               <div className={styles.headerContent}>
                 <div className={styles.container}>
-                  {/* Actions admin uniquement */}
-                  {currentUser && isAdmin(currentUser.email) && (
-                    <div className={styles.adminActions}>
-                      <button onClick={onEditProject} className={styles.editButton}>
-                        <Edit2 size={16} />
-                        <span>Modifier projet</span>
-                      </button>
-                      <button onClick={onManageTeam} className={styles.teamButton}>
-                        <UserPlus size={16} />
-                        <span>Gérer l'équipe</span>
-                      </button>
-                    </div>
-                  )}
-                  
                   <h1 className={styles.projectTitle}>{project.title}</h1>
                   
                   <div className={styles.projectMeta}>
@@ -301,6 +280,15 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                   <Users size={20} />
                   <span>Équipe</span>
                 </h2>
+                
+                {/* Bouton "Voir tous les membres" - TOUJOURS VISIBLE */}
+                <button 
+                  onClick={handleViewAllMembers}
+                  className={styles.viewAllMembersButton}
+                >
+                  <User size={16} />
+                  <span>Voir tous les membres</span>
+                </button>
               </div>
 
               {teamMembers.length > 0 ? (
@@ -368,20 +356,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
                 </div>
               )}
 
-              {/* Bouton voir tous les membres */}
-              {teamMembers.length > 5 && (
-                <div className={styles.viewAllContainer}>
-                  <button 
-                    onClick={handleViewAllMembers}
-                    className={styles.viewAllButton}
-                  >
-                    <span>Voir tous les membres</span>
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-              )}
-
-              {/* Bouton Gérer mes informations */}
+              {/* Bouton "Gérer mes informations" - SEULEMENT SI MEMBRE */}
               {isInTeam && (
                 <div className={styles.profileActions}>
                   <button onClick={onEditProfile} className={styles.editProfileButton}>

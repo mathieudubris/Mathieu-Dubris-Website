@@ -61,9 +61,9 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  border: 1px solid rgba(var(--white-rgb), 0.1);
-  background: rgba(var(--dark-rgb), 0.7);
-  color: rgba(var(--white-rgb), 0.8);
+  border: 1px solid var(--light), 0.1;
+  background: var(--dark), 0.7;
+  color: var(--light), 0.8;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -76,11 +76,6 @@
 /* Ajout d'une variable pour les valeurs RGB de --dark */
 .closeButton {
   --dark-rgb: 22, 22, 22; /* #161616 en RGB */
-}
-
-.light-theme .closeButton {
-  --dark-rgb: 233, 236, 239; /* #e9ecef en RGB */
-  --white-rgb: 33, 37, 41; /* #212529 en RGB */
 }
 
 .closeButton:hover {
@@ -123,7 +118,7 @@
   font-weight: 300;
   line-height: 1.1;
   margin: 0 0 1.25rem 0;
-  color: var(--white);
+  color: var(--light);
   letter-spacing: -0.5px;
 }
 
@@ -180,7 +175,7 @@
 .message {
   font-size: clamp(1rem, 2vw, 1.125rem);
   line-height: 1.6;
-  color: rgba(var(--white-rgb), 0.7);
+  color: var(--light), 0.7;
   margin: 0 0 2.5rem 0;
   font-weight: 400;
   max-width: 500px;
@@ -190,7 +185,7 @@
 
 .contactSection {
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(var(--white-rgb), 0.05);
+  border-top: 1px solid var(--white), 0.05;
   max-width: 400px;
   margin: 0 auto;
 }

@@ -63,7 +63,7 @@
 .userEmail {
   margin-bottom: 2rem;
   font-size: 1rem;
-  color: var(--grey);
+  color: var(--white);
 }
 
 .settingsSection {
@@ -80,7 +80,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--grey);
+  color: var(--white);
 }
 
 .toggleGroup {
@@ -113,7 +113,7 @@
   padding: 16px;
   color: var(--white);
   background: var(--dark);
-  border: 2px solid var(--grey);
+  border: 2px solid var(--white);
   border-radius: 12px;
   font-weight: 700;
   font-size: 1rem;

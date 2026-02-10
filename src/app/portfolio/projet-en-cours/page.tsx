@@ -271,9 +271,6 @@ export default function ProjetEnCoursPage() {
               currentUser={currentUser}
               userTeamProfile={userTeamProfile}
               onBack={handleBackToList}
-              onEditProject={() => handleEditProject(selectedProject)}
-              onManageTeam={handleManageTeam}
-              onDeleteProject={() => setDeleteConfirmId(selectedProject.id || '')}
               onEditProfile={handleEditProfile}
             />
           ) : (

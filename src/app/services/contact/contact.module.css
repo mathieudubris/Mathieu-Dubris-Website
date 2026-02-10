@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 2rem 1.5rem;
   font-family: var(--font-main);
-  color: var(--white); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light); /* Changé de var(--text-main) à var(--white) */
   min-height: calc(100vh - 4rem);
   display: flex;
   align-items: center;
@@ -24,7 +24,7 @@
 
 .title {
   font-size: 2.8rem;
-  color: var(--white);
+  color: var(--light);
   margin: 0 0 1rem 0;
   font-weight: 300;
   letter-spacing: -0.5px;
@@ -32,7 +32,7 @@
 
 .subtitle {
   font-size: 1.1rem;
-  color: var(--white); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light);
   opacity: 0.7;
   max-width: 600px;
   margin: 0 auto;
@@ -65,7 +65,7 @@
 
 .sectionTitle {
   font-size: 1.4rem;
-  color: var(--white);
+  color: var(--light);
   margin: 0 0 1rem 0;
   font-weight: 400;
   display: flex;
@@ -111,14 +111,14 @@
 
 .infoTitle {
   font-size: 1rem;
-  color: var(--white);
+  color: var(--light);
   margin: 0 0 0.5rem 0;
   font-weight: 500;
 }
 
 .infoText {
   font-size: 0.9rem;
-  color: var(--white); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light); /* Changé de var(--text-main) à var(--white) */
   opacity: 0.7;
   line-height: 1.5;
   margin: 0;
@@ -135,14 +135,14 @@
 
 .quickTitle {
   font-size: 1.1rem;
-  color: var(--white);
+  color: var(--light);
   margin: 0 0 0.5rem 0;
   font-weight: 500;
 }
 
 .quickText {
   font-size: 0.9rem;
-  color: var(--white); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light); /* Changé de var(--text-main) à var(--white) */
   opacity: 0.7;
   line-height: 1.5;
   margin: 0;
@@ -197,7 +197,7 @@
 
 .formLabel {
   font-size: 0.9rem;
-  color: var(--white); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light); /* Changé de var(--text-main) à var(--white) */
   opacity: 0.9;
   font-weight: 400;
 }
@@ -211,7 +211,7 @@
   border-radius: 6px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
   width: 100%;
 }
@@ -270,7 +270,7 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background: rgba(199, 255, 68, 0.9); /* Utilise var(--primary) dans rgba */
+  background: var(--primary); /* Utilise var(--primary) dans rgba */
 }
 
 .submitButton:disabled {

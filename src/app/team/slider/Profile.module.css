@@ -50,7 +50,7 @@
 }
 
 .cameraIcon {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.4;
 }
 
@@ -72,22 +72,8 @@
 }
 
 .hint {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.6;
   font-size: 0.75rem;
   text-align: center;
-}
-
-/* Support pour le thème clair */
-.light-theme .image {
-  border-color: rgba(156, 223, 0, 0.3);
-}
-
-.light-theme .cameraIcon {
-  color: var(--white);
-  opacity: 0.4;
-}
-
-.light-theme .uploadButton:hover {
-  background: rgba(156, 223, 0, 0.9);
 }

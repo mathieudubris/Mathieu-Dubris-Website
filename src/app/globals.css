@@ -2,8 +2,8 @@
   --primary: #c7ff44;
   --dark-red: #c01414; 
   --dark: #1b1b1b;
-  --white: #e0e0e0;
-  --grey: #0e0e0e;
+  --light: #e0e0e0;
+  --grey: #b1b1b1;
   --font-main: 'Inter', sans-serif;
 }
 
@@ -11,15 +11,15 @@
   --primary: #9cdf00;
   --dark-red: #c01414; 
   --dark: #e0e0e0;
-  --white: #1b1b1b;
-  --grey: #aaaaaa;
+  --light: #1b1b1b;
+  --grey: #363636;
 }
 
 html, body {
   margin: 0;
   padding: 0;
   background-color: var(--dark);
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
   overflow-x: hidden;
   min-height: 100vh;
@@ -132,7 +132,7 @@ body * {
 
 .translated-rtl,
 .translated-ltr {
-  color: var(--white) !important;
+  color: var(--light) !important;
   background-color: var(--dark) !important;
 }
 

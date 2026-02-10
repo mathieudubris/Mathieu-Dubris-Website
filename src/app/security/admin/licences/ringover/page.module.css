@@ -63,7 +63,7 @@
   border: 1px solid var(--border-color);
   padding: 12px;
   border-radius: 4px;
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
   outline: none;
 }
@@ -129,7 +129,7 @@
 }
 
 .nameCol {
-  color: var(--white);
+  color: var(--light);
   font-weight: 600;
   font-size: 1.1rem;
 }

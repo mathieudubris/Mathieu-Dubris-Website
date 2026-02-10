@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -290,7 +291,7 @@ function EquipePageContent() {
       return;
     }
 
-    if (!teamMember.firstName.trim() || !teamMember.lastName.trim() || !teamMember.email.trim()) {
+    if (!teamMember.firstName.trim() || !teamMember.lastName.trim()) {
       alert('⚠️ Veuillez remplir les informations obligatoires (Prénom, Nom, Email)');
       return;
     }
@@ -327,7 +328,7 @@ function EquipePageContent() {
       
       if (projectId) {
         setTimeout(() => {
-          router.push(`/projet-en-cours?project=${projectId}`);
+          router.push(`/team/view`);
         }, 1500);
       } else {
         setTimeout(() => {
@@ -510,49 +511,27 @@ function EquipePageContent() {
             </div>
             
             <div className={styles.headerActions}>
-              {/* Actions Desktop */}
-              <div className={styles.desktopActions}>
-                {projectId && (
-                  <button
-                    onClick={() => router.push(`/projet-en-cours?project=${projectId}`)}
-                    className={styles.viewTeamButton}
-                  >
-                    <ArrowLeft size={16} />
-                    <span>Retour</span>
-                  </button>
-                )}
-                
-                <button
-                  onClick={() => router.push('/portfolio/projet-en-cours')}
-                  className={styles.viewTeamButton}
-                >
-                  <FolderKanban size={16} />
-                  <span>Projets</span>
-                </button>
-                
-                {!projectId && (
-                  <button
-                    onClick={() => router.push('/team/view')}
-                    className={styles.viewTeamButton}
-                  >
-                    <span>Équipe</span>
-                  </button>
-                )}
-              </div>
+              {/* Bouton Projets toujours visible */}
+              <button
+                onClick={() => router.push('/portfolio/projet-en-cours')}
+                className={styles.projectsButton}
+              >
+                <FolderKanban size={16} />
+                <span className={styles.buttonText}>Projets</span>
+              </button>
               
-              {/* Mobile Save Button */}
+              {/* Bouton Save - VISIBLE SUR TOUS LES ÉCRANS */}
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className={`${styles.saveButton} ${styles.mobileSaveButton}`}
+                className={styles.saveButton}
               >
                 {isSaving ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
                   <>
-                    <Save size={16} className={styles.saveIcon} />
+                    <Save size={16} />
                     <span className={styles.saveText}>Enregistrer</span>
-                    <span className={styles.saveShortText}>Save</span>
                   </>
                 )}
               </button>
@@ -578,7 +557,6 @@ function EquipePageContent() {
             >
               <ChevronLeft size={18} />
               <span className={styles.navArrowText}>Précédent</span>
-              <span className={styles.navArrowShortText}>Préc.</span>
             </button>
             
             <div className={styles.navIndicator}>
@@ -593,7 +571,6 @@ function EquipePageContent() {
               className={styles.navArrow}
             >
               <span className={styles.navArrowText}>Suivant</span>
-              <span className={styles.navArrowShortText}>Suiv.</span>
               <ChevronRight size={18} />
             </button>
           </footer>
