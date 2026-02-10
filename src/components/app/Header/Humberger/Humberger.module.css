@@ -22,7 +22,7 @@
 .navLink {
   font-weight: 500;
   font-size: 0.75rem;
-  color: var(--white);
+  color: var(--light);
   text-transform: uppercase;
   transition: color 0.3s ease;
 }
@@ -30,7 +30,7 @@
 .chevronIcon {
   transition: transform 0.3s ease, color 0.3s ease;
   opacity: 0.6;
-  color: var(--white);
+  color: var(--light);
 }
 
 .dropdown {
@@ -75,7 +75,7 @@
   display: flex;
   padding: 8px 12px;
   font-size: 0.75rem;
-  color: var(--white);
+  color: var(--light);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
@@ -117,7 +117,7 @@
 .hamburger {
   width: 20px;
   height: 2px;
-  background: var(--white);
+  background: var(--light);
   position: relative;
   display: block;
   transition: 0.3s;
@@ -129,7 +129,7 @@
   position: absolute;
   width: 20px;
   height: 2px;
-  background: var(--white);
+  background: var(--light);
   left: 0;
   transition: 0.3s;
 }
@@ -179,7 +179,7 @@
   font-size: 2rem;
   background: none;
   border: none;
-  color: var(--white);
+  color: var(--light);
   cursor: pointer;
 }
 
@@ -206,7 +206,7 @@
   display: block;
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--white);
+  color: var(--light);
 }
 
 .profileSubtext {
@@ -226,7 +226,7 @@
   padding: 15px 5px;
   background: none;
   border: none;
-  color: var(--white);
+  color: var(--light);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -236,7 +236,7 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0;
-  color: var(--white);
+  color: var(--light);
 }
 
 .mobileLinksGrid {
@@ -253,7 +253,7 @@
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;
-  color: var(--white);
+  color: var(--light);
   text-decoration: none;
   font-size: 0.75rem;
   margin-bottom: 4px;

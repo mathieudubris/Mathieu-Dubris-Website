@@ -18,7 +18,7 @@
   right: 20px;
   background: rgba(128, 128, 128, 0.1);
   border: none;
-  color: var(--white);
+  color: var(--light);
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -40,7 +40,7 @@
   max-width: 400px;
   padding: 2rem;
   text-align: center;
-  color: var(--white);
+  color: var(--light);
 }
 
 .largeAvatar {
@@ -57,13 +57,13 @@
   margin-bottom: 0.5rem;
   font-size: 1.8rem;
   font-weight: 800;
-  color: var(--white);
+  color: var(--light);
 }
 
 .userEmail {
   margin-bottom: 2rem;
   font-size: 1rem;
-  color: var(--white);
+  color: var(--light);
 }
 
 .settingsSection {
@@ -80,7 +80,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--white);
+  color: var(--light);
 }
 
 .toggleGroup {
@@ -93,7 +93,7 @@
 
 .toggleGroup button {
   padding: 12px;
-  color: var(--white);
+  color: var(--light);
   background: none;
   border: none;
   border-radius: 8px;
@@ -111,9 +111,9 @@
 .logoutBtn {
   width: 100%;
   padding: 16px;
-  color: var(--white);
+  color: var(--light);
   background: var(--dark);
-  border: 2px solid var(--white);
+  border: 2px solid var(--light);
   border-radius: 12px;
   font-weight: 700;
   font-size: 1rem;

@@ -3,8 +3,21 @@
   --dark-red: #c01414; 
   --dark: #1b1b1b;
   --light: #e0e0e0;
-  --grey: #b1b1b1;
   --font-main: 'Inter', sans-serif;
+  --line: #a3a3a3;
+
+
+  --white: #ffffff;
+  --black: #000000;
+  --red: #d30000;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --green: #10ce55;
+  --teal: #27ffe6;
+  --blue: #3b82f6;
+  --purple: #d60aff;
+  --pink: #f762ac;
+  --gray: #6b7280;
 }
 
 .light-theme {
@@ -12,7 +25,7 @@
   --dark-red: #c01414; 
   --dark: #e0e0e0;
   --light: #1b1b1b;
-  --grey: #363636;
+  --line: #222222;
 }
 
 html, body {

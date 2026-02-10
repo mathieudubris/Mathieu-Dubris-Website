@@ -88,7 +88,7 @@
 .closeBtn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--white);
+  color: var(--light);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -137,7 +137,7 @@
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--light);
   padding: 12px 0;
   outline: none;
   width: 100%;
@@ -152,7 +152,7 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   padding: 20px;
-  color: var(--white);
+  color: var(--light);
   flex: 1;
   font-family: inherit;
   font-size: 1rem;
@@ -284,7 +284,7 @@
   top: 4px;
   left: 4px;
   background: rgba(0, 0, 0, 0.8);
-  color: var(--white);
+  color: var(--light);
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -300,7 +300,7 @@
   top: 4px;
   right: 4px;
   background: var(--dark-red);
-  color: var(--white);
+  color: var(--light);
   border: none;
   width: 20px;
   height: 20px;
@@ -433,7 +433,7 @@
 .sectionButton {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--white);
+  color: var(--light);
   padding: 12px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -623,39 +623,4 @@
     width: 18px;
     height: 18px;
   }
-}
-
-/* Styles pour le thème clair */
-.light-theme .editorPanel,
-.light-theme .editorHeader {
-  background: var(--dark);
-}
-
-.light-theme .closeBtn {
-  color: var(--white);
-}
-
-.light-theme .contentInput {
-  background: rgba(0, 0, 0, 0.1);
-  color: var(--white);
-}
-
-.light-theme .carouselItem,
-.light-theme .addCarouselBtn,
-.light-theme .featuredUpload,
-.light-theme .sectionButton {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.light-theme .selectedCount {
-  background: rgba(0, 0, 0, 0.1);
-  color: var(--grey);
-}
-
-.light-theme .selectedMembersPreview {
-  background: rgba(199, 255, 68, 0.05);
-}
-
-.light-theme .memberPreview {
-  background: rgba(199, 255, 68, 0.08);
 }

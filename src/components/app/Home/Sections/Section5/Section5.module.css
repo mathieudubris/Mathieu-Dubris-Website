@@ -25,7 +25,7 @@
 }
 
 .title {
-  color: var(--white);
+  color: var(--light);
   font-size: clamp(28px, 5vw, 42px);
   font-weight: 800;
   letter-spacing: -1px;
@@ -70,7 +70,7 @@
   align-items: center;
   gap: 14px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--white);
+  border: 1px solid var(--light);
   padding: 14px 28px;
   border-radius: 16px;
   text-decoration: none;
@@ -95,7 +95,7 @@
 }
 
 .partnerName {
-  color: var(--white);
+  color: var(--light);
   font-weight: 600;
   font-size: 17px;
   letter-spacing: -0.3px;
@@ -121,9 +121,9 @@
   display: block;
   font-size: 42px;
   font-weight: 800;
-  color: var(--white);
+  color: var(--light);
   margin-bottom: 8px;
-  background: linear-gradient(180deg, var(--white) 0%, var(--grey) 100%);
+  background: linear-gradient(180deg, var(--light) 0%, var(--grey) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

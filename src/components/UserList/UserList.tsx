@@ -260,11 +260,7 @@ const UserList: React.FC<UserListProps> = ({
           <div className={styles.selectionInfo}>
             <div className={styles.selectionCount}>
               {pendingMembers.length} membre{pendingMembers.length > 1 ? 's' : ''} sélectionné{pendingMembers.length > 1 ? 's' : ''}
-              {hasChanges() && (
-                <span style={{ color: 'var(--primary)', fontWeight: '700', marginLeft: '8px' }}>
-                  ● Modifications non enregistrées
-                </span>
-              )}
+              {hasChanges()}
             </div>
             <div className={styles.selectionActions}>
               <button 

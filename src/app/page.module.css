@@ -51,7 +51,7 @@
   line-height: 1;
   margin-bottom: 8px;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--light);
   letter-spacing: -0.02em;
   display: inline-block;
 }

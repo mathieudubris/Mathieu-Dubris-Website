@@ -41,14 +41,14 @@
 }
 
 .logoText {
-  color: var(--white);
+  color: var(--light);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 
 .brandTagline {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.6;
   line-height: 1.6;
   font-size: 15px;
@@ -92,7 +92,7 @@
 }
 
 .groupTitle {
-  color: var(--white);
+  color: var(--light);
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
@@ -110,7 +110,7 @@
 }
 
 .linkItem {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.7;
   text-decoration: none;
   font-size: 15px;
@@ -136,13 +136,13 @@
 }
 
 .ctaText h3 {
-  color: var(--white);
+  color: var(--light);
   font-size: 24px;
   margin-bottom: 8px;
 }
 
 .ctaText p {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.6;
 }
 
@@ -161,17 +161,17 @@
   background: transparent;
   border: none;
   padding: 10px 16px;
-  color: var(--white);
+  color: var(--light);
   outline: none;
 }
 
 .input::placeholder {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.5;
 }
 
 .submitBtn {
-  background: var(--white);
+  background: var(--light);
   color: var(--dark);
   border: none;
   padding: 10px 20px;
@@ -195,7 +195,7 @@
   align-items: center;
   padding-top: 40px;
   border-top: 1px solid var(--grey);
-  color: var(--white);
+  color: var(--light);
   opacity: 0.5;
   font-size: 14px;
 }
@@ -213,21 +213,21 @@
 }
 
 .legalLinks a {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.7;
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .legalLinks a:hover {
-  color: var(--white);
+  color: var(--light);
   opacity: 1;
 }
 
 .dot {
   width: 3px;
   height: 3px;
-  background: var(--white);
+  background: var(--light);
   opacity: 0.3;
   border-radius: 50%;
 }
@@ -244,7 +244,7 @@
 }
 
 .socialBtn {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.7;
   transition: all 0.2s;
 }
@@ -258,7 +258,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.7;
   cursor: pointer;
   position: relative;
@@ -283,7 +283,7 @@
 
 .languageOption {
   padding: 8px 16px;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.7;
   cursor: pointer;
   transition: all 0.2s;

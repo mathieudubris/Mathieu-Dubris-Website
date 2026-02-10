@@ -4,7 +4,7 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: var(--dark);
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
   width: 100%;
   overflow-x: hidden;
@@ -83,7 +83,7 @@
   display: none;
   background: transparent;
   border: none;
-  color: var(--white);
+  color: var(--light);
   cursor: pointer;
   padding: 0.5rem;
   z-index: 100;
@@ -108,7 +108,7 @@
   border: 1px solid var(--grey);
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
-  color: var(--white);
+  color: var(--light);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -157,7 +157,7 @@
 
 .viewTeamButton {
   background-color: transparent;
-  color: var(--white);
+  color: var(--light);
   border: 1px solid var(--grey);
   font-weight: 600;
   padding: 0.5rem 0.75rem;
@@ -197,7 +197,7 @@
 }
 
 .saveButton:hover {
-  background-color: rgba(199, 255, 68, 0.9);
+  background-color: var(--primary);
   transform: translateY(-1px);
 }
 
@@ -259,7 +259,7 @@
   border: 1px solid var(--grey);
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
-  color: var(--white);
+  color: var(--light);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -292,7 +292,7 @@
 }
 
 .navIndicator {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.9;
   font-size: 0.85rem;
   font-weight: 600;

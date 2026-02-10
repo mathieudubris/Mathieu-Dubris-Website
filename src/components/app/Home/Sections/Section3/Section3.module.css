@@ -1,7 +1,7 @@
 .section {
   padding: 100px 20px;
   background-color: var(--dark);
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
   overflow: hidden;
 }
@@ -75,7 +75,7 @@
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 15px;
-  color: var(--white);
+  color: var(--light);
 }
 
 .cardDescription {

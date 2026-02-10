@@ -6,14 +6,14 @@
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #e6e300; /* Jaune vif */
+  color: var(--primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .sectionTitle svg {
-  color: #e6e300; /* Jaune vif */
+  color: var(--primary);
 }
 
 .formGroup {
@@ -25,7 +25,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 0.875rem;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.9;
   margin-bottom: 0.75rem;
   font-weight: 500;
@@ -33,8 +33,8 @@
 
 .selectionCount {
   font-size: 0.75rem;
-  color: #e6e300; /* Jaune vif */
-  background: rgba(230, 227, 0, 0.1); /* Jaune vif avec transparence */
+  color: var(--black);
+  background:var(--primary);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 }
@@ -47,8 +47,7 @@
   margin-bottom: 1.5rem;
   min-height: 2.5rem;
   padding: 0.75rem;
-  background: var(--dark);
-  border: 1px solid var(--grey);
+  background: var(--line);
   border-radius: 0.5rem;
 }
 
@@ -56,8 +55,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #e6e300 0%, rgba(230, 227, 0, 0.8) 100%); /* Jaune vif */
-  color: #000; /* Noir pour contraste */
+  background: var(--primary);
+  color: var(--black);
   padding: 0.375rem 0.75rem;
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -76,7 +75,7 @@
   justify-content: center;
   background: none;
   border: none;
-  color: #000; /* Noir pour contraste */
+  color: var(--black);
   cursor: pointer;
   padding: 0;
   transition: transform 0.2s ease;
@@ -94,15 +93,15 @@
 .categoryTitle {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--white);
+  color: var(--light);
   margin-bottom: 0.75rem;
   padding-bottom: 0.25rem;
-  border-bottom: 1px solid var(--grey);
+  border-bottom: 1px solid var(--gray);
 }
 
 .roleGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -114,77 +113,178 @@
 
 .roleHeader {
   width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.roleButtonContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .roleButton {
   width: 100%;
-  background: var(--dark);
-  border: 1px solid var(--grey);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  color: var(--white);
+  border: 1px solid var(--gray);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--light);
   text-align: left;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  font-size: 0.8125rem;
   font-family: var(--font-main);
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.roleButton:hover {
-  border-color: #e6e300; /* Jaune vif */
-  background: rgba(230, 227, 0, 0.05);
-}
 
 .roleButton.selected {
-  background: rgba(230, 227, 0, 0.15);
-  border-color: #e6e300; /* Jaune vif */
-  color: #e6e300; /* Jaune vif */
   font-weight: 500;
 }
 
-.roleButtonContent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+/* Direction & Management - Blanc */
+.roleButton.Direction {
+  background-color: var(--white);
+  color: var(--black);
 }
 
-.roleName {
-  flex: 1;
+.roleButton.Direction:hover {
+  background-color: var(--primary);
 }
+
+.roleButton.Direction.selected {
+  border-color: var(--white);
+  /* box-shadow supprimé */
+}
+
+/* Design - Rouge */
+.roleButton.Design {
+  background-color: var(--red);
+  color: var(--black);
+}
+
+.roleButton.Design:hover {
+  background-color: var(--primary);
+}
+
+.roleButton.Design.selected {
+  border-color: var(--red);
+  /* box-shadow supprimé */
+}
+
+/* Programmation - Orange */
+.roleButton.Programming {
+  background-color: var(--orange);
+  color: var(--black);
+}
+
+.roleButton.Programming:hover {
+  background-color: var(--primary);
+}
+
+.roleButton.Programming.selected {
+  border-color: var(--orange);
+  /* box-shadow supprimé */
+}
+
+/* Art 3D - Jaune */
+.roleButton.Art3D {
+  background-color: var(--yellow);
+  color: var(--black);
+}
+
+.roleButton.Art3D:hover {
+  background-color: var(--primary);
+}
+
+.roleButton.Art3D.selected {
+  border-color: var(--yellow);
+  /* box-shadow supprimé */
+}
+
+/* UI/UX - Vert */
+.roleButton.UIUX {
+  background-color: var(--green);
+  color: var(--black);
+}
+
+.roleButton.UIUX:hover {
+  background-color: var(--primary);
+}
+
+.roleButton.UIUX.selected {
+  border-color: var(--green);
+  /* box-shadow supprimé */
+}
+
+/* Audio - Turquoise */
+.roleButton.Audio {
+  background-color: var(--teal);
+  color: var(--black);
+}
+
+.roleButton.Audio:hover {
+  background-color: var(--primary);
+}
+
+.roleButton.Audio.selected {
+  border-color: var(--teal);
+  /* box-shadow supprimé */
+}
+
+/* Support & Marketing - Rose */
+.roleButton.Support {
+  background-color: var(--pink);
+  color: var(--black);
+}
+
+.roleButton.Support:hover {
+  background-color: var(--primary);
+}
+
+.roleButton.Support.selected {
+  border-color: var(--pink);
+  /* box-shadow supprimé */
+}
+
 
 .infoButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
-  border: none;
-  color: var(--white);
-  opacity: 0.6;
+  background: var(--light);
+  color: var(--dark);
+  opacity: 0.8;
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 0.25rem;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  margin-top: 0.25rem;
 }
 
 .infoButton:hover {
   opacity: 1;
-  color: #e6e300; /* Jaune vif */
-  background: rgba(230, 227, 0, 0.1);
+  background: var(--line);
 }
 
 .roleButton.selected .infoButton {
-  color: #e6e300; /* Jaune vif */
-  opacity: 0.8;
+  opacity: 1;
 }
 
 /* Informations sur le rôle */
 .roleInfo {
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: var(--dark);
-  border: 1px solid var(--grey);
-  border-radius: 0.5rem;
+  background: var(--light);
+  color: var(--dark);
+  border-radius: 0.375rem;
   animation: slideDown 0.3s ease;
 }
 
@@ -194,7 +294,7 @@
 }
 
 .roleDescription {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   line-height: 1.4;
   color: var(--white);
   opacity: 0.9;
@@ -202,9 +302,9 @@
 }
 
 .locationHint {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.5;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   margin-top: 1rem;
   line-height: 1.4;
   font-style: italic;
@@ -213,7 +313,13 @@
 /* Responsive */
 @media (max-width: 768px) {
   .roleGrid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+  
+  .roleButton {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    min-height: 2.25rem;
   }
 }
 
@@ -222,25 +328,19 @@
     grid-template-columns: 1fr;
   }
   
+  .roleButton {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    min-height: 2.25rem;
+  }
+  
   .selectedRoleTag {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
   }
-}
-
-/* Support pour le thème clair */
-.light-theme .selectedRoleTag {
-  background: linear-gradient(135deg, #e6e300 0%, rgba(230, 227, 0, 0.8) 100%);
-}
-
-.light-theme .roleButton:hover {
-  background: rgba(230, 227, 0, 0.05);
-}
-
-.light-theme .roleButton.selected {
-  background: rgba(230, 227, 0, 0.15);
-}
-
-.light-theme .infoButton:hover {
-  background: rgba(230, 227, 0, 0.1);
+  
+  .infoButton {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
 }

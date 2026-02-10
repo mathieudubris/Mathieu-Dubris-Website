@@ -53,7 +53,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--white);
+  color: var(--light);
   font-weight: bold;
   font-size: 18px;
   border-radius: 50%;

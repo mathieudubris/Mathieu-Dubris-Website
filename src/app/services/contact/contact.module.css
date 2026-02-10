@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 2rem 1.5rem;
   font-family: var(--font-main);
-  color: var(--light); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light);
   min-height: calc(100vh - 4rem);
   display: flex;
   align-items: center;
@@ -118,7 +118,7 @@
 
 .infoText {
   font-size: 0.9rem;
-  color: var(--light); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light);
   opacity: 0.7;
   line-height: 1.5;
   margin: 0;
@@ -128,7 +128,7 @@
 /* Section réponse rapide */
 .quickInfo {
   padding: 1.5rem;
-  background: rgba(22, 22, 22, 0.4); /* Changé pour utiliser var(--dark) dans rgba */
+  background: rgba(22, 22, 22, 0.4); 
   border-left: 3px solid var(--primary);
   border-radius: 0 8px 8px 0;
 }
@@ -142,7 +142,7 @@
 
 .quickText {
   font-size: 0.9rem;
-  color: var(--light); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light); 
   opacity: 0.7;
   line-height: 1.5;
   margin: 0;
@@ -197,7 +197,7 @@
 
 .formLabel {
   font-size: 0.9rem;
-  color: var(--light); /* Changé de var(--text-main) à var(--white) */
+  color: var(--light);
   opacity: 0.9;
   font-weight: 400;
 }

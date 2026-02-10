@@ -23,7 +23,7 @@
 .searchBar input {
   background: none;
   border: none;
-  color: var(--white);
+  color: var(--light);
   outline: none;
   width: 100%;
   font-size: 0.85rem;
@@ -31,7 +31,7 @@
 
 .searchIcon {
   display: flex;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.5;
   transition: 0.3s;
 }

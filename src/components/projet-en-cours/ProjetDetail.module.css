@@ -29,7 +29,7 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  background: var(--white);
+  background: var(--light);
   border: 1px solid var(--grey);
   color: var(--dark);
   width: 44px;
@@ -147,7 +147,7 @@
   top: 50%;
   transform: translateY(-50%);
   background: var(--dark);
-  color: var(--white);
+  color: var(--light);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -193,7 +193,7 @@
   left: 0;
   right: 0;
   padding: 20px 0;
-  color: var(--white);
+  color: var(--light);
   z-index: 2;
 }
 
@@ -221,7 +221,7 @@
   margin: 0 0 12px 0;
   line-height: 1.1;
   letter-spacing: -0.5px;
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
 }
 
@@ -235,7 +235,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--white);
+  color: var(--light);
   font-size: 0.85rem;
   font-family: var(--font-main);
 }
@@ -266,7 +266,7 @@
 }
 
 .projectDescription {
-  color: var(--white);
+  color: var(--light);
   font-size: 0.95rem;
   line-height: 1.6;
   white-space: pre-wrap;
@@ -280,7 +280,7 @@
 
 /* Logiciels */
 .noSoftware {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.6;
   font-style: italic;
   font-size: 0.9rem;
@@ -308,7 +308,7 @@
   width: 50px;
   height: 50px;
   background: var(--dark);
-  border: 1px solid var(--white);
+  border: 1px solid var(--light);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -319,7 +319,7 @@
 
 .softwareName {
   font-size: 0.7rem;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.8;
   text-align: center;
   overflow: hidden;
@@ -346,14 +346,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--white);
+  color: var(--light);
   font-size: 0.9rem;
   font-weight: 700;
 }
 
 .moreSoftwareText {
   font-size: 0.7rem;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.6;
   text-align: center;
   font-family: var(--font-main);
@@ -431,7 +431,7 @@
 }
 
 .memberItem {
-  border: 1px solid var(--white);
+  border: 1px solid var(--light);
   border-radius: 10px;
   padding: 14px;
   display: flex;
@@ -481,7 +481,7 @@
 .memberName {
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--light);
   margin: 0 0 4px 0;
   font-family: var(--font-main);
 }
@@ -496,7 +496,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: var(--white);
+  color: var(--light);
   opacity: 0.7;
   font-size: 0.75rem;
   font-family: var(--font-main);
@@ -511,7 +511,7 @@
 
 .roleTag {
   background: var(--dark);
-  color: var(--white);
+  color: var(--light);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.65rem;
@@ -520,7 +520,7 @@
 }
 
 .moreRoles {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.5;
   font-size: 0.65rem;
   font-style: italic;
@@ -557,7 +557,7 @@
 .editProfileButton {
   background: var(--dark);
   border: 1px solid var(--grey);
-  color: var(--white);
+  color: var(--light);
   padding: 12px 16px;
   border-radius: 10px;
   cursor: pointer;
@@ -592,7 +592,7 @@
 }
 
 .callToAction p {
-  color: var(--white);
+  color: var(--light);
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 0 0 12px 0;
@@ -643,13 +643,13 @@
 .emptyTeam h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--light);
   margin: 0 0 8px 0;
   font-family: var(--font-main);
 }
 
 .emptyTeam p {
-  color: var(--white);
+  color: var(--light);
   opacity: 0.6;
   font-size: 0.85rem;
   max-width: 250px;

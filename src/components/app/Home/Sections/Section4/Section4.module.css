@@ -1,7 +1,7 @@
 .section {
   padding: 120px 20px;
   background-color: var(--dark);
-  color: var(--white);
+  color: var(--light);
   font-family: var(--font-main);
   position: relative;
 }
@@ -37,7 +37,7 @@
   font-weight: 800;
   margin-bottom: 24px;
   line-height: 1.2;
-  color: var(--white);
+  color: var(--light);
 }
 
 .subtitle {
@@ -57,7 +57,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--white);
+  color: var(--light);
   font-weight: 500;
 }
 
@@ -131,7 +131,7 @@
 .stepTitle {
   font-size: 20px;
   font-weight: 600;
-  color: var(--white);
+  color: var(--light);
   margin-bottom: 8px;
 }
 
