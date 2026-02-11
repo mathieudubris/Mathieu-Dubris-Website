@@ -14,8 +14,6 @@
   left: 0;
 }
 
-
-
 .main {
   width: 100%;
   display: flex;
@@ -61,11 +59,12 @@
 }
 
 .loadingContainer {
-  width: 100%;
+  width: 100%; /* MODIFIÉ : sera ajusté par JavaScript */
   height: 3px;
   background-color: var(--grey);
   position: relative;
   overflow: hidden;
+  max-width: 100%; /* Empêche le débordement */
 }
 
 .loadingBar {
@@ -84,12 +83,17 @@
 /* Adaptabilité Mobile */
 @media (max-width: 992px) {
   .contentContainer {
-    width: 90%; /* Limite la largeur sur mobile */
+    width: auto; /* MODIFIÉ : ne limite plus la largeur */
+    min-width: min-content; /* Garantit que le contenu ne soit pas compressé */
   }
   
   .title {
     font-size: clamp(2.2rem, 10vw, 3.5rem);
     margin-bottom: 6px;
+  }
+  
+  .loadingContainer {
+    width: 100%; /* MODIFIÉ : sera ajusté dynamiquement */
   }
 }
 

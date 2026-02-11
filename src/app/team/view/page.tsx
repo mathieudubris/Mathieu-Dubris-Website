@@ -5,7 +5,11 @@ import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { auth, setupAuthListener, getTeamMembers, getProject } from '@/utils/firebase-api';
-import { User, Mail, Phone, MapPin, Monitor, Laptop, FolderKanban } from 'lucide-react';
+import { 
+  User, Mail, Phone, MapPin, Monitor, Laptop, FolderKanban,
+  Instagram, MessageCircle, Youtube, Facebook, Twitter, Linkedin,
+  Music, MessageSquare
+} from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
 import styles from './view.module.css';
@@ -47,6 +51,124 @@ interface TeamMember {
   };
   createdAt: Date;
 }
+
+// Définition des rôles avec leur catégorie de couleur (identique à Role.tsx)
+const rolesData = [
+  // Direction & Management - Blanc
+  { name: 'Game Director', description: 'Supervise la vision globale et la direction créative du jeu', colorClass: 'Direction' },
+  { name: 'Creative Director', description: 'Dirige la direction artistique et créative du projet', colorClass: 'Direction' },
+  { name: 'Technical Director', description: 'Responsable des aspects techniques et de l\'architecture du jeu', colorClass: 'Direction' },
+  { name: 'Project Manager', description: 'Gère la planification, les ressources et les délais du projet', colorClass: 'Direction' },
+  { name: 'Team Coordinator', description: 'Coordonne les différentes équipes et assure la communication', colorClass: 'Direction' },
+  
+  // Design - Rouge
+  { name: 'Game Designer', description: 'Conçoit les mécaniques de jeu et les systèmes interactifs', colorClass: 'Design' },
+  { name: 'Level Designer', description: 'Crée les niveaux, l\'environnement et le parcours du joueur', colorClass: 'Design' },
+  { name: 'Gameplay Designer', description: 'Développe et équilibre les mécaniques de gameplay', colorClass: 'Design' },
+  { name: 'Narrative Designer', description: 'Élabore l\'histoire, les dialogues et l\'univers narratif', colorClass: 'Design' },
+  
+  // Programmation - Orange
+  { name: 'Game Programmer', description: 'Développe les fonctionnalités principales du jeu', colorClass: 'Programming' },
+  { name: 'Engine Programmer', description: 'Travaille sur le moteur de jeu et les outils techniques', colorClass: 'Programming' },
+  { name: 'AI Programmer', description: 'Programme l\'intelligence artificielle des ennemis et PNJ', colorClass: 'Programming' },
+  { name: 'UI Programmer', description: 'Développe les interfaces utilisateur et les systèmes HUD', colorClass: 'Programming' },
+  
+  // Art 3D - Jaune
+  { name: '3D Artist', description: 'Crée les modèles 3D des personnages et objets', colorClass: 'Art3D' },
+  { name: '3D Cinematic', description: 'Réalise les cinématiques et séquences animées en 3D', colorClass: 'Art3D' },
+  { name: 'Texture Artist', description: 'Crée les textures et matériaux pour les modèles 3D', colorClass: 'Art3D' },
+  { name: 'Prop Artist', description: 'Modélise les objets et accessoires du jeu', colorClass: 'Art3D' },
+  { name: 'Environment Artist', description: 'Construit les environnements et décors du jeu', colorClass: 'Art3D' },
+  { name: '3D Animator', description: 'Anime les personnages et créatures en 3D', colorClass: 'Art3D' },
+  { name: 'Mocap Actor', description: 'Effectue les performances pour la capture de mouvement', colorClass: 'Art3D' },
+  { name: '3D Art Support', description: 'Assiste l\'équipe artistique sur les aspects techniques 3D', colorClass: 'Art3D' },
+  { name: 'Technical Artist', description: 'Fait le pont entre artistes et programmeurs, crée des shaders', colorClass: 'Art3D' },
+  
+  // UI/UX - Vert
+  { name: 'UX Designer', description: 'Conçoit l\'expérience utilisateur et la fluidité d\'interaction', colorClass: 'UIUX' },
+  { name: 'UI Designer', description: 'Dessine les interfaces utilisateur et éléments d\'interface', colorClass: 'UIUX' },
+  { name: 'UI Artist', description: 'Crée les assets graphiques pour les interfaces', colorClass: 'UIUX' },
+  { name: 'UI Art Support', description: 'Assiste dans la création des éléments d\'interface', colorClass: 'UIUX' },
+  
+  // Audio - Turquoise
+  { name: 'Music Composer', description: 'Compose la bande-son et les thèmes musicaux', colorClass: 'Audio' },
+  { name: 'Sound Designer', description: 'Crée les effets sonores et l\'ambiance audio', colorClass: 'Audio' },
+  { name: 'Voice Actor', description: 'Prête sa voix aux personnages du jeu', colorClass: 'Audio' },
+  { name: 'Voice Director', description: 'Dirige les séances d\'enregistrement vocal', colorClass: 'Audio' },
+  
+  // Support & Marketing - Rose
+  { name: 'Community Manager', description: 'Gère la relation avec la communauté de joueurs', colorClass: 'Support' },
+  { name: 'Documentation Manager', description: 'Organise et maintient la documentation du projet', colorClass: 'Support' },
+  { name: 'Content Creator', description: 'Crée du contenu promotionnel et éducatif autour du jeu', colorClass: 'Support' },
+  { name: 'Marketing Manager', description: 'Gère la stratégie marketing et la promotion du jeu', colorClass: 'Support' },
+  { name: 'QA Tester', description: 'Teste le jeu pour identifier les bugs et problèmes', colorClass: 'Support' }
+];
+
+// Fonction utilitaire pour obtenir la classe de couleur d'un rôle
+const getRoleColorClass = (roleName: string): string => {
+  const role = rolesData.find(r => r.name === roleName);
+  return role ? role.colorClass : '';
+};
+
+// Fonction pour générer l'URL correcte en fonction du type de contact
+const generateContactUrl = (contact: TeamMember['contacts'][0]): string => {
+  const { type, value } = contact;
+  
+  // Si la valeur commence déjà par http/https, on l'utilise directement
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  }
+  
+  switch (type) {
+    case 'instagram':
+      const instaUser = value.replace('@', '').trim();
+      return `https://instagram.com/${instaUser}`;
+    case 'facebook':
+      const fbUser = value.replace('@', '').trim();
+      return `https://facebook.com/${fbUser}`;
+    case 'twitter':
+      const twitterUser = value.replace('@', '').trim();
+      return `https://twitter.com/${twitterUser}`;
+    case 'youtube':
+      if (value.includes('youtube.com') || value.includes('youtu.be')) {
+        return value.includes('://') ? value : `https://${value}`;
+      }
+      const ytUser = value.replace('@', '').trim();
+      return `https://youtube.com/@${ytUser}`;
+    case 'linkedin':
+      if (value.includes('linkedin.com')) {
+        return value.includes('://') ? value : `https://${value}`;
+      }
+      const linkedinUser = value.trim();
+      return `https://linkedin.com/in/${linkedinUser}`;
+    case 'whatsapp':
+      const phoneNumber = value.replace(/[^\d+]/g, '');
+      return `https://wa.me/${phoneNumber}`;
+    case 'discord':
+      const discordUser = value.trim();
+      return `https://discord.com/users/${discordUser}`;
+    case 'tiktok':
+      const tiktokUser = value.replace('@', '').trim();
+      return `https://tiktok.com/@${tiktokUser}`;
+    default:
+      return '#';
+  }
+};
+
+// Fonction pour obtenir l'icône Lucide correspondante
+const getContactLucideIcon = (type: string) => {
+  const icons = {
+    instagram: Instagram,
+    whatsapp: MessageCircle,
+    discord: MessageSquare,
+    tiktok: Music,
+    youtube: Youtube,
+    facebook: Facebook,
+    twitter: Twitter,
+    linkedin: Linkedin
+  };
+  return icons[type as keyof typeof icons] || MessageCircle;
+};
 
 // Fonction utilitaire pour normaliser les données des membres
 const normalizeMemberData = (member: any): TeamMember => {
@@ -145,20 +267,6 @@ function TeamViewContent() {
     } catch (error) {
       console.error('Erreur lors du chargement des membres:', error);
     }
-  };
-
-  const getContactIcon = (type: string) => {
-    const icons = {
-      instagram: '📸',
-      whatsapp: '💬',
-      discord: '🎮',
-      tiktok: '🎵',
-      youtube: '🎥',
-      facebook: '📘',
-      twitter: '🐦',
-      linkedin: '💼'
-    };
-    return icons[type as keyof typeof icons] || '📱';
   };
 
   const handleEditProfile = () => {
@@ -271,11 +379,14 @@ function TeamViewContent() {
                               <span>Rôles</span>
                             </h4>
                             <div className={styles.rolesList}>
-                              {member.roles.slice(0, 3).map((role, i) => (
-                                <span key={i} className={styles.roleTag}>
-                                  {role}
-                                </span>
-                              ))}
+                              {member.roles.slice(0, 3).map((role, i) => {
+                                const colorClass = getRoleColorClass(role);
+                                return (
+                                  <span key={i} className={`${styles.roleTag} ${styles[colorClass]}`}>
+                                    {role}
+                                  </span>
+                                );
+                              })}
                               {member.roles.length > 3 && (
                                 <span className={styles.moreRoles}>
                                   +{member.roles.length - 3} autres
@@ -372,11 +483,14 @@ function TeamViewContent() {
                     <span>Rôles dans l'équipe</span>
                   </h3>
                   <div className={styles.modalRoles}>
-                    {selectedMember.roles.map((role, i) => (
-                      <span key={i} className={styles.modalRoleTag}>
-                        {role}
-                      </span>
-                    ))}
+                    {selectedMember.roles.map((role, i) => {
+                      const colorClass = getRoleColorClass(role);
+                      return (
+                        <span key={i} className={`${styles.modalRoleTag} ${styles[colorClass]}`}>
+                          {role}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -411,19 +525,32 @@ function TeamViewContent() {
                   <div className={styles.modalContacts}>
                     {selectedMember.contacts
                       .filter(contact => contact.isPublic)
-                      .map((contact, i) => (
-                        <div key={i} className={styles.modalContact}>
-                          <span className={styles.contactIcon}>
-                            {getContactIcon(contact.type)}
-                          </span>
-                          <span className={styles.contactType}>
-                            {contact.type.charAt(0).toUpperCase() + contact.type.slice(1)}:
-                          </span>
-                          <span className={styles.contactValue}>
-                            {contact.value}
-                          </span>
-                        </div>
-                    ))}
+                      .map((contact, i) => {
+                        const ContactIcon = getContactLucideIcon(contact.type);
+                        const contactUrl = generateContactUrl(contact);
+                        
+                        return (
+                          <a
+                            key={i}
+                            href={contactUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.modalContactLink}
+                          >
+                            <div className={styles.modalContact}>
+                              <span className={styles.contactIcon}>
+                                <ContactIcon size={20} />
+                              </span>
+                              <span className={styles.contactType}>
+                                {contact.type.charAt(0).toUpperCase() + contact.type.slice(1)}:
+                              </span>
+                              <span className={styles.contactValue}>
+                                {contact.value}
+                              </span>
+                            </div>
+                          </a>
+                        );
+                    })}
                   </div>
                 </div>
               )}

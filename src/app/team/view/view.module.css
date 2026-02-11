@@ -1,4 +1,3 @@
-
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -51,7 +50,7 @@
 }
 
 .loginCenterButton:hover {
-  background-color: rgba(199, 255, 68, 0.9);
+  background-color: var(--primary);
   transform: translateY(-2px);
 }
 
@@ -87,16 +86,16 @@
   color: var(--light);
   margin-bottom: 24px;
   padding: 12px 16px;
-  background: rgba(30, 30, 30, 0.7);
+  background: color-mix(in srgb, var(--dark) 70%, transparent);
   border-radius: 8px;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .projectTitle::before {
-  content: '📁';
+  content: '';
   font-size: 18px;
 }
 
@@ -116,7 +115,7 @@
 }
 
 .editProfileButton:hover {
-  background-color: rgba(199, 255, 68, 0.9);
+  background-color: var(--primary);
   transform: translateY(-1px);
 }
 
@@ -130,8 +129,8 @@
 }
 
 .memberCard {
-  background-color: rgba(30, 30, 30, 0.7);
-  border: 1px solid var(--grey);
+  background-color: color-mix(in srgb, var(--dark) 70%, transparent);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
@@ -162,7 +161,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(40, 40, 40, 0.8);
+  background-color: color-mix(in srgb, var(--dark) 80%, transparent);
 }
 
 .avatar img {
@@ -217,12 +216,48 @@
 }
 
 .roleTag {
-  background-color: rgba(199, 255, 68, 0.1);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   color: var(--primary);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+/* Classes de couleur pour les tags de rôle dans la vue équipe */
+.roleTag.Direction {
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.roleTag.Design {
+  background-color: var(--red);
+  color: var(--black);
+}
+
+.roleTag.Programming {
+  background-color: var(--orange);
+  color: var(--black);
+}
+
+.roleTag.Art3D {
+  background-color: var(--yellow);
+  color: var(--black);
+}
+
+.roleTag.UIUX {
+  background-color: var(--green);
+  color: var(--black);
+}
+
+.roleTag.Audio {
+  background-color: var(--teal);
+  color: var(--black);
+}
+
+.roleTag.Support {
+  background-color: var(--pink);
+  color: var(--black);
 }
 
 .moreRoles {
@@ -285,7 +320,7 @@
 }
 
 .emptyStateButton:hover {
-  background-color: rgba(199, 255, 68, 0.9);
+  background-color: var(--primary);
   transform: translateY(-2px);
 }
 
@@ -296,8 +331,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
+  background-color: color-mix(in srgb, var(--black) 11%, transparent);
+  backdrop-filter: blur(30px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,15 +341,14 @@
 }
 
 .modalContent {
-  background-color: var(--dark);
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
   border-radius: 16px;
-  max-width: 800px;
+  background-color: var(--dark);
   width: 100%;
-  max-height: 90vh;
+  height: 100%;
   overflow-y: auto;
   position: relative;
-  padding: 2rem;
+  padding: 30px;
 }
 
 .closeModal {
@@ -338,7 +372,7 @@
 }
 
 .closeModal:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--light) 10%, transparent);
   color: var(--primary);
 }
 
@@ -348,7 +382,7 @@
   gap: 2rem;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid var(--grey);
+  border-bottom: 1px solid var(--line);
 }
 
 .modalAvatar {
@@ -360,7 +394,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(40, 40, 40, 0.8);
+  background-color: color-mix(in srgb, var(--dark) 80%, transparent);
 }
 
 .modalAvatar img {
@@ -424,12 +458,48 @@
 }
 
 .modalRoleTag {
-  background-color: rgba(199, 255, 68, 0.15);
+  background-color: color-mix(in srgb, var(--primary) 15%, transparent);
   color: var(--primary);
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+/* Classes de couleur pour les tags de rôle dans le modal */
+.modalRoleTag.Direction {
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.modalRoleTag.Design {
+  background-color: var(--red);
+  color: var(--black);
+}
+
+.modalRoleTag.Programming {
+  background-color: var(--orange);
+  color: var(--black);
+}
+
+.modalRoleTag.Art3D {
+  background-color: var(--yellow);
+  color: var(--black);
+}
+
+.modalRoleTag.UIUX {
+  background-color: var(--green);
+  color: var(--black);
+}
+
+.modalRoleTag.Audio {
+  background-color: var(--teal);
+  color: var(--black);
+}
+
+.modalRoleTag.Support {
+  background-color: var(--pink);
+  color: var(--black);
 }
 
 .modalLocation {
@@ -449,18 +519,34 @@
   gap: 0.75rem;
 }
 
+/* Styles pour les liens de contact cliquables */
+.modalContactLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .modalContact {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: rgba(40, 40, 40, 0.5);
+  background-color: color-mix(in srgb, var(--dark) 50%, transparent);
   border-radius: 8px;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.modalContact:hover {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-color: var(--primary);
+  transform: translateY(-2px);
 }
 
 .contactIcon {
   font-size: 1.25rem;
+  color: var(--primary);
 }
 
 .contactType {
@@ -485,9 +571,9 @@
   color: var(--light);
   font-size: 0.875rem;
   padding: 0.75rem;
-  background-color: rgba(40, 40, 40, 0.5);
+  background-color: color-mix(in srgb, var(--dark) 50%, transparent);
   border-radius: 8px;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
 }
 
 .equipmentItem strong {
@@ -509,7 +595,7 @@
 .loadingSpinner {
   width: 50px;
   height: 50px;
-  border: 3px solid rgba(199, 255, 68, 0.1);
+  border: 3px solid color-mix(in srgb, var(--primary) 10%, transparent);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;

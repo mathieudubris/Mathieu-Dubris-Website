@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Phone, Mail, Instagram, MessageCircle, 
   Youtube, Facebook, Twitter, Linkedin, 
-  Plus, X 
+  Plus, X, Music, Video, MessageSquare
 } from 'lucide-react';
 import styles from './Contacts.module.css';
 
@@ -25,8 +25,8 @@ interface ContactsProps {
 const contactTypes = [
   { type: 'instagram', label: 'Instagram', icon: Instagram },
   { type: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
-  { type: 'discord', label: 'Discord', icon: MessageCircle },
-  { type: 'tiktok', label: 'TikTok', icon: MessageCircle },
+  { type: 'discord', label: 'Discord', icon: MessageSquare },
+  { type: 'tiktok', label: 'TikTok', icon: Music },
   { type: 'youtube', label: 'YouTube', icon: Youtube },
   { type: 'facebook', label: 'Facebook', icon: Facebook },
   { type: 'twitter', label: 'Twitter (X)', icon: Twitter },
@@ -82,7 +82,7 @@ export default function Contacts({
             value={newContact.value}
             onChange={(e) => setNewContact(prev => ({ ...prev, value: e.target.value }))}
             className={styles.input}
-            placeholder="@username ou URL"
+            placeholder="@username, ID Discord ou URL"
           />
           
           <button onClick={handleAddContact} className={styles.addButton}>

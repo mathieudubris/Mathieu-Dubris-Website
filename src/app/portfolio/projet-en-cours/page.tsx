@@ -271,6 +271,7 @@ export default function ProjetEnCoursPage() {
               currentUser={currentUser}
               userTeamProfile={userTeamProfile}
               onBack={handleBackToList}
+
               onEditProfile={handleEditProfile}
             />
           ) : (

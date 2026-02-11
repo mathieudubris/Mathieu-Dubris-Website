@@ -58,7 +58,7 @@
 }
 
 .loginCenterButton:hover {
-  background-color: rgba(199, 255, 68, 0.9);
+  background-color: color-mix(in srgb, var(--primary) 90%, transparent);
   transform: translateY(-2px);
 }
 
@@ -69,14 +69,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 0.75rem;
-  position: relative; /* Changé de sticky à relative */
-  top: 0; /* Réinitialisé */
+  position: relative;
+  top: 0;
   z-index: 90;
   background-color: var(--dark);
-  border-bottom: 1px solid var(--grey);
+  border-bottom: 1px solid var(--line);
   flex-shrink: 0;
   gap: 0.5rem;
-  margin-top: 0; /* Ajouté */
+  margin-top: 0;
 }
 
 .mobileMenuToggle {
@@ -96,7 +96,7 @@
   flex: 1;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  padding-left: 0.5rem; /* Ajouté pour espacement */
+  padding-left: 0.5rem;
 }
 
 .navButtons::-webkit-scrollbar {
@@ -104,8 +104,8 @@
 }
 
 .navButton {
-  background-color: rgba(30, 30, 30, 0.3);
-  border: 1px solid var(--grey);
+  background-color: color-mix(in srgb, var(--dark) 85%, transparent);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   color: var(--light);
@@ -125,7 +125,7 @@
 
 .navButton:hover {
   border-color: var(--primary);
-  background-color: rgba(199, 255, 68, 0.1);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .navButton.active {
@@ -143,6 +143,35 @@
   display: none;
 }
 
+/* Bouton Projets */
+.projectsButton {
+  background-color: transparent;
+  color: var(--light);
+  border: 1px solid var(--line);
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.projectsButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Texte du bouton */
+.buttonText {
+  display: inline;
+}
+
 .headerActions {
   display: flex;
   gap: 0.5rem;
@@ -158,7 +187,7 @@
 .viewTeamButton {
   background-color: transparent;
   color: var(--light);
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
   font-weight: 600;
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
@@ -197,7 +226,7 @@
 }
 
 .saveButton:hover {
-  background-color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 90%, transparent);
   transform: translateY(-1px);
 }
 
@@ -231,7 +260,7 @@
   width: 100%;
   background-color: var(--dark);
   -webkit-overflow-scrolling: touch;
-  height: calc(100% - 120px); /* Ajusté pour tenir compte du header et footer */
+  height: calc(100% - 120px);
 }
 
 .mainContent > div {
@@ -245,18 +274,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 0.75rem;
-  position: relative; /* Changé de sticky à relative */
-  bottom: auto; /* Réinitialisé */
+  position: relative;
+  bottom: auto;
   z-index: 90;
   background-color: var(--dark);
-  border-top: 1px solid var(--grey);
+  border-top: 1px solid var(--line);
   flex-shrink: 0;
   gap: 0.5rem;
 }
 
 .navArrow {
-  background-color: rgba(40, 40, 40, 0.3);
-  border: 1px solid var(--grey);
+  background-color: color-mix(in srgb, var(--dark) 80%, transparent);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   color: var(--light);
@@ -274,7 +303,7 @@
 
 .navArrow:hover:not(:disabled) {
   border-color: var(--primary);
-  background-color: rgba(199, 255, 68, 0.1);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   transform: translateY(-1px);
 }
 
@@ -296,10 +325,10 @@
   opacity: 0.9;
   font-size: 0.85rem;
   font-weight: 600;
-  background-color: rgba(30, 30, 30, 0.3);
+  background-color: color-mix(in srgb, var(--dark) 85%, transparent);
   padding: 0.4rem 0.8rem;
   border-radius: 10px;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
   min-width: 60px;
   text-align: center;
 }
@@ -323,7 +352,7 @@
 .loadingSpinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(199, 255, 68, 0.1);
+  border: 3px solid color-mix(in srgb, var(--primary) 10%, transparent);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -343,7 +372,7 @@
 /* ==================== RESPONSIVE MOBILE ==================== */
 @media (max-width: 768px) {
   .content {
-    padding-top: 80px; /* Ajusté pour correspondre à la navbar */
+    padding-top: 80px;
   }
   
   .pageContainer {
@@ -367,11 +396,11 @@
   
   .navButtons {
     position: fixed;
-    top: 80px; /* Ajusté pour être sous la navbar */
+    top: 80px;
     left: 0;
     right: 0;
     background-color: var(--dark);
-    border-bottom: 1px solid var(--grey);
+    border-bottom: 1px solid var(--line);
     padding: 0.5rem;
     flex-direction: column;
     height: auto;
@@ -404,8 +433,19 @@
     font-size: 0.85rem;
   }
   
+  /* Bouton Projets sur mobile */
+  .projectsButton {
+    padding: 0.5rem;
+    min-width: 44px;
+    display: flex;
+  }
+  
+  .buttonText {
+    display: none;
+  }
+  
   .desktopActions {
-    display: none; /* Masquer tous les boutons sauf "Save" sur mobile */
+    display: none;
   }
   
   .mobileSaveButton {
@@ -431,7 +471,7 @@
   .viewTeamButton {
     padding: 0.5rem;
     min-width: 44px;
-    display: none; /* Masquer le bouton "Projets" sur mobile */
+    display: none;
   }
   
   .mainContent {
@@ -442,7 +482,7 @@
   .footer {
     height: 60px;
     padding: 0 0.5rem;
-    position: relative; /* Changé de fixed à relative */
+    position: relative;
     bottom: auto;
     left: auto;
     right: auto;
@@ -491,6 +531,11 @@
     font-size: 0.7rem;
   }
   
+  .projectsButton {
+    padding: 0.4rem 0.6rem;
+    min-width: 40px;
+  }
+  
   .saveButton {
     padding: 0.4rem 0.6rem;
     min-width: 40px;
@@ -525,10 +570,14 @@
   }
 }
 
-
 /* Tablettes */
 @media (min-width: 769px) and (max-width: 1024px) {
   .navButton {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+  
+  .projectsButton {
     padding: 0.5rem 0.85rem;
     font-size: 0.8rem;
   }
@@ -542,13 +591,3 @@
     padding: 1.25rem;
   }
 }
-
-
-
-
-
-
-
-
-
-

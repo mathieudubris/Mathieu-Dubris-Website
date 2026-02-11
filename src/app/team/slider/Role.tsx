@@ -134,7 +134,7 @@ export default function Role({ teamMember, onUpdate }: RoleProps) {
           {(teamMember.roles || []).map((roleName) => {
             const role = roles.find(r => r.name === roleName);
             return (
-              <div key={roleName} className={styles.selectedRoleTag}>
+              <div key={roleName} className={`${styles.selectedRoleTag} ${role ? styles[role.colorClass] : ''}`}>
                 <span>{roleName}</span>
                 <button 
                   onClick={() => removeRole(roleName)}

@@ -55,8 +55,6 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--primary);
-  color: var(--black);
   padding: 0.375rem 0.75rem;
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -67,6 +65,42 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Classes de couleur pour les tags sélectionnés */
+.selectedRoleTag.Direction {
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.selectedRoleTag.Design {
+  background-color: var(--red);
+  color: var(--black);
+}
+
+.selectedRoleTag.Programming {
+  background-color: var(--orange);
+  color: var(--black);
+}
+
+.selectedRoleTag.Art3D {
+  background-color: var(--yellow);
+  color: var(--black);
+}
+
+.selectedRoleTag.UIUX {
+  background-color: var(--green);
+  color: var(--black);
+}
+
+.selectedRoleTag.Audio {
+  background-color: var(--teal);
+  color: var(--black);
+}
+
+.selectedRoleTag.Support {
+  background-color: var(--pink);
+  color: var(--black);
 }
 
 .removeButton {
@@ -141,9 +175,11 @@
   justify-content: space-between;
 }
 
-
 .roleButton.selected {
   font-weight: 500;
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--black) !important;
 }
 
 /* Direction & Management - Blanc */
@@ -152,13 +188,12 @@
   color: var(--black);
 }
 
-.roleButton.Direction:hover {
+.roleButton.Direction:hover:not(.selected) {
   background-color: var(--primary);
 }
 
 .roleButton.Direction.selected {
-  border-color: var(--white);
-  /* box-shadow supprimé */
+  border-color: var(--primary);
 }
 
 /* Design - Rouge */
@@ -167,13 +202,12 @@
   color: var(--black);
 }
 
-.roleButton.Design:hover {
+.roleButton.Design:hover:not(.selected) {
   background-color: var(--primary);
 }
 
 .roleButton.Design.selected {
-  border-color: var(--red);
-  /* box-shadow supprimé */
+  border-color: var(--primary);
 }
 
 /* Programmation - Orange */
@@ -182,13 +216,12 @@
   color: var(--black);
 }
 
-.roleButton.Programming:hover {
+.roleButton.Programming:hover:not(.selected) {
   background-color: var(--primary);
 }
 
 .roleButton.Programming.selected {
-  border-color: var(--orange);
-  /* box-shadow supprimé */
+  border-color: var(--primary);
 }
 
 /* Art 3D - Jaune */
@@ -197,13 +230,12 @@
   color: var(--black);
 }
 
-.roleButton.Art3D:hover {
+.roleButton.Art3D:hover:not(.selected) {
   background-color: var(--primary);
 }
 
 .roleButton.Art3D.selected {
-  border-color: var(--yellow);
-  /* box-shadow supprimé */
+  border-color: var(--primary);
 }
 
 /* UI/UX - Vert */
@@ -212,13 +244,12 @@
   color: var(--black);
 }
 
-.roleButton.UIUX:hover {
+.roleButton.UIUX:hover:not(.selected) {
   background-color: var(--primary);
 }
 
 .roleButton.UIUX.selected {
-  border-color: var(--green);
-  /* box-shadow supprimé */
+  border-color: var(--primary);
 }
 
 /* Audio - Turquoise */
@@ -227,13 +258,12 @@
   color: var(--black);
 }
 
-.roleButton.Audio:hover {
+.roleButton.Audio:hover:not(.selected) {
   background-color: var(--primary);
 }
 
 .roleButton.Audio.selected {
-  border-color: var(--teal);
-  /* box-shadow supprimé */
+  border-color: var(--primary);
 }
 
 /* Support & Marketing - Rose */
@@ -242,15 +272,13 @@
   color: var(--black);
 }
 
-.roleButton.Support:hover {
+.roleButton.Support:hover:not(.selected) {
   background-color: var(--primary);
 }
 
 .roleButton.Support.selected {
-  border-color: var(--pink);
-  /* box-shadow supprimé */
+  border-color: var(--primary);
 }
-
 
 .infoButton {
   display: flex;

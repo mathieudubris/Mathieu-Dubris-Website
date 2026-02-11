@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import styles from './page.module.css';
@@ -8,6 +8,31 @@ import styles from './page.module.css';
 export default function RootPage() {
   const router = useRouter();
   const [isFinished, setIsFinished] = useState(false);
+  const [loadingBarWidth, setLoadingBarWidth] = useState<number | null>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const loadingContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Ajuste la largeur de la barre de chargement à celle du texte
+    const updateLoadingBarWidth = () => {
+      if (textRef.current && loadingContainerRef.current) {
+        const textWidth = textRef.current.offsetWidth;
+        setLoadingBarWidth(textWidth);
+        
+        // Applique la largeur directement au conteneur
+        loadingContainerRef.current.style.width = `${textWidth}px`;
+      }
+    };
+
+    // Initial update
+    updateLoadingBarWidth();
+
+    // Update on window resize
+    window.addEventListener('resize', updateLoadingBarWidth);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', updateLoadingBarWidth);
+  }, []);
 
   useEffect(() => {
     // Redirection après la fin du chargement
@@ -47,21 +72,29 @@ export default function RootPage() {
         <AnimatePresence mode="wait">
           {!isFinished && (
             <motion.div 
-              className={styles.contentContainer}  // Changé ici
+              className={styles.contentContainer}
               variants={containerVariants}
               initial="hidden"
               animate="visible"
               exit={{ opacity: 0, filter: "blur(10px)" }}
             >
               <h1 className={styles.title}>
-                <motion.span variants={itemVariants} className={styles.line}>
+                <motion.span 
+                  ref={textRef}
+                  variants={itemVariants} 
+                  className={styles.line}
+                >
                   BIENVENUE
                 </motion.span>
               </h1>
 
               <motion.div 
+                ref={loadingContainerRef}
                 className={styles.loadingContainer}
                 variants={itemVariants}
+                style={{
+                  width: loadingBarWidth ? `${loadingBarWidth}px` : '100%'
+                }}
               >
                 <motion.div 
                   className={styles.loadingBar}
