@@ -145,22 +145,22 @@ const ContactPage: React.FC = () => {
     {
       icon: <MapPin size={20} />,
       title: 'Adresse',
-      content: '123 Avenue de la République\n75011 Paris, France'
+      content: 'Ankerana / Antananarivo'
     },
     {
       icon: <Phone size={20} />,
       title: 'Téléphone',
-      content: '+33 1 23 45 67 89\nLundi - Vendredi, 9h-18h'
+      content: '+261 34 25 269 48'
     },
     {
       icon: <Mail size={20} />,
       title: 'Email',
-      content: 'contact@example.com\nsupport@example.com'
+      content: 'mathieudubris@gmail.com'
     },
     {
       icon: <Clock size={20} />,
       title: 'Horaires',
-      content: 'Lundi - Vendredi: 9h-18h\nSamedi: 10h-16h'
+      content: 'Lundi - Vendredi: 10h-21h / Samedi: 07h-22h'
     }
   ];
 

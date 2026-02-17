@@ -7,7 +7,7 @@
 .searchBar {
   display: flex;
   align-items: center;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--light);
   padding: 0 18px;
   border-radius: 50px;
   height: 42px;

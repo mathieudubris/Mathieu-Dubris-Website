@@ -1,0 +1,401 @@
+/* cookies/cookies.module.css */
+.container {
+  min-height: 100vh;
+  background-color: var(--dark);
+  color: var(--light);
+  padding: 3rem 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-main);
+}
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem;
+  background-color: transparent;
+}
+
+.title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--light);
+  margin-bottom: 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 1rem;
+  letter-spacing: -0.5px;
+}
+
+.lastUpdated {
+  color: var(--light);
+  margin-bottom: 4rem;
+  font-size: 0.95rem;
+  font-style: italic;
+  text-align: left;
+}
+
+.section {
+  margin-bottom: 3rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--light);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.subsection {
+  margin-bottom: 2rem;
+}
+
+.subsectionTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+}
+
+.text {
+  color: var(--light);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  font-size: 1.05rem;
+}
+
+.emphasis {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.highlight {
+  background-color: var(--dark);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: monospace;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.list {
+  margin: 1.5rem 0;
+  padding-left: 2rem;
+}
+
+.listItem {
+  color: var(--light);
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
+  position: relative;
+}
+
+.listItem::before {
+  content: "•";
+  color: var(--primary);
+  font-weight: bold;
+  font-size: 1.2rem;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+  vertical-align: middle;
+}
+
+.nestedList {
+  margin: 0.5rem 0 0.5rem 1.5rem;
+  padding-left: 1rem;
+}
+
+.nestedListItem {
+  color: var(--light);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.nestedListItem::before {
+  content: "–";
+  color: var(--light);
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin: 2rem 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.tableHeader {
+  background-color: var(--dark);
+  font-weight: 600;
+  color: var(--primary);
+  border: 1px solid var(--line);
+}
+
+.tableCell {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--light);
+}
+
+.cookieManager {
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.preferenceCard {
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.preferenceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.preferenceTitle {
+  font-weight: 600;
+  color: var(--light);
+  font-size: 1.1rem;
+}
+
+.preferenceStatus {
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.preferenceDescription {
+  color: var(--light);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--line);
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--light);
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.checkbox:checked + .slider {
+  background-color: var(--primary);
+}
+
+.checkbox:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.saveButton {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.saveButton:hover {
+  background-color: var(--primary);
+  color: var(--dark);
+}
+
+.acceptAllButton {
+  background-color: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.acceptAllButton:hover {
+  opacity: 0.8;
+}
+
+.refuseAllButton {
+  background-color: transparent;
+  color: var(--light);
+  border: 1px solid var(--line);
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.refuseAllButton:hover {
+  border-color: var(--light);
+}
+
+.contactCard {
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.footerNote {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+  color: var(--light);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.small {
+  font-size: 0.85rem;
+  color: var(--light);
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem 1rem;
+  }
+  
+  .main {
+    padding: 1.5rem;
+  }
+  
+  .title {
+    font-size: 2.2rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.4rem;
+  }
+  
+  .subsectionTitle {
+    font-size: 1.1rem;
+  }
+  
+  .text {
+    font-size: 1rem;
+  }
+  
+  .tableCell {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+  
+  .cookieManager {
+    padding: 1.5rem;
+  }
+  
+  .buttonGroup {
+    flex-direction: column;
+  }
+  
+  .saveButton,
+  .acceptAllButton,
+  .refuseAllButton {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 1rem;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+  
+  .section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+  }
+  
+  .list {
+    padding-left: 1.5rem;
+  }
+  
+  .cookieManager {
+    padding: 1.2rem;
+  }
+  
+  .preferenceCard {
+    padding: 1rem;
+  }
+}

@@ -37,7 +37,7 @@
   color: var(--light);
   margin-bottom: 25px;
   line-height: 1.4;
-  border-left: 2px solid var(--grey);
+  border-left: 2px solid var(--line);
   padding-left: 12px;
 }
 
@@ -94,7 +94,7 @@
     padding-left: 0;
     margin-bottom: 15px;
     font-size: 0.8rem;
-    color: var(--whlightite);
+    color: var(--light);
   }
   .actions {
     justify-content: center;

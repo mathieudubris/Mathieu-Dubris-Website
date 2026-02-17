@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Users } from 'lucide-react';
+import { Edit2, Trash2, Users, Lock } from 'lucide-react';
 import { Project as FirebaseProject } from '@/utils/firebase-api';
 import styles from './ProjectCard.module.css';
 
@@ -93,6 +93,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     );
   };
 
+  // Gestion du clic sur la carte (redirection ou accès anticipé)
+  const handleCardClick = () => {
+    // Si c'est un accès anticipé et que l'utilisateur n'est PAS membre et PAS admin
+    if (project.visibility === 'early_access' && !isMember && !isAdmin) {
+      // Rediriger vers la page de sécurité
+      window.location.href = '/security/access';
+      return;
+    }
+    
+    // Sinon, ouvrir le projet normalement
+    onClick(project);
+  };
+
+  // Vérifier si le contenu (sauf la date) doit être flou
+  const isBlurred = project.visibility === 'early_access' && !isMember && !isAdmin;
+
   // Gestion de la confirmation de suppression
   if (isDeleteConfirm && project.id) {
     return (
@@ -140,10 +156,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      onClick={() => onClick(project)}
+      onClick={handleCardClick}
     >
-      {/* Header avec badge membre et actions admin - COMME MAQUETTE */}
+      {/* Header avec badge membre, badge accès anticipé et actions admin */}
       <div className={styles.cardHeader}>
+        {/* Badge "Vous êtes membre" si l'utilisateur est membre */}
         {isMember && (
           <div className={styles.memberBadge}>
             <Users size={12} />
@@ -151,10 +168,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         )}
 
+        {/* Badge "Accès anticipé" si le projet est en early access et que l'utilisateur n'est pas membre/admin */}
+        {project.visibility === 'early_access' && !isMember && !isAdmin && (
+          <div className={`${styles.memberBadge} ${styles.earlyAccessBadge}`}>
+            <Lock size={12} />
+            <span>Accès anticipé</span>
+          </div>
+        )}
+
+        {/* Actions admin (toujours visibles pour l'admin même si flou) */}
         {isAdmin && (
           <div className={styles.adminActions} style={{ 
-            marginLeft: isMember ? 'auto' : '0',
-            marginTop: isMember ? '0' : '0'
+            marginLeft: (isMember || (project.visibility === 'early_access' && !isMember && !isAdmin)) ? 'auto' : '0',
+            marginTop: (isMember || (project.visibility === 'early_access' && !isMember && !isAdmin)) ? '0' : '0'
           }}>
             <button
               onClick={(e) => {
@@ -180,8 +206,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )}
       </div>
 
-      {/* Image de couverture */}
-      <div className={styles.coverImageContainer}>
+      {/* Image de couverture - MAINTENANT FLOUE SI ACCÈS ANTICIPÉ */}
+      <div className={`${styles.coverImageContainer} ${isBlurred ? styles.blurredImage : ''}`}>
         <img 
           src={project.image || '/default-project.jpg'} 
           alt={project.title}
@@ -192,35 +218,46 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         />
       </div>
 
-      {/* Contenu - STRUCTURE COMME MAQUETTE */}
+      {/* Contenu - avec structure spéciale pour que la date reste visible */}
       <div className={styles.cardContent}>
-        {/* Titre en gras avec effet multiligne + ellipsis */}
-        <h3 className={styles.projectTitle}>
-          {project.title || "Titre du projet"}
-        </h3>
+        {/* Partie floutée (tout sauf le footer) */}
+        <div className={`${styles.blurrableContent} ${isBlurred ? styles.blurred : ''}`}>
+          {/* Titre en gras avec effet multiligne + ellipsis */}
+          <h3 className={styles.projectTitle}>
+            {project.title || "Titre du projet"}
+          </h3>
 
-        {/* Description avec ellipsis */}
-        <p className={styles.projectDescription}>
-          {project.description || "Description du projet. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum."}
-        </p>
+          {/* Description avec ellipsis */}
+          <p className={styles.projectDescription}>
+            {project.description || "Description du projet. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum."}
+          </p>
 
-        {/* Icônes des logiciels */}
-        {renderSoftwareIcons()}
+          {/* Icônes des logiciels */}
+          {renderSoftwareIcons()}
 
-        {/* Barre de progression */}
-        <div className={styles.progressBar}>
-          <div 
-            className={styles.progressFill}
-            style={{ width: `${project.progress || 0}%` }}
-          ></div>
+          {/* Barre de progression */}
+          <div className={styles.progressBar}>
+            <div 
+              className={styles.progressFill}
+              style={{ width: `${project.progress || 0}%` }}
+            ></div>
+          </div>
         </div>
 
-        {/* Footer avec avatars et date - COMME MAQUETTE */}
+        {/* Footer avec avatars et date - TOUJOURS VISIBLE (pas flouté) */}
         <div className={styles.cardFooter}>
           {renderMemberAvatars()}
           <span className={styles.projectDate}>{formatDate(project.createdAt) || "22/01/2025"}</span>
         </div>
       </div>
+
+      {/* Overlay pour l'accès anticipé (message optionnel) */}
+      {isBlurred && (
+        <div className={styles.earlyAccessOverlay}>
+          <Lock size={24} />
+          <span>Projet en accès anticipé</span>
+        </div>
+      )}
     </motion.div>
   );
 };

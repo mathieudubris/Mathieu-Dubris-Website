@@ -1,12 +1,18 @@
-
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { FolderKanban, ArrowLeft, Menu, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { auth, setupAuthListener, canEditTeamMember } from '@/utils/firebase-api';
-import { getFirestore, doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
+import { 
+  auth, 
+  setupAuthListener, 
+  canEditTeamMember, 
+  saveProjectTeamMember, 
+  getUserProjectTeamProfile, 
+  getProject,
+  getProjectBySlug
+} from '@/utils/firebase-api';
 import { 
   User, Info, Phone, Monitor, Laptop, MapPin,
   Save, ChevronLeft, ChevronRight, Loader2
@@ -20,9 +26,11 @@ import Role from './slider/Role';
 import Equipment from './slider/Equipment';
 import styles from './team.module.css';
 
-interface TeamMember {
+interface ProjectTeamMember {
   id?: string;
   userId: string;
+  projectId: string;
+  slug?: string;
   image: string;
   firstName: string;
   lastName: string;
@@ -69,30 +77,20 @@ const sections = [
 
 const convertFirestoreDate = (date: any): Date => {
   if (!date) return new Date();
-  
-  if (date instanceof Date) {
-    return date;
-  }
-  
+  if (date instanceof Date) return date;
   if (typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function') {
     return date.toDate();
   }
-  
-  if (typeof date === 'string') {
+  if (typeof date === 'string' || typeof date === 'number') {
     return new Date(date);
   }
-  
-  if (typeof date === 'number') {
-    return new Date(date);
-  }
-  
   return new Date();
 };
 
 function EquipePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const projectId = searchParams.get('project');
+  const projectSlug = searchParams.get('project');
   
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showLogin, setShowLogin] = useState(false);
@@ -100,9 +98,14 @@ function EquipePageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState('profile');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [projectTitle, setProjectTitle] = useState<string>('');
+  const [projectId, setProjectId] = useState<string>('');
+  const [isMember, setIsMember] = useState<boolean>(false);
+  const [accessError, setAccessError] = useState<string>('');
   
-  const [teamMember, setTeamMember] = useState<TeamMember>({
+  const [teamMember, setTeamMember] = useState<ProjectTeamMember>({
     userId: '',
+    projectId: '',
     image: '',
     firstName: '',
     lastName: '',
@@ -138,7 +141,9 @@ function EquipePageContent() {
     const unsubscribe = setupAuthListener(async (user) => {
       if (user) {
         setCurrentUser(user);
-        await loadTeamMemberData(user.uid);
+        if (projectSlug) {
+          await loadProjectFromSlug(user);
+        }
       } else {
         setCurrentUser(null);
       }
@@ -146,64 +151,96 @@ function EquipePageContent() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [projectSlug]);
 
-  const loadTeamMemberData = async (userId: string) => {
+  const loadProjectFromSlug = async (user: any) => {
+    if (!projectSlug || !user) return;
+    
     try {
-      const db = getFirestore();
-      const teamRef = doc(db, 'team', userId);
-      const teamSnap = await getDoc(teamRef);
-      
-      if (teamSnap.exists()) {
-        const data = teamSnap.data() as any;
+      const project = await getProjectBySlug(projectSlug);
+      if (project) {
+        setProjectTitle(project.title);
+        setProjectId(project.id || '');
         
-        const canEdit = await canEditTeamMember(userId, auth.currentUser);
-        if (!canEdit) {
-          console.warn("L'utilisateur n'a pas la permission de modifier cette fiche");
-          router.push('/team/view');
+        // VÉRIFICATION CRUCIALE : L'utilisateur connecté est-il membre du projet ?
+        const userIsMember = project.teamMembers?.includes(user.uid) || 
+                            project.createdBy === user.uid;
+        
+        setIsMember(userIsMember);
+        
+        if (!userIsMember) {
+          // L'utilisateur n'est pas membre - afficher un message d'erreur
+          setAccessError("Vous n'êtes pas membre de ce projet. Vous ne pouvez pas accéder à la page d'équipe.");
           return;
         }
         
-        const createdAt = convertFirestoreDate(data.createdAt);
-        const updatedAt = convertFirestoreDate(data.updatedAt);
+        // Si membre, charger ses données
+        await loadTeamMemberData(user.uid, project.id || '');
+      } else {
+        // Projet non trouvé, rediriger
+        router.push('/portfolio/projet-en-cours');
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du projet:', error);
+      setAccessError("Erreur lors du chargement du projet");
+    }
+  };
+
+  // Redirection si pas de projectSlug
+  useEffect(() => {
+    if (!projectSlug && !isLoading) {
+      router.push('/portfolio/projet-en-cours');
+    }
+  }, [projectSlug, isLoading, router]);
+
+  const loadTeamMemberData = async (userId: string, pid: string) => {
+    try {
+      const profile = await getUserProjectTeamProfile(userId, pid);
+      
+      if (profile) {
+        const createdAt = convertFirestoreDate(profile.createdAt);
+        const updatedAt = convertFirestoreDate(profile.updatedAt);
         
         setTeamMember({
-          ...data,
-          userId: data.userId || userId,
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
-          email: data.email || currentUser?.email || '',
-          phone: data.phone || '',
-          age: data.age || 0,
-          agePublic: data.agePublic !== undefined ? data.agePublic : true,
-          image: data.image || '',
-          contacts: data.contacts || [],
-          roles: data.roles || [],
+          ...profile,
+          userId: profile.userId || userId,
+          projectId: pid,
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          email: profile.email || currentUser?.email || '',
+          phone: profile.phone || '',
+          age: profile.age || 0,
+          agePublic: profile.agePublic !== undefined ? profile.agePublic : true,
+          image: profile.image || '',
+          contacts: profile.contacts || [],
+          roles: profile.roles || [],
           equipment: {
             phone: {
-              model: data.equipment?.phone?.model || '',
-              internet: data.equipment?.phone?.internet || 'wifi'
+              model: profile.equipment?.phone?.model || '',
+              internet: profile.equipment?.phone?.internet || 'wifi'
             },
             computer: {
-              os: data.equipment?.computer?.os || 'windows',
-              ram: data.equipment?.computer?.ram || '',
-              storage: data.equipment?.computer?.storage || '',
-              gpu: data.equipment?.computer?.gpu || ''
+              os: profile.equipment?.computer?.os || 'windows',
+              ram: profile.equipment?.computer?.ram || '',
+              storage: profile.equipment?.computer?.storage || '',
+              gpu: profile.equipment?.computer?.gpu || ''
             }
           },
           location: {
-            country: data.location?.country || '',
-            city: data.location?.city || '',
-            district: data.location?.district || '',
-            districtPublic: data.location?.districtPublic !== undefined ? data.location.districtPublic : true
+            country: profile.location?.country || '',
+            city: profile.location?.city || '',
+            district: profile.location?.district || '',
+            districtPublic: profile.location?.districtPublic !== undefined ? profile.location.districtPublic : true
           },
           createdAt,
           updatedAt
         });
       } else {
+        // Nouveau profil pour ce projet
         setTeamMember(prev => ({
           ...prev,
           userId,
+          projectId: pid,
           email: currentUser?.email || '',
           firstName: currentUser?.displayName?.split(' ')[0] || '',
           lastName: currentUser?.displayName?.split(' ').slice(1).join(' ') || '',
@@ -259,7 +296,7 @@ function EquipePageContent() {
       setTeamMember(prev => ({
         ...prev,
         [mainField]: {
-          ...(prev[mainField as keyof TeamMember] as any),
+          ...(prev[mainField as keyof ProjectTeamMember] as any),
           [subField]: value
         },
         updatedAt: new Date()
@@ -267,7 +304,7 @@ function EquipePageContent() {
     } else if (fieldParts.length === 3) {
       const [mainField, subField, subSubField] = fieldParts;
       setTeamMember(prev => {
-        const mainObj = prev[mainField as keyof TeamMember] as any;
+        const mainObj = prev[mainField as keyof ProjectTeamMember] as any;
         const subObj = mainObj[subField];
         
         return {
@@ -291,50 +328,32 @@ function EquipePageContent() {
       return;
     }
 
+    if (!projectId) {
+      alert('❌ Erreur: Aucun projet sélectionné');
+      return;
+    }
+
     if (!teamMember.firstName.trim() || !teamMember.lastName.trim()) {
-      alert('⚠️ Veuillez remplir les informations obligatoires (Prénom, Nom, Email)');
+      alert('⚠️ Veuillez remplir les informations obligatoires (Prénom, Nom)');
       return;
     }
 
     setIsSaving(true);
     try {
-      const db = getFirestore();
-      const teamRef = doc(db, 'team', currentUser.uid);
-      
-      if (teamMember.userId !== currentUser.uid) {
-        alert('❌ Vous ne pouvez pas modifier cette fiche');
-        return;
-      }
-      
-      const teamData = {
+      await saveProjectTeamMember(currentUser.uid, projectId, {
         ...teamMember,
         userId: currentUser.uid,
-        createdAt: teamMember.createdAt ? Timestamp.fromDate(new Date(teamMember.createdAt)) : Timestamp.now(),
-        updatedAt: Timestamp.now(),
-        phone: teamMember.phone || '',
-        contacts: teamMember.contacts || [],
-        roles: teamMember.roles || []
-      };
-      
-      Object.keys(teamData).forEach(key => {
-        if (teamData[key as keyof typeof teamData] === undefined) {
-          delete teamData[key as keyof typeof teamData];
-        }
+        projectId: projectId,
+        email: teamMember.email || currentUser.email || '',
+        updatedAt: new Date()
       });
-      
-      await setDoc(teamRef, teamData, { merge: true });
 
       alert('✅ Profil enregistré avec succès!');
       
-      if (projectId) {
-        setTimeout(() => {
-          router.push(`/team/view`);
-        }, 1500);
-      } else {
-        setTimeout(() => {
-          router.push('/team/view');
-        }, 1500);
-      }
+      // Redirection avec slug
+      setTimeout(() => {
+        router.push(`/portfolio/projet-en-cours?project=${projectSlug}`);
+      }, 1500);
       
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
@@ -399,6 +418,10 @@ function EquipePageContent() {
     if (currentIndex > 0) {
       setActiveSection(sections[currentIndex - 1].id);
     }
+  };
+
+  const handleBackToProjects = () => {
+    router.push('/portfolio/projet-en-cours');
   };
 
   const renderSection = () => {
@@ -473,6 +496,44 @@ function EquipePageContent() {
     );
   }
 
+  // Afficher un message d'erreur si l'utilisateur n'est pas membre
+  if (accessError) {
+    return (
+      <div className={styles.mainContainer}>
+        <Header />
+        <div className={styles.accessDenied}>
+          <div className={styles.accessDeniedContent}>
+            <p>{accessError}</p>
+            <button
+              onClick={handleBackToProjects}
+              className={styles.backButton}
+            >
+              <ArrowLeft size={16} />
+              Retour aux projets
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!projectSlug) {
+    return (
+      <div className={styles.mainContainer}>
+        <Header />
+        <div className={styles.loginCenter}>
+          <button
+            onClick={handleBackToProjects}
+            className={styles.loginCenterButton}
+          >
+            <FolderKanban size={20} />
+            Retour aux projets
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.mainContainer}>
       <Header />
@@ -480,6 +541,13 @@ function EquipePageContent() {
       <main className={styles.content}>
         <div className={styles.pageContainer}>
           <header className={styles.header}>
+            {/* Titre du projet */}
+            <div className={styles.projectInfo}>
+              <h1 className={styles.projectTitle}>
+                {projectTitle ? `Équipe - ${projectTitle}` : 'Équipe du projet'}
+              </h1>
+            </div>
+
             {/* Mobile Menu Toggle */}
             <button
               className={styles.mobileMenuToggle}
@@ -513,14 +581,14 @@ function EquipePageContent() {
             <div className={styles.headerActions}>
               {/* Bouton Projets toujours visible */}
               <button
-                onClick={() => router.push('/portfolio/projet-en-cours')}
+                onClick={handleBackToProjects}
                 className={styles.projectsButton}
               >
                 <FolderKanban size={16} />
                 <span className={styles.buttonText}>Projets</span>
               </button>
               
-              {/* Bouton Save - VISIBLE SUR TOUS LES ÉCRANS */}
+              {/* Bouton Save */}
               <button
                 onClick={handleSave}
                 disabled={isSaving}

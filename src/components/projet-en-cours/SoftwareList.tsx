@@ -1,8 +1,7 @@
-
-// SoftwareList.tsx - LISTE COMPLÈTE DE LOGICIELS AVEC RECHERCHE
+// SoftwareList.tsx - LISTE COMPLÈTE DE LOGICIELS AVEC RECHERCHE OPTIMISÉE
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Wrench, Search } from 'lucide-react';
 import styles from './SoftwareList.module.css';
@@ -23,7 +22,7 @@ interface SoftwareListProps {
   onSave?: (software: any[]) => void;
 }
 
-// LISTE COMPLÈTE ET ÉTENDUE DES LOGICIELS
+// LISTE COMPLÈTE ET ÉTENDUE DES LOGICIELS - Gardée telle quelle
 const allSoftware: Software[] = [
   // OFFICE - 11 logiciels
   { id: '101', name: 'Microsoft Word', icon: '📝', category: 'office' },
@@ -259,6 +258,7 @@ const allSoftware: Software[] = [
   { id: '189', name: 'Scikit-learn', icon: '📊', category: 'ai' },
 ];
 
+// COMPOSANT OPTIMISÉ AVEC VIRTUALISATION
 const SoftwareList: React.FC<SoftwareListProps> = ({ 
   projectId, 
   isAdmin, 
@@ -267,24 +267,26 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
   onClose = () => {},
   onSave = () => {}
 }) => {
-  const [selected, setSelected] = useState<Software[]>(selectedSoftware || []);
+  const [selected, setSelected] = useState<Software[]>(() => selectedSoftware || []);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayCount, setDisplayCount] = useState(50); // Pour le chargement progressif
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Optimisation : mise à jour uniquement quand selectedSoftware change vraiment
   useEffect(() => {
     setSelected(selectedSoftware || []);
-  }, [selectedSoftware]);
+  }, [JSON.stringify(selectedSoftware)]); // Évite les re-rendus inutiles
 
-  // Filtrer les logiciels par catégorie ET recherche
+  // Filtrer les logiciels par catégorie ET recherche - avec useMemo optimisé
   const filteredSoftware = useMemo(() => {
     let filtered = allSoftware;
     
-    // Filtrer par catégorie
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(s => s.category === selectedCategory);
     }
     
-    // Filtrer par recherche
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(s => 
@@ -296,33 +298,60 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
     return filtered;
   }, [selectedCategory, searchQuery]);
 
-  // Toggle sélection
-  const toggleSoftware = (soft: Software) => {
-    if (selected.find(s => s.id === soft.id)) {
-      setSelected(selected.filter(s => s.id !== soft.id));
-    } else {
-      setSelected([...selected, soft]);
+  // Version limitée pour l'affichage (chargement progressif)
+  const displayedSoftware = useMemo(() => {
+    return filteredSoftware.slice(0, displayCount);
+  }, [filteredSoftware, displayCount]);
+
+  // Détecter le scroll pour charger plus d'éléments
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const bottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 200;
+    
+    if (bottom && displayCount < filteredSoftware.length) {
+      setIsLoading(true);
+      // Petit délai pour ne pas bloquer le thread principal
+      setTimeout(() => {
+        setDisplayCount(prev => Math.min(prev + 50, filteredSoftware.length));
+        setIsLoading(false);
+      }, 100);
     }
-  };
+  }, [displayCount, filteredSoftware.length]);
+
+  // Réinitialiser le compteur quand les filtres changent
+  useEffect(() => {
+    setDisplayCount(50);
+  }, [selectedCategory, searchQuery]);
+
+  // Toggle sélection - avec useCallback pour éviter les re-rendus
+  const toggleSoftware = useCallback((soft: Software) => {
+    setSelected(prev => {
+      if (prev.find(s => s.id === soft.id)) {
+        return prev.filter(s => s.id !== soft.id);
+      } else {
+        return [...prev, soft];
+      }
+    });
+  }, []);
 
   // Sauvegarder
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     onSave(selected);
     onClose();
-  };
+  }, [selected, onSave, onClose]);
 
   // Réinitialiser les filtres
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setSelectedCategory('all');
     setSearchQuery('');
-  };
+  }, []);
 
   // Vue compacte pour les cartes - JUSTE LES ICÔNES
   if (compact) {
-    return null; // Les icônes sont affichées directement dans ProjectCard
+    return null;
   }
 
-  // Vue modal plein écran
+  // Vue modal plein écran optimisée
   return (
     <motion.div 
       className={styles.modalOverlay}
@@ -408,9 +437,13 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
           })}
         </div>
 
-        {/* Corps - SCROLLABLE */}
-        <div className={styles.modalBody}>
-          {(filteredSoftware.length > 0 || searchQuery.trim() !== '') ? (
+        {/* Corps - SCROLLABLE avec détection de fin */}
+        <div 
+          className={styles.modalBody} 
+          onScroll={handleScroll}
+          ref={scrollRef}
+        >
+          {filteredSoftware.length > 0 ? (
             <>
               {searchQuery.trim() !== '' && (
                 <div style={{ marginBottom: '16px', color: 'var(--text-main)', opacity: 0.7, fontSize: '0.9rem' }}>
@@ -419,7 +452,7 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
                 </div>
               )}
               <div className={styles.softwareGrid}>
-                {filteredSoftware.map(soft => {
+                {displayedSoftware.map(soft => {
                   const isSelected = selected.find(s => s.id === soft.id);
                   
                   return (
@@ -440,6 +473,16 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
                   );
                 })}
               </div>
+              {isLoading && (
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--primary)' }}>
+                  Chargement...
+                </div>
+              )}
+              {displayCount < filteredSoftware.length && !isLoading && (
+                <div style={{ textAlign: 'center', padding: '10px', opacity: 0.5, fontSize: '0.8rem' }}>
+                  Faites défiler pour voir plus de logiciels...
+                </div>
+              )}
             </>
           ) : (
             <div className={styles.emptyState}>
@@ -486,4 +529,4 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
   );
 };
 
-export default SoftwareList;
+export default React.memo(SoftwareList); // Évite les re-rendus inutiles du parent

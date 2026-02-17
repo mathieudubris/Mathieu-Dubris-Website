@@ -6,7 +6,7 @@
     bottom: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
+    background: var(--dark);
     backdrop-filter: blur(20px);
     z-index: 3000;
     display: flex;
@@ -44,7 +44,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid var(--line);
     overflow-y: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -60,7 +60,7 @@
     flex-direction: column;
     overflow: hidden;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--dark);
     overflow-y: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -74,9 +74,9 @@
     position: fixed;
     top: 15px;
     right: 15px;
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--dark);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid var(--line);
     color: var(--light);
     width: 40px;
     height: 40px;
@@ -126,8 +126,8 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(to bottom, 
-        rgba(0, 0, 0, 0.3) 0%, 
-        rgba(0, 0, 0, 0.5) 50%, 
+        var(--dark) 0%, 
+        var(--dark) 50%, 
         var(--dark) 100%);
 }
 
@@ -165,7 +165,7 @@
     display: flex;
     gap: 10px;
     font-size: 0.85rem;
-    color: #bbb;
+    color: var(--line);
     flex-wrap: wrap;
 }
 
@@ -189,15 +189,15 @@
 }
 
 .tag {
-    background: rgba(255,255,255,0.05);
-    color: #aaa;
+    background: var(--dark);
+    color: var(--line);
     padding: 5px 12px;
     border-radius: 100px;
     font-size: 0.75rem;
     display: flex;
     align-items: center;
     gap: 5px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--line);
 }
 
 .content {
@@ -212,7 +212,7 @@
     margin: 30px 0;
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 15px 30px var(--dark);
 }
 
 .media {
@@ -220,7 +220,7 @@
     display: block;
     max-height: 400px;
     object-fit: contain;
-    background: #000;
+    background: var(--dark);
 }
 
 /* Colonne droite */
@@ -249,17 +249,17 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #888;
+    color: var(--line);
     font-size: 0.9rem;
     padding: 10px 12px;
-    background: rgba(255,255,255,0.03);
+    background: var(--dark);
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid var(--line);
 }
 
 .likeBtn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dark);
+    border: 1px solid var(--line);
     color: var(--light);
     padding: 12px 16px;
     border-radius: 10px;
@@ -296,10 +296,10 @@
     gap: 10px;
     margin-bottom: 20px;
     align-items: center;
-    background: rgba(255,255,255,0.03);
+    background: var(--dark);
     padding: 10px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid var(--line);
 }
 
 .userAvatar {
@@ -375,11 +375,11 @@
 }
 
 .commentItem {
-    background: rgba(255,255,255,0.02);
+    background: var(--dark);
     padding: 15px;
     border-radius: 12px;
     position: relative;
-    border: 1px solid rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
 }
 
 .commentAuthor {
@@ -403,13 +403,13 @@
 }
 
 .commentMeta span {
-    color: #555;
+    color: var(--line);
     font-size: 0.7rem;
 }
 
 .commentText {
     font-size: 0.9rem;
-    color: #bbb;
+    color: var(--line);
     line-height: 1.5;
 }
 
@@ -417,7 +417,7 @@
     position: absolute;
     top: 15px;
     right: 15px;
-    color: #ff4444;
+    color: var(--dark-red);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -438,7 +438,7 @@
     .leftColumn, .rightColumn {
         width: 100%;
         border-right: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--line);
     }
     
     .leftColumn {

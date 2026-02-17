@@ -23,8 +23,8 @@
   display: inline-block;
   padding: 6px 16px;
   border-radius: 100px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--grey);
+  background-color: var(--dark);
+  border: 1px solid var(--line);
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -41,7 +41,7 @@
 }
 
 .subtitle {
-  color: var(--grey);
+  color: var(--line);
   font-size: 18px;
   line-height: 1.6;
   margin-bottom: 32px;
@@ -87,8 +87,8 @@
   position: relative;
   width: 56px;
   height: 56px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--grey);
+  background-color: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -120,7 +120,7 @@
 .line {
   width: 2px;
   height: 100%;
-  background: linear-gradient(180deg, var(--grey) 0%, transparent 100%);
+  background: linear-gradient(180deg, var(--line) 0%, transparent 100%);
   margin-top: 10px;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .stepDescription {
-  color: var(--grey);
+  color: var(--line);
   font-size: 15px;
   line-height: 1.5;
 }

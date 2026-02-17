@@ -27,7 +27,7 @@
 
 .section {
   background: var(--dark);
-  border: 1px solid var(--grey);
+  border: 1px solid var(--light);
   border-radius: 0.75rem;
   padding: 1.25rem;
 }

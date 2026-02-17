@@ -45,7 +45,7 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
       title: 'Portfolio', 
       links: [
         { label: 'Projets Réalisés', path: '/security/access' },
-        { label: 'Travaux en Cours', path: '/portfolio/projet-en-cours' },
+        { label: 'Projets en Cours', path: '/portfolio/projet-en-cours' },
         { label: 'Galerie Créative', path: '/security/access' },
         { label: 'Expertises', path: '/security/access' },
         { label: 'Diplômes', path: '/security/access' }

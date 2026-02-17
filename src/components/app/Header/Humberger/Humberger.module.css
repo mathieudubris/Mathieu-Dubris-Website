@@ -53,7 +53,7 @@
   top: 100%;
   left: 0;
   background: var(--dark);
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 6px;
   min-width: 200px;
@@ -61,7 +61,6 @@
   visibility: hidden;
   transform: translateY(10px);
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   z-index: 100;
 }
 
@@ -83,8 +82,8 @@
 }
 
 .dropdownContent a:hover {
-  background: rgba(199, 255, 68, 0.1);
-  color: var(--primary);
+  background: var(--primary);
+  color: var(--dark);
 }
 
 .quoteBtn {
@@ -184,8 +183,8 @@
 }
 
 .profileCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--grey);
+  background: var(--dark);
+  border: 1px solid var(--line);
   padding: 15px;
   border-radius: 12px;
   display: flex;
@@ -211,11 +210,11 @@
 
 .profileSubtext {
   font-size: 0.7rem;
-  color: var(--grey);
+  color: var(--line);
 }
 
 .mobileSection {
-  border-bottom: 1px solid var(--grey);
+  border-bottom: 1px solid var(--line);
 }
 
 .mobileDropdownTrigger {
@@ -251,7 +250,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--light);
   text-decoration: none;

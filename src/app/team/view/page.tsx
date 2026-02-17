@@ -3,8 +3,15 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { auth, setupAuthListener, getTeamMembers, getProject } from '@/utils/firebase-api';
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { 
+  auth, 
+  setupAuthListener, 
+  getProjectTeamMembers, 
+  getProject,
+  getProjectBySlug,
+  getProjectTeamMembersByProjectSlug
+} from '@/utils/firebase-api';
 import { 
   User, Mail, Phone, MapPin, Monitor, Laptop, FolderKanban,
   Instagram, MessageCircle, Youtube, Facebook, Twitter, Linkedin,
@@ -14,9 +21,11 @@ import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
 import styles from './view.module.css';
 
-interface TeamMember {
+interface ProjectTeamMember {
   id: string;
   userId: string;
+  projectId: string;
+  slug?: string;
   image: string;
   firstName: string;
   lastName: string;
@@ -52,7 +61,7 @@ interface TeamMember {
   createdAt: Date;
 }
 
-// Définition des rôles avec leur catégorie de couleur (identique à Role.tsx)
+// Définition des rôles avec leur catégorie de couleur
 const rolesData = [
   // Direction & Management - Blanc
   { name: 'Game Director', description: 'Supervise la vision globale et la direction créative du jeu', colorClass: 'Direction' },
@@ -104,58 +113,40 @@ const rolesData = [
   { name: 'QA Tester', description: 'Teste le jeu pour identifier les bugs et problèmes', colorClass: 'Support' }
 ];
 
-// Fonction utilitaire pour obtenir la classe de couleur d'un rôle
 const getRoleColorClass = (roleName: string): string => {
   const role = rolesData.find(r => r.name === roleName);
   return role ? role.colorClass : '';
 };
 
-// Fonction pour générer l'URL correcte en fonction du type de contact
-const generateContactUrl = (contact: TeamMember['contacts'][0]): string => {
+const generateContactUrl = (contact: ProjectTeamMember['contacts'][0]): string => {
   const { type, value } = contact;
   
-  // Si la valeur commence déjà par http/https, on l'utilise directement
   if (value.startsWith('http://') || value.startsWith('https://')) {
     return value;
   }
   
   switch (type) {
     case 'instagram':
-      const instaUser = value.replace('@', '').trim();
-      return `https://instagram.com/${instaUser}`;
+      return `https://instagram.com/${value.replace('@', '')}`;
     case 'facebook':
-      const fbUser = value.replace('@', '').trim();
-      return `https://facebook.com/${fbUser}`;
+      return `https://facebook.com/${value.replace('@', '')}`;
     case 'twitter':
-      const twitterUser = value.replace('@', '').trim();
-      return `https://twitter.com/${twitterUser}`;
+      return `https://twitter.com/${value.replace('@', '')}`;
     case 'youtube':
-      if (value.includes('youtube.com') || value.includes('youtu.be')) {
-        return value.includes('://') ? value : `https://${value}`;
-      }
-      const ytUser = value.replace('@', '').trim();
-      return `https://youtube.com/@${ytUser}`;
+      return value.includes('://') ? value : `https://youtube.com/@${value.replace('@', '')}`;
     case 'linkedin':
-      if (value.includes('linkedin.com')) {
-        return value.includes('://') ? value : `https://${value}`;
-      }
-      const linkedinUser = value.trim();
-      return `https://linkedin.com/in/${linkedinUser}`;
+      return value.includes('://') ? value : `https://linkedin.com/in/${value}`;
     case 'whatsapp':
-      const phoneNumber = value.replace(/[^\d+]/g, '');
-      return `https://wa.me/${phoneNumber}`;
+      return `https://wa.me/${value.replace(/[^\d+]/g, '')}`;
     case 'discord':
-      const discordUser = value.trim();
-      return `https://discord.com/users/${discordUser}`;
+      return `https://discord.com/users/${value}`;
     case 'tiktok':
-      const tiktokUser = value.replace('@', '').trim();
-      return `https://tiktok.com/@${tiktokUser}`;
+      return `https://tiktok.com/@${value.replace('@', '')}`;
     default:
       return '#';
   }
 };
 
-// Fonction pour obtenir l'icône Lucide correspondante
 const getContactLucideIcon = (type: string) => {
   const icons = {
     instagram: Instagram,
@@ -170,12 +161,12 @@ const getContactLucideIcon = (type: string) => {
   return icons[type as keyof typeof icons] || MessageCircle;
 };
 
-// Fonction utilitaire pour normaliser les données des membres
-const normalizeMemberData = (member: any): TeamMember => {
+const normalizeMemberData = (member: any): ProjectTeamMember => {
   return {
     ...member,
     id: member.id || '',
     userId: member.userId || '',
+    projectId: member.projectId || '',
     firstName: member.firstName || '',
     lastName: member.lastName || '',
     age: member.age || 0,
@@ -199,70 +190,59 @@ const normalizeMemberData = (member: any): TeamMember => {
   };
 };
 
-// Create a component that uses useSearchParams
 function TeamViewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const projectId = searchParams.get('project');
+  const projectSlug = searchParams.get('project');
   
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamMembers, setTeamMembers] = useState<ProjectTeamMember[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [selectedMember, setSelectedMember] = useState<ProjectTeamMember | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [projectTitle, setProjectTitle] = useState<string>('');
+  const [projectId, setProjectId] = useState<string>('');
 
   useEffect(() => {
     const unsubscribe = setupAuthListener(async (user) => {
       if (user) {
         setCurrentUser(user);
-        await loadTeamMembers();
-        if (projectId) {
-          await loadProjectInfo();
-        }
-      } else {
-        setCurrentUser(null);
+      }
+      if (projectSlug) {
+        await loadProjectFromSlug();
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [projectId]);
+  }, [projectSlug]);
 
-  const loadProjectInfo = async () => {
-    if (!projectId) return;
-    
+  const loadProjectFromSlug = async () => {
+    if (!projectSlug) return;
     try {
-      const project = await getProject(projectId);
+      const project = await getProjectBySlug(projectSlug);
       if (project) {
         setProjectTitle(project.title);
+        setProjectId(project.id || '');
+        await loadTeamMembers(project.id || '');
       }
     } catch (error) {
       console.error('Erreur lors du chargement du projet:', error);
     }
   };
 
-  const loadTeamMembers = async () => {
+  useEffect(() => {
+    if (!projectSlug && !loading) {
+      router.push('/portfolio/projet-en-cours');
+    }
+  }, [projectSlug, loading, router]);
+
+  const loadTeamMembers = async (pid: string) => {
     try {
-      const members = await getTeamMembers();
-      
-      // Filtrer par projet si projectId existe
-      let filteredMembers = members;
-      if (projectId) {
-        // Récupérer le projet pour obtenir les membres
-        const project = await getProject(projectId);
-        if (project && project.teamMembers) {
-          filteredMembers = members.filter(member => 
-            project.teamMembers.includes(member.userId)
-          );
-        }
-      }
-      
-      // Normaliser les données de chaque membre
-      const formattedMembers = filteredMembers.map(member => 
+      const members = await getProjectTeamMembers(pid);
+      const formattedMembers = members.map(member => 
         normalizeMemberData(member)
       );
-      
       setTeamMembers(formattedMembers);
     } catch (error) {
       console.error('Erreur lors du chargement des membres:', error);
@@ -270,9 +250,8 @@ function TeamViewContent() {
   };
 
   const handleEditProfile = () => {
-    if (currentUser) {
-      const url = projectId ? `/team?project=${projectId}` : '/team';
-      router.push(url);
+    if (currentUser && projectSlug) {
+      router.push(`/team?project=${projectSlug}`);
     } else {
       setShowLogin(true);
     }
@@ -287,6 +266,23 @@ function TeamViewContent() {
       <div className={styles.loadingContainer}>
         <div className={styles.loadingSpinner}></div>
         <div className={styles.loadingText}>Chargement de l'équipe...</div>
+      </div>
+    );
+  }
+
+  if (!projectSlug) {
+    return (
+      <div className={styles.mainContainer}>
+        <Header />
+        <div className={styles.loginCenter}>
+          <button
+            onClick={handleBackToProjects}
+            className={styles.loginCenterButton}
+          >
+            <FolderKanban size={20} />
+            Retour aux projets
+          </button>
+        </div>
       </div>
     );
   }
@@ -310,7 +306,7 @@ function TeamViewContent() {
               <div className={styles.pageHeader}>
                 <div>
                   <h1 className={styles.pageTitle}>
-                    {projectTitle ? `Équipe - ${projectTitle}` : 'Notre Équipe'}
+                    {projectTitle ? `Équipe - ${projectTitle}` : 'Équipe du projet'}
                   </h1>
                   <p className={styles.pageSubtitle}>
                     {teamMembers.length} membre{teamMembers.length > 1 ? 's' : ''} dans l'équipe
@@ -336,105 +332,105 @@ function TeamViewContent() {
                 </div>
               </div>
               
-              {projectTitle && (
-                <div className={styles.projectTitle}>
-                  📁 Projet en cours : {projectTitle}
-                </div>
-              )}
-              
               {teamMembers.length > 0 ? (
                 <div className={styles.teamGrid}>
-                  {teamMembers.map((member, index) => (
-                    <motion.div
-                      key={member.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={styles.memberCard}
-                      onClick={() => setSelectedMember(member)}
-                    >
-                      <div className={styles.cardHeader}>
-                        <div className={styles.avatar}>
-                          {member.image ? (
-                            <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
-                          ) : (
-                            <User size={32} />
-                          )}
-                        </div>
-                        <div className={styles.memberInfo}>
-                          <h3 className={styles.memberName}>
-                            {member.firstName} {member.lastName}
-                          </h3>
-                          {member.agePublic && member.age > 0 && (
-                            <div className={styles.memberAge}>{member.age} ans</div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className={styles.cardContent}>
-                        {member.roles && member.roles.length > 0 && (
-                          <div className={styles.rolesSection}>
-                            <h4 className={styles.sectionTitle}>
-                              <Monitor size={14} />
-                              <span>Rôles</span>
-                            </h4>
-                            <div className={styles.rolesList}>
-                              {member.roles.slice(0, 3).map((role, i) => {
-                                const colorClass = getRoleColorClass(role);
-                                return (
-                                  <span key={i} className={`${styles.roleTag} ${styles[colorClass]}`}>
-                                    {role}
-                                  </span>
-                                );
-                              })}
-                              {member.roles.length > 3 && (
-                                <span className={styles.moreRoles}>
-                                  +{member.roles.length - 3} autres
-                                </span>
-                              )}
-                            </div>
+                  {teamMembers.map((member, index) => {
+                    const isCurrentUser = currentUser?.uid === member.userId;
+                    
+                    return (
+                      <motion.div
+                        key={member.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`${styles.memberCard} ${isCurrentUser ? styles.currentUserCard : ''}`}
+                        onClick={() => setSelectedMember(member)}
+                      >
+                        {isCurrentUser && (
+                          <div className={styles.currentUserBadge}>
+                            <User size={12} />
+                            <span>Vous</span>
                           </div>
                         )}
                         
-                        <div className={styles.locationSection}>
-                          <h4 className={styles.sectionTitle}>
-                            <MapPin size={14} />
-                            <span>Localisation</span>
-                          </h4>
-                          <p className={styles.locationText}>
-                            {member.location ? (
-                              <>
-                                {member.location.city || 'Ville non renseignée'}, {member.location.country || 'Pays non renseigné'}
-                              </>
+                        <div className={styles.cardHeader}>
+                          <div className={styles.avatar}>
+                            {member.image ? (
+                              <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
                             ) : (
-                              'Localisation non renseignée'
+                              <User size={32} />
                             )}
-                          </p>
+                          </div>
+                          <div className={styles.memberInfo}>
+                            <h3 className={styles.memberName}>
+                              {member.firstName} {member.lastName}
+                            </h3>
+                            {member.agePublic && member.age > 0 && (
+                              <div className={styles.memberAge}>{member.age} ans</div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                        
+                        <div className={styles.cardContent}>
+                          {member.roles && member.roles.length > 0 && (
+                            <div className={styles.rolesSection}>
+                              <h4 className={styles.sectionTitle}>
+                                <Monitor size={14} />
+                                <span>Rôles</span>
+                              </h4>
+                              <div className={styles.rolesList}>
+                                {member.roles.slice(0, 3).map((role, i) => {
+                                  const colorClass = getRoleColorClass(role);
+                                  return (
+                                    <span key={i} className={`${styles.roleTag} ${styles[colorClass]}`}>
+                                      {role}
+                                    </span>
+                                  );
+                                })}
+                                {member.roles.length > 3 && (
+                                  <span className={styles.moreRoles}>
+                                    +{member.roles.length - 3} autres
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className={styles.locationSection}>
+                            <h4 className={styles.sectionTitle}>
+                              <MapPin size={14} />
+                              <span>Localisation</span>
+                            </h4>
+                            <p className={styles.locationText}>
+                              {member.location ? (
+                                <>
+                                  {member.location.city || 'Ville non renseignée'}, {member.location.country || 'Pays non renseigné'}
+                                </>
+                              ) : (
+                                'Localisation non renseignée'
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className={styles.emptyState}>
                   <User size={48} className={styles.emptyStateIcon} />
                   <h3 className={styles.emptyStateTitle}>
-                    {projectTitle ? 'Aucun membre dans ce projet' : 'Aucun membre dans l\'équipe'}
+                    Aucun membre dans ce projet
                   </h3>
                   <p className={styles.emptyStateText}>
-                    {projectTitle 
-                      ? 'Les membres apparaîtront ici une fois ajoutés au projet'
-                      : 'Créez votre profil pour être le premier membre de l\'équipe'
-                    }
+                    Soyez le premier à créer votre profil d'équipe
                   </p>
-                  {!projectTitle && (
-                    <button
-                      onClick={handleEditProfile}
-                      className={styles.emptyStateButton}
-                    >
-                      Créer mon profil
-                    </button>
-                  )}
+                  <button
+                    onClick={handleEditProfile}
+                    className={styles.emptyStateButton}
+                  >
+                    Créer mon profil
+                  </button>
                 </div>
               )}
             </>
@@ -574,6 +570,20 @@ function TeamViewContent() {
                 </div>
               </div>
             </div>
+            
+            {currentUser?.uid === selectedMember.userId && (
+              <div className={styles.modalFooter}>
+                <button
+                  onClick={() => {
+                    setSelectedMember(null);
+                    handleEditProfile();
+                  }}
+                  className={styles.modalEditButton}
+                >
+                  Modifier mon profil
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -583,7 +593,6 @@ function TeamViewContent() {
   );
 }
 
-// Main component with Suspense boundary
 export default function TeamViewPage() {
   return (
     <div className={styles.mainContainer}>

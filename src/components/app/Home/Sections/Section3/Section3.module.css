@@ -20,8 +20,8 @@
   display: inline-block;
   padding: 6px 16px;
   border-radius: 100px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--grey);
+  background-color: var(--dark);
+  border: 1px solid var(--line);
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -33,7 +33,7 @@
   font-size: clamp(32px, 5vw, 48px);
   font-weight: 800;
   margin-bottom: 20px;
-  background: linear-gradient(180deg, var(--white) 0%, var(--grey) 100%);
+  background: linear-gradient(180deg, var(--light) 0%, var(--line) 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -48,8 +48,8 @@
 .card {
   position: relative;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--grey);
+  background-color: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 24px;
   overflow: hidden;
   transition: border-color 0.3s ease;
@@ -79,7 +79,7 @@
 }
 
 .cardDescription {
-  color: var(--grey);
+  color: var(--line);
   line-height: 1.6;
   font-size: 16px;
 }

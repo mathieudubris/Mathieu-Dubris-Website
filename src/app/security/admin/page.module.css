@@ -10,7 +10,7 @@
 
 .header {
   margin-bottom: 2rem;
-  border-bottom: 2px solid var(--grey);
+  border-bottom: 2px solid var(--light);
   padding-bottom: 1rem;
 }
 
@@ -36,12 +36,11 @@
   align-items: flex-start;
   padding: 1.5rem;
   background: var(--dark);
-  border: 1px solid var(--grey);
+  border: 1px solid var(--light);
   border-radius: 12px;
   text-decoration: none;
   color: var(--light);
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .card:hover {
@@ -52,7 +51,7 @@
 }
 
 .iconWrapper {
-  background: rgba(199, 255, 68, 0.1); /* Utilisation de var(--primary) avec transparence */
+  background: var(--dark);
   padding: 0.75rem;
   border-radius: 8px;
   margin-bottom: 1rem;
@@ -67,7 +66,7 @@
 
 .cardDesc {
   font-size: 0.875rem;
-  color: var(--grey);
+  color: var(--light);
 }
 
 .badge {
@@ -79,19 +78,4 @@
   margin-top: 0.5rem;
   text-transform: uppercase;
   font-weight: bold;
-}
-
-/* Support pour le thème clair */
-.light-theme .card {
-  background: var(--dark);
-  border-color: var(--grey);
-}
-
-.light-theme .iconWrapper {
-  background: rgba(156, 223, 0, 0.1); /* Utilisation de var(--primary) en thème clair avec transparence */
-  color: var(--primary);
-}
-
-.light-theme .header {
-  border-bottom-color: var(--grey);
 }

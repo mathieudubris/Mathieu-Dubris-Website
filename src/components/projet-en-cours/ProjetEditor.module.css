@@ -1,4 +1,4 @@
-/* ProjetEditor.module.css - AVEC CAROUSEL D'IMAGES ET PRÉVISUALISATION DES MEMBRES */
+/* ProjetEditor.module.css - Version avec onglets */
 
 .overlay {
   position: fixed;
@@ -32,6 +32,51 @@
   flex-direction: column;
 }
 
+/* Panel d'erreur (admin non autorisé) */
+.errorPanel {
+  background: var(--dark);
+  border: 1px solid var(--dark-red);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.errorIcon {
+  color: var(--dark-red);
+  margin-bottom: 20px;
+}
+
+.errorPanel h3 {
+  color: var(--light);
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.errorPanel p {
+  color: var(--grey);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.closeErrorBtn {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.closeErrorBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
+}
+
+/* Header */
 .editorHeader {
   padding: 15px 30px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -107,444 +152,56 @@
   transform: rotate(90deg);
 }
 
-.publishForm {
-  padding: 20px 30px;
-  flex: 1;
+/* Navigation par onglets - MÊME STYLE QUE DANS PROJET DETAIL */
+.tabsContainer {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--dark);
+  padding: 0 24px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.formGrid {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 30px;
-  flex: 1;
-  overflow: hidden;
-  min-height: 0;
-}
-
-.mainFields {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  overflow: hidden;
-}
-
-.titleInput {
+.tabButton {
   background: transparent;
   border: none;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  font-size: 2rem;
-  font-weight: 700;
   color: var(--light);
-  padding: 12px 0;
-  outline: none;
-  width: 100%;
-}
-
-.titleInput:focus {
-  border-color: var(--primary);
-}
-
-.contentInput {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 20px;
-  color: var(--light);
-  flex: 1;
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.6;
-  outline: none;
-  resize: none;
-  overflow-y: auto;
-  min-height: 300px;
-}
-
-.contentInput::-webkit-scrollbar {
-  width: 6px;
-}
-
-.contentInput::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.contentInput::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
-  opacity: 0.5;
-}
-
-.contentInput::-webkit-scrollbar-thumb:hover {
-  opacity: 0.8;
-}
-
-.mediaSidebar {
+  opacity: 0.6;
+  padding: 12px 20px;
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-  overflow-y: auto;
-  padding-right: 10px;
-  height: 100%;
-  max-height: calc(100vh - 150px);
-}
-
-.mediaSidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.mediaSidebar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.mediaSidebar::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
-  opacity: 0.5;
-}
-
-.mediaSidebar::-webkit-scrollbar-thumb:hover {
-  opacity: 0.8;
-}
-
-.sidebarSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sidebarSection label {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  color: var(--grey);
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-/* CAROUSEL D'IMAGES */
-.carouselContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.carouselImages {
-  display: flex;
+  align-items: center;
   gap: 8px;
-  overflow-x: auto;
-  padding: 4px;
-}
-
-.carouselImages::-webkit-scrollbar {
-  height: 4px;
-}
-
-.carouselImages::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.carouselImages::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 2px;
-  opacity: 0.5;
-}
-
-.carouselImages::-webkit-scrollbar-thumb:hover {
-  opacity: 0.8;
-}
-
-.carouselItem {
-  position: relative;
-  flex-shrink: 0;
-  width: 70px;
-  height: 70px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.carouselItem:hover {
-  border-color: var(--primary);
-  transform: scale(1.05);
-}
-
-.carouselItem img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.carouselNumber {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  background: rgba(0, 0, 0, 0.8);
-  color: var(--light);
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.removeCarouselBtn {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: var(--dark-red);
-  color: var(--light);
-  border: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: all 0.3s ease;
-  padding: 0;
-}
-
-.carouselItem:hover .removeCarouselBtn {
-  opacity: 1;
-}
-
-.removeCarouselBtn:hover {
-  background: rgba(192, 20, 20, 0.9);
-  transform: scale(1.1);
-}
-
-.addCarouselBtn {
-  flex-shrink: 0;
-  width: 70px;
-  height: 70px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--primary);
-}
-
-.addCarouselBtn:hover {
-  border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.1);
-}
-
-/* IMAGE PRINCIPALE */
-.featuredUpload {
-  width: 100%;
-  aspect-ratio: 16/9;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  overflow: hidden;
-  transition: 0.3s;
-}
-
-.featuredUpload:hover {
-  border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.05);
-}
-
-.featuredUpload img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.imagePlaceholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  color: var(--grey);
-}
-
-.imagePlaceholder svg {
-  opacity: 0.5;
-}
-
-/* SLIDER DE PROGRESSION */
-.progressSection {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.progressLabel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  color: var(--grey);
-}
-
-.progressValue {
-  color: var(--primary);
-  font-weight: 700;
-}
-
-.progressSlider {
-  width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  outline: none;
-  -webkit-appearance: none;
-}
-
-.progressSlider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--primary);
-  cursor: pointer;
-}
-
-.progressSlider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--primary);
-  cursor: pointer;
-  border: none;
-}
-
-/* LOGICIELS ET MEMBRES - BOUTONS */
-.sectionButton {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--light);
-  padding: 12px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: relative;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-main);
 }
 
-.sectionButton:hover {
-  border-color: var(--primary);
-  background: rgba(199, 255, 68, 0.1);
+.tabButton:hover {
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tabButton.active {
+  opacity: 1;
   color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
-.selectedCount {
-  font-size: 0.75rem;
-  color: var(--grey);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-/* PRÉVISUALISATION DES MEMBRES SÉLECTIONNÉS */
-.selectedMembersPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 8px;
-  background: rgba(199, 255, 68, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(199, 255, 68, 0.1);
-  max-height: 120px;
-  overflow-y: auto;
-}
-
-.selectedMembersPreview::-webkit-scrollbar {
-  width: 4px;
-}
-
-.selectedMembersPreview::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.selectedMembersPreview::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 2px;
-  opacity: 0.5;
-}
-
-.memberPreview {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  background: rgba(199, 255, 68, 0.1);
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: var(--text-main);
-  max-width: 120px;
-  min-width: 60px;
-}
-
-.memberPreview img {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
+.tabButton svg {
   flex-shrink: 0;
 }
 
-.avatarPreview {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #000;
+/* Formulaire */
+.editorForm {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.memberPreview span {
+  flex-direction: column;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 80px;
-}
-
-.moreMembers {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  height: 28px;
-  min-width: 28px;
-  cursor: default;
-}
-
-.moreMembers:hover {
-  background: rgba(255, 255, 255, 0.15);
+  padding: 20px 30px;
 }
 
 .errorMessage {
@@ -555,25 +212,30 @@
   border: 1px solid rgba(192, 20, 20, 0.3);
   font-size: 0.9rem;
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabContent {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .formGrid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    overflow-y: auto;
+  .tabsContainer {
+    padding: 0 20px;
   }
   
-  .mediaSidebar {
-    order: -1;
-    height: auto;
-    max-height: 500px;
-    width: 100%;
+  .tabButton {
+    padding: 12px 16px;
+    font-size: 0.85rem;
   }
   
-  .mainFields {
-    min-height: 400px;
+  .editorForm {
+    padding: 20px;
   }
 }
 
@@ -592,35 +254,55 @@
     font-size: 0.8rem;
   }
   
-  .publishForm {
-    padding: 12px 15px;
+  .tabsContainer {
+    padding: 0 12px;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
   
-  .titleInput {
-    font-size: 1.5rem;
-    padding: 10px 0;
+  .tabsContainer::-webkit-scrollbar {
+    display: none;
   }
   
-  .contentInput {
-    font-size: 0.95rem;
+  .tabButton {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  
+  .tabButton span {
+    display: none;
+  }
+  
+  .tabButton.active span {
+    display: inline;
+  }
+  
+  .tabButton svg {
+    margin-right: 0;
+  }
+  
+  .tabButton.active svg {
+    margin-right: 4px;
+  }
+  
+  .editorForm {
     padding: 15px;
-    min-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabsContainer {
+    padding: 0 8px;
   }
   
-  .carouselItem,
-  .addCarouselBtn {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .memberPreview {
+  .tabButton {
+    padding: 8px 10px;
     font-size: 0.75rem;
-    padding: 3px 6px;
   }
   
-  .memberPreview img,
-  .avatarPreview {
-    width: 18px;
-    height: 18px;
+  .editorForm {
+    padding: 12px;
   }
 }

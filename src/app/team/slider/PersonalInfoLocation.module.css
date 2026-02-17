@@ -40,7 +40,7 @@
 .input {
   width: 100%;
   background: var(--dark);
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
   border-radius: 0.5rem;
   padding: 0.75rem;
   color: var(--light);
@@ -52,7 +52,8 @@
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(199, 255, 68, 0.1);
+  box-shadow: 0 0 0 2px var(--primary);
+  opacity: 0.3;
 }
 
 .inputWithSwitch {
@@ -98,10 +99,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(199, 255, 68, 0.1);
+  background-color: var(--dark);
   transition: .4s;
   border-radius: 24px;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--line);
 }
 
 .slider:before {

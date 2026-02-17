@@ -12,7 +12,7 @@
 
 .content {
   flex: 1;
-  padding-top: 80px; /* Ajusté pour correspondre à la hauteur de la navbar */
+  padding-top: 80px;
   min-height: calc(100svh - 80px);
   width: 100%;
   background-color: var(--dark);
@@ -26,6 +26,61 @@
   margin: 0 auto;
   background-color: var(--dark);
   position: relative;
+}
+
+/* Access Denied */
+.accessDenied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100svh - 80px);
+  width: 100%;
+  padding: 2rem;
+}
+
+.accessDeniedContent {
+  padding: 3rem;
+  text-align: center;
+  max-width: 500px;
+}
+
+.accessDeniedIcon {
+  color: var(--light);
+  opacity: 0.7;
+  margin-bottom: 1.5rem;
+}
+
+.accessDeniedContent h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: var(--light);
+}
+
+.accessDeniedContent p {
+  color: color-mix(in srgb, var(--light) 70%, transparent);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: transparent;
+  color: var(--light);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
 }
 
 /* Login Center */
@@ -379,6 +434,19 @@
     height: calc(100svh - 80px);
   }
   
+  /* Access Denied mobile */
+  .accessDenied {
+    padding: 1rem;
+  }
+  
+  .accessDeniedContent {
+    padding: 2rem 1.5rem;
+  }
+  
+  .accessDeniedContent h2 {
+    font-size: 1.5rem;
+  }
+  
   .header {
     height: 56px;
     padding: 0 0.5rem;
@@ -433,7 +501,6 @@
     font-size: 0.85rem;
   }
   
-  /* Bouton Projets sur mobile */
   .projectsButton {
     padding: 0.5rem;
     min-width: 44px;
@@ -549,6 +616,20 @@
     font-size: 0.75rem;
     min-width: 45px;
   }
+  
+  /* Access Denied small mobile */
+  .accessDeniedContent {
+    padding: 1.5rem 1rem;
+  }
+  
+  .accessDeniedContent h2 {
+    font-size: 1.3rem;
+  }
+  
+  .backButton {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
 }
 
 /* Orientation paysage */
@@ -567,6 +648,15 @@
   
   .mainContent {
     height: calc(100% - 100px);
+  }
+  
+  /* Access Denied landscape */
+  .accessDenied {
+    height: calc(100svh - 80px);
+  }
+  
+  .accessDeniedContent {
+    padding: 1.5rem;
   }
 }
 
@@ -589,5 +679,10 @@
   
   .mainContent {
     padding: 1.25rem;
+  }
+  
+  /* Access Denied tablet */
+  .accessDeniedContent {
+    padding: 2.5rem;
   }
 }

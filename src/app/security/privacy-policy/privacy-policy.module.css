@@ -1,4 +1,4 @@
-/* privacy-policy.module.css */
+/* privacy-policy/privacy-policy.module.css */
 .container {
   min-height: 100vh;
   background-color: var(--dark);
@@ -27,7 +27,7 @@
 }
 
 .lastUpdated {
-  color: var(--grey);
+  color: var(--light);
   margin-bottom: 4rem;
   font-size: 0.95rem;
   font-style: italic;
@@ -37,7 +37,7 @@
 .section {
   margin-bottom: 3rem;
   padding-bottom: 2.5rem;
-  border-bottom: 1px solid rgba(147, 255, 68, 0.15);
+  border-bottom: 1px solid var(--line);
 }
 
 .section:last-child {
@@ -79,11 +79,14 @@
 }
 
 .definition {
-  background-color: rgba(147, 255, 68, 0.05);
+  background-color: var(--dark);
   border-left: 3px solid var(--primary);
   padding: 1.2rem 1.5rem;
   margin: 1.5rem 0;
   border-radius: 0 4px 4px 0;
+  border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .definitionTitle {
@@ -130,7 +133,7 @@
 
 .nestedListItem::before {
   content: "–";
-  color: var(--grey);
+  color: var(--light);
   display: inline-block;
   width: 1em;
   margin-left: -1em;
@@ -148,48 +151,51 @@
 }
 
 .tableHeader {
-  background-color: rgba(147, 255, 68, 0.1);
+  background-color: var(--dark);
   font-weight: 600;
   color: var(--primary);
+  border: 1px solid var(--line);
 }
 
 .tableCell {
   padding: 1rem;
-  border: 1px solid rgba(147, 255, 68, 0.15);
+  border: 1px solid var(--line);
   vertical-align: top;
   line-height: 1.6;
+  color: var(--light);
 }
 
 .highlight {
-  background-color: rgba(147, 255, 68, 0.08);
+  background-color: var(--dark);
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
   font-family: monospace;
   color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .footerNote {
   margin-top: 4rem;
   padding-top: 2rem;
-  border-top: 1px solid rgba(147, 255, 68, 0.15);
-  color: var(--grey);
+  border-top: 1px solid var(--line);
+  color: var(--light);
   font-size: 0.9rem;
   line-height: 1.6;
 }
 
 .legalReference {
-  color: var(--grey);
+  color: var(--light);
   font-size: 0.9rem;
   margin-top: 0.5rem;
   font-style: italic;
 }
 
 .contactSection {
-  background-color: rgba(147, 255, 68, 0.05);
+  background-color: var(--dark);
   padding: 2rem;
   border-radius: 8px;
   margin-top: 2rem;
-  border: 1px solid rgba(147, 255, 68, 0.15);
+  border: 1px solid var(--line);
 }
 
 .contactTitle {

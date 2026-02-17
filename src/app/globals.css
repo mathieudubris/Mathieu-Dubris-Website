@@ -1,7 +1,7 @@
 :root {
   --primary: #c7ff44;
   --dark-red: #c01414; 
-  --dark: #1b1b1b;
+  --dark: #0e0e0e;
   --light: #e0e0e0;
   --font-main: 'Inter', sans-serif;
   --line: #a3a3a3;
@@ -24,7 +24,7 @@
   --primary: #9cdf00;
   --dark-red: #c01414; 
   --dark: #e0e0e0;
-  --light: #1b1b1b;
+  --light: #0e0e0e;
   --line: #222222;
 }
 

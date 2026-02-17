@@ -72,7 +72,7 @@
   align-items: center;
   gap: 0.75rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--grey); /* Changé de var(--border-color) à var(--grey) */
+  border-bottom: 1px solid var(--line);
 }
 
 .sectionIcon {
@@ -88,8 +88,8 @@
 }
 
 .infoCard {
-  background: rgba(22, 22, 22, 0.6); /* Changé pour utiliser var(--dark) dans rgba */
-  border: 1px solid var(--grey); /* Changé de var(--border-color) à var(--grey) */
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 1.5rem;
   transition: all 0.2s ease;
@@ -128,9 +128,10 @@
 /* Section réponse rapide */
 .quickInfo {
   padding: 1.5rem;
-  background: rgba(22, 22, 22, 0.4); 
+  background: var(--dark);
   border-left: 3px solid var(--primary);
   border-radius: 0 8px 8px 0;
+  opacity: 0.4;
 }
 
 .quickTitle {
@@ -142,7 +143,7 @@
 
 .quickText {
   font-size: 0.9rem;
-  color: var(--light); 
+  color: var(--light);
   opacity: 0.7;
   line-height: 1.5;
   margin: 0;
@@ -150,16 +151,16 @@
 
 /* Section formulaire */
 .formSection {
-  background: rgba(22, 22, 22, 0.6); /* Changé pour utiliser var(--dark) dans rgba */
-  border: 1px solid var(--grey); /* Changé de var(--border-color) à var(--grey) */
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 2.5rem;
 }
 
 /* Message de succès */
 .successMessage {
-  background: rgba(199, 255, 68, 0.05); /* Utilise var(--primary) dans rgba */
-  border: 1px solid rgba(199, 255, 68, 0.2); /* Utilise var(--primary) dans rgba */
+  background: var(--dark);
+  border: 1px solid var(--primary);
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 2rem;
@@ -168,6 +169,7 @@
   gap: 0.75rem;
   font-size: 0.9rem;
   color: var(--primary);
+  opacity: 0.05;
 }
 
 /* Formulaire */
@@ -206,8 +208,8 @@
 .formSelect,
 .formTextarea {
   padding: 0.9rem 1rem;
-  background: rgba(22, 22, 22, 0.8); /* Changé pour utiliser var(--dark) dans rgba */
-  border: 1px solid var(--grey); /* Changé de var(--border-color) à var(--grey) */
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 6px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -221,15 +223,15 @@
 .formTextarea:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(22, 22, 22, 0.9); /* Changé pour utiliser var(--dark) dans rgba */
+  background: var(--dark);
 }
 
 .inputError {
-  border-color: var(--grey); /* Utilisation de var(--grey) pour l'erreur */
+  border-color: var(--line);
 }
 
 .errorText {
-  color: var(--grey); /* Utilisation de var(--grey) pour l'erreur */
+  color: var(--line);
   font-size: 0.8rem;
   margin-top: 0.25rem;
   font-weight: 400;
@@ -243,7 +245,7 @@
 
 .formSelect {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='var(--white)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 16px;
@@ -270,7 +272,8 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background: var(--primary); /* Utilise var(--primary) dans rgba */
+  background: var(--primary);
+  opacity: 0.8;
 }
 
 .submitButton:disabled {

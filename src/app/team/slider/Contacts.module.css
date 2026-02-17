@@ -39,7 +39,7 @@
 .input {
   width: 100%;
   background: var(--dark);
-  border: 1px solid var(--grey);
+  border: 1px solid var(--light);
   border-radius: 0.5rem;
   padding: 0.75rem;
   color: var(--light);
@@ -97,7 +97,7 @@
   padding: 0.75rem;
   background: var(--dark);
   border-radius: 0.5rem;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--light);
   gap: 1rem;
 }
 
@@ -163,7 +163,7 @@
   background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   transition: .4s;
   border-radius: 20px;
-  border: 1px solid var(--grey);
+  border: 1px solid var(--light);
 }
 
 .slider:before {
@@ -225,18 +225,5 @@ input:checked + .slider:before {
   margin: 0 auto 0.75rem;
   display: block;
   opacity: 0.4;
-  color: var(--grey);
-}
-
-/* Support pour le thème clair */
-.light-theme .input:focus {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 10%, transparent);
-}
-
-.light-theme .slider {
-  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
-}
-
-.light-theme .addButton:hover {
-  background: color-mix(in srgb, var(--primary) 90%, transparent);
+  color: var(--light);
 }

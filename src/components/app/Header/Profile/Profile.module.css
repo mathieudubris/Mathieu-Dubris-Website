@@ -16,8 +16,8 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(128, 128, 128, 0.1);
-  border: none;
+  background: var(--dark);
+  border: 1px solid var(--line);
   color: var(--light);
   width: 44px;
   height: 44px;
@@ -31,7 +31,7 @@
 }
 
 .closeOverlayBtn:hover {
-  background: rgba(128, 128, 128, 0.2);
+  background: var(--line);
   transform: rotate(90deg);
 }
 
@@ -47,7 +47,7 @@
   width: 120px;
   height: 120px;
   margin-bottom: 1.5rem;
-  background-color: var(--grey);
+  background-color: var(--line);
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--primary);
@@ -87,7 +87,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   padding: 4px;
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 12px;
 }
 
@@ -123,7 +124,7 @@
 
 .logoutBtn:hover {
   transform: scale(1.02);
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--line);
 }
 
 @media (max-width: 480px) {

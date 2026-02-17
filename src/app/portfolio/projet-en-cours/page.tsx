@@ -9,13 +9,13 @@ import {
   getProjects, 
   deleteProject,
   isAdmin,
-  getTeamMembers,
+  getProjectTeamMembers,
   hasAccessToProject,
   isUserInProject,
-  getUserTeamProfile,
+  getUserProjectTeamProfile,
   Project as FirebaseProject,
-  TeamMember as FirebaseTeamMember,
-  getAllUsers
+  getAllUsers,
+  getProjectBySlug
 } from '@/utils/firebase-api';
 import { 
   Plus, 
@@ -30,9 +30,8 @@ import UserList from '@/components/UserList/UserList';
 import ProjectCard from '@/components/projet-en-cours/ProjectCard';
 import styles from './projet-en-cours.module.css';
 
-// Utiliser les interfaces importées de firebase-api
 type Project = FirebaseProject;
-type TeamMember = FirebaseTeamMember;
+type ProjectTeamMember = any;
 
 export default function ProjetEnCoursPage() {
   const router = useRouter();
@@ -41,7 +40,7 @@ export default function ProjetEnCoursPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [projectTeamMembers, setProjectTeamMembers] = useState<TeamMember[]>([]);
+  const [projectTeamMembers, setProjectTeamMembers] = useState<ProjectTeamMember[]>([]);
   const [userTeamProfile, setUserTeamProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
@@ -59,19 +58,11 @@ export default function ProjetEnCoursPage() {
       if (user) {
         setCurrentUser(user);
         await loadProjects();
-        
-        // Vérifier si un project est dans l'URL
-        const params = new URLSearchParams(window.location.search);
-        const projectId = params.get('project');
-        if (projectId && projects.length > 0) {
-          const project = projects.find(p => p.id === projectId);
-          if (project && hasAccessToProject(project, user.uid)) {
-            handleProjectClick(project);
-          }
-        }
       } else {
         setCurrentUser(null);
         setSelectedProject(null);
+        setProjects([]);
+        setFilteredProjects([]);
       }
       setLoading(false);
     });
@@ -79,11 +70,47 @@ export default function ProjetEnCoursPage() {
     return () => unsubscribe();
   }, []);
 
+  // Vérifier si un projet est dans l'URL au chargement - MODIFIÉ POUR SLUGS
+  useEffect(() => {
+    const checkUrlForProject = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const projectSlug = params.get('project');
+      
+      if (projectSlug && currentUser) {
+        // Chercher le projet par slug
+        const project = await getProjectBySlug(projectSlug);
+        if (project && hasAccessToProject(project, currentUser.uid)) {
+          setSelectedProject(project);
+          await loadProjectTeam(project);
+        }
+      }
+    };
+    
+    if (currentUser) {
+      checkUrlForProject();
+    }
+  }, [currentUser]);
+
+  // Mettre à jour l'URL quand un projet est sélectionné - MODIFIÉ POUR SLUGS
+  useEffect(() => {
+    if (selectedProject?.slug) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('project', selectedProject.slug);
+      window.history.pushState({}, '', url.toString());
+    } else {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('project');
+      window.history.pushState({}, '', url.toString());
+    }
+  }, [selectedProject]);
+
   const loadProjects = async () => {
     try {
       let allProjects = await getProjects();
       
-      // Filtrer les projets auxquels l'utilisateur a accès
+      // Filtrer les projets selon la visibilité :
+      // - projets "public" (ou sans visibilité) → visibles par tous les utilisateurs connectés
+      // - projets "early_access" → visibles uniquement par les membres
       if (currentUser) {
         allProjects = allProjects.filter(project => 
           hasAccessToProject(project, currentUser.uid)
@@ -124,26 +151,26 @@ export default function ProjetEnCoursPage() {
 
   const loadProjectTeam = async (project: Project) => {
     try {
-      if (project.teamMembers?.length > 0) {
-        const allTeamMembers = await getTeamMembers();
-        const team = allTeamMembers.filter(member =>
-          project.teamMembers.includes(member.userId)
-        );
+      if (project.id) {
+        // Charger les membres de l'équipe — accessible à tous les utilisateurs connectés pour les projets publics
+        const team = await getProjectTeamMembers(project.id);
         setProjectTeamMembers(team);
+        
+        // Charger le profil d'équipe de l'utilisateur courant uniquement s'il est membre
+        if (currentUser && project.teamMembers?.includes(currentUser.uid)) {
+          const profile = await getUserProjectTeamProfile(currentUser.uid, project.id);
+          setUserTeamProfile(profile);
+        } else {
+          setUserTeamProfile(null);
+        }
       } else {
         setProjectTeamMembers([]);
-      }
-      
-      // Charger le profil d'équipe de l'utilisateur courant
-      if (currentUser && project.teamMembers?.includes(currentUser.uid)) {
-        const profile = await getUserTeamProfile(currentUser.uid);
-        setUserTeamProfile(profile);
-      } else {
         setUserTeamProfile(null);
       }
     } catch (error) {
       console.error('Erreur lors du chargement de l\'équipe:', error);
       setProjectTeamMembers([]);
+      setUserTeamProfile(null);
     }
   };
 
@@ -232,7 +259,6 @@ export default function ProjetEnCoursPage() {
   };
 
   const handleUserAdded = async () => {
-    // Recharger les projets et l'équipe
     await loadProjects();
     if (selectedProject) {
       await loadProjectTeam(selectedProject);
@@ -271,7 +297,6 @@ export default function ProjetEnCoursPage() {
               currentUser={currentUser}
               userTeamProfile={userTeamProfile}
               onBack={handleBackToList}
-
               onEditProfile={handleEditProfile}
             />
           ) : (
@@ -400,7 +425,7 @@ export default function ProjetEnCoursPage() {
         )}
       </AnimatePresence>
 
-      {/* Liste des utilisateurs pour ajouter à l'équipe - MODAL PLEIN ÉCRAN */}
+      {/* Liste des utilisateurs pour ajouter à l'équipe */}
       <AnimatePresence>
         {showUserList && selectedProject && (
           <UserList
