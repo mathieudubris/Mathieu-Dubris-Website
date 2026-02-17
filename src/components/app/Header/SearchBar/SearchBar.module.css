@@ -1,6 +1,6 @@
 .searchContainer {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end; /* Changé de flex-start à flex-end */
   width: 100%;
 }
 
@@ -11,12 +11,14 @@
   padding: 0 18px;
   border-radius: 50px;
   height: 42px;
-  width: 300px;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s;
+  width: 100%; /* Prend toute la largeur disponible */
+  max-width: 300px; /* Largeur max par défaut */
+  transition: max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s;
+  margin-left: auto; /* Pousse à droite dans son conteneur */
 }
 
 .searchBar:focus-within {
-  width: 500px;
+  max-width: 500px;
   border-color: var(--primary);
 }
 
@@ -34,6 +36,7 @@
   color: var(--light);
   opacity: 0.5;
   transition: 0.3s;
+  flex-shrink: 0; /* Empêche l'icône de rétrécir */
 }
 
 .searchBar:focus-within .searchIcon {
@@ -42,6 +45,17 @@
 }
 
 @media (max-width: 1024px) {
-  .searchBar { width: 140px; }
-  .searchBar:focus-within { width: 180px; }
+  .searchBar {
+    max-width: 140px; /* Réduit sur mobile/tablette */
+  }
+  
+  .searchBar:focus-within {
+    max-width: calc(100vw - 180px); /* S'adapte à l'espace disponible */
+  }
+}
+
+@media (max-width: 480px) {
+  .searchBar:focus-within {
+    max-width: calc(100vw - 120px); /* Encore plus d'adaptation */
+  }
 }

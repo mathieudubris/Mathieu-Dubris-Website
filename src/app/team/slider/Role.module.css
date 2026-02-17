@@ -284,8 +284,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--light);
-  color: var(--dark);
+  background: var(--dark);
+  color: var(--light);
   opacity: 0.8;
   cursor: pointer;
   padding: 0.25rem;
@@ -299,7 +299,7 @@
 
 .infoButton:hover {
   opacity: 1;
-  background: var(--line);
+  background: var(--primary);
 }
 
 .roleButton.selected .infoButton {
@@ -310,9 +310,8 @@
 .roleInfo {
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: var(--light);
+  background: var(--dark);
   color: var(--dark);
-  border-radius: 0.375rem;
   animation: slideDown 0.3s ease;
 }
 

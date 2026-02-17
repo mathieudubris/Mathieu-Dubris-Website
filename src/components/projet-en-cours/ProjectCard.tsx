@@ -70,11 +70,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     );
   };
 
-  // Afficher les avatars des membres comme dans la maquette - MAX 5 et pas de +X
+  // Afficher les avatars des membres comme dans la maquette - MAX 5 avec compteur +X
   const renderMemberAvatars = () => {
     const members = project.members || [];
     const maxVisible = 5;
     const visibleMembers = members.slice(0, maxVisible);
+    const remaining = members.length - maxVisible;
     
     return (
       <div className={styles.memberAvatars}>
@@ -84,11 +85,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <img src={member.photoURL} alt={member.displayName || 'Membre'} />
             ) : (
               <div className={styles.avatarPlaceholder}>
-                {member.displayName?.[0]?.toUpperCase() || (index + 1)}
+                {member.displayName?.[0]?.toUpperCase() || 'M'}
               </div>
             )}
           </div>
         ))}
+        {remaining > 0 && (
+          <div className={styles.moreMembers} title={`+${remaining} autres membres`}>
+            +{remaining}
+          </div>
+        )}
       </div>
     );
   };
@@ -163,7 +169,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* Badge "Vous êtes membre" si l'utilisateur est membre */}
         {isMember && (
           <div className={styles.memberBadge}>
-            <Users size={12} />
+            <Users size={10} />
             <span>Vous êtes membre</span>
           </div>
         )}
@@ -171,17 +177,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* Badge "Accès anticipé" si le projet est en early access et que l'utilisateur n'est pas membre/admin */}
         {project.visibility === 'early_access' && !isMember && !isAdmin && (
           <div className={`${styles.memberBadge} ${styles.earlyAccessBadge}`}>
-            <Lock size={12} />
+            <Lock size={10} />
             <span>Accès anticipé</span>
           </div>
         )}
 
         {/* Actions admin (toujours visibles pour l'admin même si flou) */}
         {isAdmin && (
-          <div className={styles.adminActions} style={{ 
-            marginLeft: (isMember || (project.visibility === 'early_access' && !isMember && !isAdmin)) ? 'auto' : '0',
-            marginTop: (isMember || (project.visibility === 'early_access' && !isMember && !isAdmin)) ? '0' : '0'
-          }}>
+          <div className={styles.adminActions}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -190,7 +193,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className={styles.actionBtn}
               title="Modifier"
             >
-              <Edit2 size={14} />
+              <Edit2 size={12} />
             </button>
             <button
               onClick={(e) => {
@@ -200,7 +203,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className={styles.actionBtn}
               title="Supprimer"
             >
-              <Trash2 size={14} />
+              <Trash2 size={12} />
             </button>
           </div>
         )}
@@ -254,7 +257,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       {/* Overlay pour l'accès anticipé (message optionnel) */}
       {isBlurred && (
         <div className={styles.earlyAccessOverlay}>
-          <Lock size={24} />
+          <Lock size={20} />
           <span>Projet en accès anticipé</span>
         </div>
       )}

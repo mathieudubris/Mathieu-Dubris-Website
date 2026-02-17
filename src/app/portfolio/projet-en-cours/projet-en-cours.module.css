@@ -1,4 +1,4 @@
-/* projet-en-cours.module.css - VERSION SANS RGBA */
+/* projet-en-cours.module.css - GRILLE 4 COLONNES */
 
 .mainContainer {
   display: flex;
@@ -17,7 +17,7 @@
 }
 
 .pageContainer {
-  max-width: 1400px;
+  max-width: 1600px; /* Augmenté pour accueillir 4 colonnes */
   margin: 0 auto;
   padding: 2rem;
   width: 100%;
@@ -133,11 +133,11 @@
   box-shadow: 0 5px 15px var(--primary);
 }
 
-/* Grille de projets */
+/* Grille de projets - 4 colonnes sur desktop */
 .projectsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(4, 1fr); /* Force 4 colonnes */
+  gap: 1.2rem;
   margin-top: 1rem;
 }
 
@@ -223,14 +223,30 @@
   font-weight: 500;
 }
 
-/* Responsive */
+/* Responsive - Passage progressif à moins de colonnes */
+@media (max-width: 1400px) {
+  .projectsGrid {
+    grid-template-columns: repeat(4, 1fr); /* Toujours 4 colonnes */
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .projectsGrid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr); /* 3 colonnes à partir de 1200px */
+  }
+  
+  .pageContainer {
+    max-width: 1400px;
+    padding: 1.5rem;
   }
 }
 
 @media (max-width: 992px) {
+  .projectsGrid {
+    grid-template-columns: repeat(2, 1fr); /* 2 colonnes sur tablettes */
+  }
+  
   .headerRow {
     flex-wrap: wrap;
     gap: 1rem;
@@ -255,8 +271,13 @@
 }
 
 @media (max-width: 768px) {
+  .projectsGrid {
+    grid-template-columns: repeat(2, 1fr); /* 2 colonnes sur tablettes */
+    gap: 0.8rem;
+  }
+  
   .pageContainer {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
   }
   
   .headerRow {
@@ -282,16 +303,11 @@
     justify-content: center;
     margin-left: 0;
   }
-  
-  .projectsGrid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 580px) {
   .projectsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* 1 colonne sur mobile */
   }
   
   .filterBtn {

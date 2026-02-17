@@ -117,7 +117,7 @@ const Membres: React.FC<MembresProps> = ({
   onEditProfile
 }) => {
   const [showAllMembers, setShowAllMembers] = useState(false);
-  const displayedMembers = showAllMembers ? teamMembers : teamMembers.slice(0, 5);
+  const displayedMembers = showAllMembers ? teamMembers : teamMembers.slice(0, 8);
 
   return (
     <div className={styles.membres}>
@@ -128,7 +128,7 @@ const Membres: React.FC<MembresProps> = ({
             <span>Équipe ({teamMembers.length})</span>
           </h2>
           
-          {teamMembers.length > 5 && (
+          {teamMembers.length > 8 && (
             <button 
               onClick={() => setShowAllMembers(!showAllMembers)}
               className={styles.toggleButton}
@@ -203,34 +203,36 @@ const Membres: React.FC<MembresProps> = ({
           </div>
         )}
 
-        {/* Bouton "Voir tous les membres" (navigation) */}
-        <button 
-          onClick={onViewAllMembers}
-          className={styles.viewAllMembersButton}
-        >
-          <Users size={16} />
-          <span>Voir tous les membres du projet</span>
-          <ChevronRight size={16} />
-        </button>
+        {/* Footer avec actions côte à côte */}
+        <div className={styles.footerActions}>
+          <button 
+            onClick={onViewAllMembers}
+            className={styles.viewAllMembersButton}
+          >
+            <Users size={16} />
+            <span>Voir tous les membres</span>
+            <ChevronRight size={16} />
+          </button>
 
-        {/* Actions pour le membre connecté */}
-        {isInTeam && (
-          <div className={styles.profileActions}>
-            {!userTeamProfile ? (
-              <button onClick={onCreateProfile} className={styles.createProfileButton}>
-                <Settings size={16} />
-                <span>Créer mon profil</span>
-                <ChevronRight size={16} />
-              </button>
-            ) : (
-              <button onClick={onEditProfile} className={styles.editProfileButton}>
-                <Settings size={16} />
-                <span>Modifier mon profil</span>
-                <ChevronRight size={16} />
-              </button>
-            )}
-          </div>
-        )}
+          {/* Actions pour le membre connecté */}
+          {isInTeam && (
+            <div className={styles.profileActions}>
+              {!userTeamProfile ? (
+                <button onClick={onCreateProfile} className={styles.createProfileButton}>
+                  <Settings size={16} />
+                  <span>Créer mon profil</span>
+                  <ChevronRight size={16} />
+                </button>
+              ) : (
+                <button onClick={onEditProfile} className={styles.editProfileButton}>
+                  <Settings size={16} />
+                  <span>Modifier mon profil</span>
+                  <ChevronRight size={16} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

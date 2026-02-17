@@ -175,28 +175,30 @@ export default function ProjetEnCoursPage() {
   };
 
   useEffect(() => {
-    let filtered = [...projects];
-    
-    // Filtre par recherche
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(project =>
-        project.title.toLowerCase().includes(query) ||
-        project.description.toLowerCase().includes(query)
+  let filtered = [...projects];
+  
+  // Filtre par recherche
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+    filtered = filtered.filter(project =>
+      project.title.toLowerCase().includes(query) ||
+      project.description.toLowerCase().includes(query)
+    );
+  }
+  
+  // Filtre par type
+  if (currentUser) {
+    if (activeFilter === 'joined') {
+      // CORRECTION : Inclure TOUS les projets où l'utilisateur est membre
+      // (créés par lui OU auxquels il a été ajouté)
+      filtered = filtered.filter(project => 
+        isUserInProject(project, currentUser.uid)
       );
     }
-    
-    // Filtre par type
-    if (currentUser) {
-      if (activeFilter === 'joined') {
-        filtered = filtered.filter(project => 
-          project.teamMembers?.includes(currentUser.uid) && project.createdBy !== currentUser.uid
-        );
-      }
-    }
-    
-    setFilteredProjects(filtered);
-  }, [projects, searchQuery, activeFilter, currentUser]);
+  }
+  
+  setFilteredProjects(filtered);
+}, [projects, searchQuery, activeFilter, currentUser]);
 
   const handleCreateProject = () => {
     if (!currentUser) {

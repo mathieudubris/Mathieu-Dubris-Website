@@ -1,4 +1,4 @@
-/* ProjectCard.module.css - VERSION EXACTE SELON MAQUETTE AVEC GESTION ACCÈS ANTICIPÉ */
+/* ProjectCard.module.css - VERSION ULTRA COMPACTE POUR 4 COLONNES */
 
 .projectCard {
   border: 3px solid var(--light);
@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 420px;
+  min-height: 340px; /* Réduit pour 4 colonnes */
 }
 
 .projectCard:hover {
@@ -20,9 +20,9 @@
 /* Header avec badge membre et actions admin */
 .cardHeader {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  top: 8px;
+  left: 8px;
+  right: 8px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -32,12 +32,12 @@
 .memberBadge {
   background: var(--light);
   color: var(--dark);
-  padding: 6px 14px;
+  padding: 2px 8px;
   border-radius: 20px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
+  gap: 4px;
+  font-size: 0.6rem;
   font-weight: 700;
   backdrop-filter: blur(10px);
   text-transform: uppercase;
@@ -49,6 +49,8 @@
 .memberBadge svg {
   stroke-width: 2.5;
   flex-shrink: 0;
+  width: 8px;
+  height: 8px;
 }
 
 /* Badge spécifique pour l'accès anticipé */
@@ -65,7 +67,7 @@
 
 .adminActions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 20;
@@ -79,9 +81,9 @@
   background: var(--dark);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--light);
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,15 +100,20 @@
   transform: scale(1.1);
 }
 
-/* Image de couverture - carrée comme dans la maquette */
+.actionBtn svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Image de couverture - plus petite */
 .coverImageContainer {
   width: 100%;
-  height: 180px;
+  height: 140px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
-  padding: 5px;
-  border-radius: 10px;
+  padding: 4px;
+  border-radius: 8px;
   transition: filter 0.3s ease;
 }
 
@@ -119,7 +126,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 8px;
   transition: transform 0.6s ease;
 }
 
@@ -127,13 +134,13 @@
   transform: scale(1.08);
 }
 
-/* Contenu de la carte - AJUSTÉ POUR MAQUETTE */
+/* Contenu de la carte - plus compact */
 .cardContent {
-  padding: 20px 18px 18px;
+  padding: 10px 10px 8px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   position: relative;
   z-index: 1;
 }
@@ -142,7 +149,7 @@
 .blurrableContent {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   transition: filter 0.3s ease;
 }
 
@@ -161,11 +168,11 @@
   transform: translate(-50%, -50%);
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
-  padding: 12px 20px;
+  padding: 6px 12px;
   border-radius: 30px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   color: var(--primary);
   border: 1px solid var(--primary);
   z-index: 15;
@@ -175,41 +182,43 @@
 
 .earlyAccessOverlay svg {
   color: var(--primary);
+  width: 16px;
+  height: 16px;
 }
 
 .earlyAccessOverlay span {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
 
-/* Titre comme dans maquette - BOLD ET MULTILIGNE AVEC ELLIPSIS */
+/* Titre plus compact */
 .projectTitle {
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 900;
   color: var(--light);
   margin: 0;
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: -0.3px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 3em;
+  min-height: 2.5em;
   font-family: inherit;
   text-transform: none;
 }
 
-/* Description plus compacte comme dans maquette */
+/* Description plus compacte - 2 lignes maximum */
 .projectDescription {
   color: var(--light);
   opacity: 0.7;
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.7rem;
+  line-height: 1.4;
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -219,24 +228,24 @@
 
 /* Section logiciels - ICÔNES SEULEMENT */
 .softwareSection {
-  margin: 4px 0 8px;
+  margin: 0 0 2px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
 .softwareIcon {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   background: var(--light);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--primary);
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   transition: all 0.3s ease;
 }
 
@@ -247,47 +256,47 @@
 }
 
 .moreSoftware {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   background: var(--light);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--dark);
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   font-weight: 700;
   opacity: 0.7;
 }
 
-/* Barre de progression - PLUS ÉPAISSE COMME MAQUETTE */
+/* Barre de progression - plus fine */
 .progressBar {
   width: 100%;
-  height: 6px;
+  height: 4px;
   background: var(--light);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 
 .progressFill {
   height: 100%;
   background: linear-gradient(90deg, var(--primary) 0%, rgba(168, 255, 120, 0.8) 100%);
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.6s ease;
 }
 
-/* Footer avec avatars et date - ESPACEMENT COMME MAQUETTE */
+/* Footer avec avatars et date - plus compact */
 .cardFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
-  z-index: 5; /* S'assure que le footer reste au-dessus */
+  z-index: 5;
 }
 
 .memberAvatars {
@@ -296,14 +305,14 @@
 }
 
 .memberAvatar {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  border: 2px solid var(--dark);
+  border: 1.5px solid var(--dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: -8px;
+  margin-left: -5px;
   transition: transform 0.3s ease;
   overflow: hidden;
   flex-shrink: 0;
@@ -332,34 +341,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 700;
 }
 
+/* Nouveau style pour le compteur de membres supplémentaires */
 .moreMembers {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid var(--dark);
+  background: var(--dark);
+  border: 1.5px solid var(--dark);
   color: var(--light);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   font-weight: 700;
-  margin-left: -8px;
+  margin-left: -5px;
 }
 
-/* Date alignée à droite comme dans maquette - JAMAIS FLOUE */
+/* Date alignée à droite - jamais floue */
 .projectDate {
   color: var(--light);
   opacity: 0.6;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 500;
   white-space: nowrap;
   margin-left: auto;
-  filter: none !important; /* Force la date à ne jamais être floutée */
+  filter: none !important;
   pointer-events: auto !important;
   user-select: auto !important;
 }
@@ -382,34 +392,34 @@
 
 .deleteConfirmContent {
   text-align: center;
-  padding: 30px;
+  padding: 20px;
   width: 100%;
 }
 
 .deleteIcon {
-  font-size: 3rem;
-  margin-bottom: 16px;
+  font-size: 2rem;
+  margin-bottom: 10px;
   opacity: 0.8;
   color: var(--dark-red);
 }
 
 .deleteTitle {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--dark);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
 }
 
 .deleteMessage {
   color: var(--dark);
   opacity: 0.7;
-  font-size: 0.9rem;
-  margin: 0 0 24px 0;
+  font-size: 0.8rem;
+  margin: 0 0 16px 0;
 }
 
 .deleteActions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   justify-content: center;
 }
 
@@ -417,11 +427,11 @@
   background: var(--dark-red);
   color: var(--light);
   border: none;
-  padding: 10px 24px;
-  border-radius: 10px;
+  padding: 6px 16px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   transition: all 0.3s ease;
 }
 
@@ -436,10 +446,10 @@
   background: transparent;
   color: var(--dark);
   border: 1px solid var(--dark);
-  padding: 10px 24px;
-  border-radius: 10px;
+  padding: 6px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   transition: all 0.3s ease;
 }
 
@@ -448,109 +458,80 @@
   background: rgba(199, 255, 68, 0.1);
 }
 
-/* Responsive */
+/* Responsive - Ajustements pour mobile */
 @media (max-width: 768px) {
   .projectCard {
-    min-height: 400px;
-  }
-  
-  .coverImageContainer {
-    height: 150px;
-  }
-  
-  .cardContent {
-    padding: 16px 14px;
-    gap: 10px;
-  }
-  
-  .projectTitle {
-    font-size: 1.05rem;
-    min-height: 2.7em;
-  }
-  
-  .projectDescription {
-    font-size: 0.75rem;
-  }
-  
-  .adminActions {
-    opacity: 1;
-  }
-  
-  .softwareIcon,
-  .moreSoftware {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .memberAvatar,
-  .moreMembers {
-    width: 26px;
-    height: 26px;
-  }
-  
-  .earlyAccessOverlay {
-    padding: 8px 16px;
-  }
-  
-  .earlyAccessOverlay svg {
-    width: 18px;
-    height: 18px;
-  }
-  
-  .earlyAccessOverlay span {
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .projectCard {
-    min-height: 380px;
+    min-height: 320px;
   }
   
   .coverImageContainer {
     height: 130px;
   }
   
-  .cardHeader {
-    top: 8px;
-    left: 8px;
-    right: 8px;
-  }
-  
-  .memberBadge {
-    padding: 4px 10px;
-    font-size: 0.65rem;
-  }
-  
-  .actionBtn {
-    width: 28px;
-    height: 28px;
-  }
-  
   .cardContent {
-    padding: 14px 12px;
-    gap: 8px;
+    padding: 8px 8px 6px;
+    gap: 4px;
   }
   
   .projectTitle {
-    font-size: 0.95rem;
-    min-height: 2.5em;
+    font-size: 0.9rem;
+    min-height: 2.4em;
   }
   
   .projectDescription {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+    -webkit-line-clamp: 2;
+  }
+  
+  .adminActions {
+    opacity: 1;
   }
   
   .earlyAccessOverlay {
-    padding: 6px 12px;
+    padding: 4px 10px;
   }
   
   .earlyAccessOverlay svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
   
   .earlyAccessOverlay span {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .projectCard {
+    min-height: 300px;
+  }
+  
+  .coverImageContainer {
+    height: 120px;
+  }
+  
+  .cardHeader {
+    top: 5px;
+    left: 5px;
+    right: 5px;
+  }
+  
+  .memberBadge {
+    padding: 2px 6px;
+    font-size: 0.55rem;
+  }
+  
+  .actionBtn {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .projectTitle {
+    font-size: 0.85rem;
+    min-height: 2.2em;
+  }
+  
+  .projectDescription {
+    font-size: 0.6rem;
   }
 }
