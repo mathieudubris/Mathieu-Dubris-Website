@@ -16,47 +16,56 @@ interface PersonalInfoLocationProps {
     };
   };
   onUpdate: (field: string, value: any) => void;
+  hideTitle?: boolean;
 }
 
-export default function PersonalInfoLocation({ teamMember, onUpdate }: PersonalInfoLocationProps) {
+export default function PersonalInfoLocation({ teamMember, onUpdate, hideTitle }: PersonalInfoLocationProps) {
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>
-        <Info size={20} />
-        <span>Informations personnelles</span>
-      </h2>
+      {!hideTitle && (
+        <h2 className={styles.title}>
+          <Info size={20} />
+          <span>Informations personnelles</span>
+        </h2>
+      )}
       
       <div className={styles.grid}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Prénom</label>
+          <label className={styles.label}>
+            Prénom <span className={styles.required}>*</span>
+          </label>
           <input
             type="text"
             value={teamMember.firstName || ''}
             onChange={(e) => onUpdate('firstName', e.target.value)}
-            className={styles.input}
+            className={`${styles.input} ${!teamMember.firstName ? styles.error : ''}`}
             placeholder="Votre prénom"
           />
         </div>
         
         <div className={styles.formGroup}>
-          <label className={styles.label}>Nom</label>
+          <label className={styles.label}>
+            Nom <span className={styles.required}>*</span>
+          </label>
           <input
             type="text"
             value={teamMember.lastName || ''}
             onChange={(e) => onUpdate('lastName', e.target.value)}
-            className={styles.input}
+            className={`${styles.input} ${!teamMember.lastName ? styles.error : ''}`}
             placeholder="Votre nom"
           />
         </div>
         
         <div className={styles.formGroup}>
-          <label className={styles.label}>Âge</label>
+          <label className={styles.label}>
+            Âge <span className={styles.required}>*</span>
+          </label>
           <div className={styles.inputWithSwitch}>
             <input
               type="number"
               value={teamMember.age || ''}
               onChange={(e) => onUpdate('age', parseInt(e.target.value) || 0)}
-              className={styles.input}
+              className={`${styles.input} ${!teamMember.age ? styles.error : ''}`}
               placeholder="Votre âge"
               min="0"
             />
@@ -77,30 +86,36 @@ export default function PersonalInfoLocation({ teamMember, onUpdate }: PersonalI
         </div>
       </div>
       
-      <h2 className={styles.title} style={{ marginTop: '2rem' }}>
-        <MapPin size={20} />
-        <span>Localisation</span>
-      </h2>
+      {!hideTitle && (
+        <h2 className={styles.title} style={{ marginTop: '2rem' }}>
+          <MapPin size={20} />
+          <span>Localisation</span>
+        </h2>
+      )}
       
       <div className={styles.grid}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Pays</label>
+          <label className={styles.label}>
+            Pays <span className={styles.required}>*</span>
+          </label>
           <input
             type="text"
             value={teamMember.location?.country || ''}
             onChange={(e) => onUpdate('location.country', e.target.value)}
-            className={styles.input}
+            className={`${styles.input} ${!teamMember.location?.country ? styles.error : ''}`}
             placeholder="Ex: Madagascar, France..."
           />
         </div>
         
         <div className={styles.formGroup}>
-          <label className={styles.label}>Ville</label>
+          <label className={styles.label}>
+            Ville <span className={styles.required}>*</span>
+          </label>
           <input
             type="text"
             value={teamMember.location?.city || ''}
             onChange={(e) => onUpdate('location.city', e.target.value)}
-            className={styles.input}
+            className={`${styles.input} ${!teamMember.location?.city ? styles.error : ''}`}
             placeholder="Ex: Antananarivo, Lyon..."
           />
         </div>

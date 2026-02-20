@@ -46,7 +46,7 @@ const Section4 = () => {
       <div className={styles.container}>
         <div className={styles.header}>
           <p className={styles.tagline}>Confiance & Constance</p>
-          <h2 className={styles.title}>Propulser par les meilleur des indusrtier</h2>
+          <h2 className={styles.title}>Propulser par les meilleur des industries</h2>
         </div>
 
         <div className={styles.marqueeWrapper}>

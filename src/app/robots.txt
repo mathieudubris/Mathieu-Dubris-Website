@@ -1,12 +1,15 @@
 // pages/robots.js
-function Robots() {
-  // Vide - le contenu est généré par getServerSideProps
-}
+function Robots() {}
 
 export async function getServerSideProps({ res }) {
   const robots = `User-agent: *
 Allow: /
-Sitemap: https://mathieu-dubris.web.app/sitemap.xml`;
+Sitemap: https://mathieu-dubris.web.app/sitemap.xml
+
+# Règles supplémentaires pour Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1`;
 
   res.setHeader('Content-Type', 'text/plain');
   res.write(robots);

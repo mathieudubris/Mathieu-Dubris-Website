@@ -8,41 +8,65 @@ interface EquipmentProps {
       phone: {
         model: string;
         internet: 'wifi' | 'mobile' | 'both';
+        isPublic?: boolean; // Nouveau
       };
       computer: {
         os: 'windows' | 'mac' | 'linux';
         ram: string;
         storage: string;
         gpu?: string;
+        isPublic?: boolean; // Nouveau
       };
     };
   };
   onUpdate: (field: string, value: any) => void;
+  hideTitle?: boolean;
 }
 
-export default function Equipment({ teamMember, onUpdate }: EquipmentProps) {
+export default function Equipment({ teamMember, onUpdate, hideTitle }: EquipmentProps) {
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>
-        <Laptop size={20} />
-        <span>Matériels utilisés</span>
-      </h2>
+      {!hideTitle && (
+        <h2 className={styles.title}>
+          <Laptop size={20} />
+          <span>Matériels utilisés</span>
+        </h2>
+      )}
       
       <div className={styles.grid}>
         {/* Téléphone */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <Phone size={16} />
-            <h3 className={styles.sectionTitle}>Téléphone</h3>
+            <div className={styles.sectionHeaderLeft}>
+              <Phone size={16} />
+              <h3 className={styles.sectionTitle}>
+                Téléphone <span className={styles.required}>*</span>
+              </h3>
+            </div>
+            <div className={styles.privacyToggle}>
+              <label className={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={teamMember.equipment.phone.isPublic !== false}
+                  onChange={(e) => onUpdate('equipment.phone.isPublic', e.target.checked)}
+                />
+                <span className={styles.slider}></span>
+              </label>
+              <span className={styles.privacyLabel}>
+                {teamMember.equipment.phone.isPublic !== false ? 'Public' : 'Privé'}
+              </span>
+            </div>
           </div>
           
           <div className={styles.formGroup}>
-            <label className={styles.label}>Modèle</label>
+            <label className={styles.label}>
+              Modèle <span className={styles.required}>*</span>
+            </label>
             <input
               type="text"
               value={teamMember.equipment.phone.model}
               onChange={(e) => onUpdate('equipment.phone.model', e.target.value)}
-              className={styles.input}
+              className={`${styles.input} ${!teamMember.equipment.phone.model ? styles.error : ''}`}
               placeholder="Ex: iPhone 15 Pro, Samsung Galaxy S23"
             />
           </div>
@@ -92,8 +116,23 @@ export default function Equipment({ teamMember, onUpdate }: EquipmentProps) {
         {/* Ordinateur */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <Laptop size={16} />
-            <h3 className={styles.sectionTitle}>Ordinateur</h3>
+            <div className={styles.sectionHeaderLeft}>
+              <Laptop size={16} />
+              <h3 className={styles.sectionTitle}>Ordinateur</h3>
+            </div>
+            <div className={styles.privacyToggle}>
+              <label className={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={teamMember.equipment.computer.isPublic !== false}
+                  onChange={(e) => onUpdate('equipment.computer.isPublic', e.target.checked)}
+                />
+                <span className={styles.slider}></span>
+              </label>
+              <span className={styles.privacyLabel}>
+                {teamMember.equipment.computer.isPublic !== false ? 'Public' : 'Privé'}
+              </span>
+            </div>
           </div>
           
           <div className={styles.formGroup}>
@@ -136,20 +175,20 @@ export default function Equipment({ teamMember, onUpdate }: EquipmentProps) {
               placeholder="Ex: 500 Go SSD + 1 To HDD"
             />
           </div>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              Carte graphique <span className={styles.optional}>(facultatif)</span>
+            </label>
+            <input
+              type="text"
+              value={teamMember.equipment.computer.gpu || ''}
+              onChange={(e) => onUpdate('equipment.computer.gpu', e.target.value)}
+              className={styles.input}
+              placeholder="Ex: NVIDIA RTX 3060 12 Go"
+            />
+          </div>
         </div>
-      </div>
-      
-      <div className={styles.formGroup}>
-        <label className={styles.label}>
-          Carte graphique <span className={styles.optional}>(facultatif)</span>
-        </label>
-        <input
-          type="text"
-          value={teamMember.equipment.computer.gpu || ''}
-          onChange={(e) => onUpdate('equipment.computer.gpu', e.target.value)}
-          className={styles.input}
-          placeholder="Ex: NVIDIA RTX 3060 12 Go"
-        />
       </div>
     </div>
   );

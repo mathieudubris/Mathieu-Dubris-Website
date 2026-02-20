@@ -1,22 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { FolderKanban, ArrowLeft, Menu, X } from 'lucide-react';
+import { FolderKanban, ArrowLeft, Menu, X, User as UserIcon, Save, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
-  auth, 
-  setupAuthListener, 
-  canEditTeamMember, 
-  saveProjectTeamMember, 
-  getUserProjectTeamProfile, 
-  getProject,
+  auth,
+  setupAuthListener,
+  saveProjectTeamMember,
+  getUserProjectTeamProfile,
   getProjectBySlug
 } from '@/utils/firebase-api';
-import { 
-  User, Info, Phone, Monitor, Laptop, MapPin,
-  Save, ChevronLeft, ChevronRight, Loader2
-} from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
 import Profile from './slider/Profile';
@@ -49,12 +43,14 @@ interface ProjectTeamMember {
     phone: {
       model: string;
       internet: 'wifi' | 'mobile' | 'both';
+      isPublic: boolean;
     };
     computer: {
       os: 'windows' | 'mac' | 'linux';
       ram: string;
       storage: string;
       gpu?: string;
+      isPublic: boolean;
     };
   };
   location: {
@@ -68,11 +64,11 @@ interface ProjectTeamMember {
 }
 
 const sections = [
-  { id: 'profile', label: 'Profil', icon: User, shortLabel: 'Profil' },
-  { id: 'info', label: 'Infos', icon: Info, shortLabel: 'Infos' },
-  { id: 'contacts', label: 'Contacts', icon: Phone, shortLabel: 'Contacts' },
-  { id: 'role', label: 'Rôle', icon: Monitor, shortLabel: 'Rôle' },
-  { id: 'equipment', label: 'Matériel', icon: Laptop, shortLabel: 'Matériel' },
+  { id: 'profile', label: 'Profil', icon: UserIcon, shortLabel: 'Profil' },
+  { id: 'info', label: 'Infos', icon: UserIcon, shortLabel: 'Infos' },
+  { id: 'contacts', label: 'Contacts', icon: UserIcon, shortLabel: 'Contacts' },
+  { id: 'role', label: 'Rôle', icon: UserIcon, shortLabel: 'Rôle' },
+  { id: 'equipment', label: 'Matériel', icon: UserIcon, shortLabel: 'Matériel' },
 ];
 
 const convertFirestoreDate = (date: any): Date => {
@@ -118,13 +114,15 @@ function EquipePageContent() {
     equipment: {
       phone: {
         model: '',
-        internet: 'wifi'
+        internet: 'wifi',
+        isPublic: true
       },
       computer: {
         os: 'windows',
         ram: '',
         storage: '',
-        gpu: ''
+        gpu: '',
+        isPublic: true
       }
     },
     location: {
@@ -162,22 +160,18 @@ function EquipePageContent() {
         setProjectTitle(project.title);
         setProjectId(project.id || '');
         
-        // VÉRIFICATION CRUCIALE : L'utilisateur connecté est-il membre du projet ?
         const userIsMember = project.teamMembers?.includes(user.uid) || 
                             project.createdBy === user.uid;
         
         setIsMember(userIsMember);
         
         if (!userIsMember) {
-          // L'utilisateur n'est pas membre - afficher un message d'erreur
           setAccessError("Vous n'êtes pas membre de ce projet. Vous ne pouvez pas accéder à la page d'équipe.");
           return;
         }
         
-        // Si membre, charger ses données
         await loadTeamMemberData(user.uid, project.id || '');
       } else {
-        // Projet non trouvé, rediriger
         router.push('/portfolio/projet-en-cours');
       }
     } catch (error) {
@@ -186,7 +180,6 @@ function EquipePageContent() {
     }
   };
 
-  // Redirection si pas de projectSlug
   useEffect(() => {
     if (!projectSlug && !isLoading) {
       router.push('/portfolio/projet-en-cours');
@@ -217,13 +210,15 @@ function EquipePageContent() {
           equipment: {
             phone: {
               model: profile.equipment?.phone?.model || '',
-              internet: profile.equipment?.phone?.internet || 'wifi'
+              internet: profile.equipment?.phone?.internet || 'wifi',
+              isPublic: profile.equipment?.phone?.isPublic !== undefined ? profile.equipment.phone.isPublic : true
             },
             computer: {
               os: profile.equipment?.computer?.os || 'windows',
               ram: profile.equipment?.computer?.ram || '',
               storage: profile.equipment?.computer?.storage || '',
-              gpu: profile.equipment?.computer?.gpu || ''
+              gpu: profile.equipment?.computer?.gpu || '',
+              isPublic: profile.equipment?.computer?.isPublic !== undefined ? profile.equipment.computer.isPublic : true
             }
           },
           location: {
@@ -236,7 +231,6 @@ function EquipePageContent() {
           updatedAt
         });
       } else {
-        // Nouveau profil pour ce projet
         setTeamMember(prev => ({
           ...prev,
           userId,
@@ -322,6 +316,35 @@ function EquipePageContent() {
     }
   };
 
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    const notification = document.createElement('div');
+    notification.className = `custom-notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: ${type === 'success' ? 'var(--primary)' : 'var(--dark-red)'};
+      color: ${type === 'success' ? 'var(--dark)' : 'var(--light)'};
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: slideDown 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 2000);
+  };
+
   const handleSave = async () => {
     if (!currentUser) {
       setShowLogin(true);
@@ -329,12 +352,44 @@ function EquipePageContent() {
     }
 
     if (!projectId) {
-      alert('❌ Erreur: Aucun projet sélectionné');
+      showNotification('❌ Erreur: Aucun projet sélectionné', 'error');
       return;
     }
 
-    if (!teamMember.firstName.trim() || !teamMember.lastName.trim()) {
-      alert('⚠️ Veuillez remplir les informations obligatoires (Prénom, Nom)');
+    const errors = [];
+    
+    if (!teamMember.image) {
+      errors.push("Photo de profil");
+    }
+    
+    if (!teamMember.firstName.trim()) {
+      errors.push("Prénom");
+    }
+    if (!teamMember.lastName.trim()) {
+      errors.push("Nom");
+    }
+    
+    if (!teamMember.age || teamMember.age <= 0) {
+      errors.push("Âge");
+    }
+    
+    if (!teamMember.location?.country.trim()) {
+      errors.push("Pays");
+    }
+    if (!teamMember.location?.city.trim()) {
+      errors.push("Ville");
+    }
+    
+    if (!teamMember.roles || teamMember.roles.length === 0) {
+      errors.push("Au moins un rôle");
+    }
+    
+    if (!teamMember.equipment?.phone?.model.trim()) {
+      errors.push("Modèle de téléphone");
+    }
+    
+    if (errors.length > 0) {
+      showNotification(`⚠️ Champs obligatoires manquants : ${errors.join(', ')}`, 'error');
       return;
     }
 
@@ -348,16 +403,15 @@ function EquipePageContent() {
         updatedAt: new Date()
       });
 
-      alert('✅ Profil enregistré avec succès!');
+      showNotification('✅ Profil enregistré avec succès!', 'success');
       
-      // Redirection avec slug
       setTimeout(() => {
         router.push(`/portfolio/projet-en-cours?project=${projectSlug}`);
       }, 1500);
       
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      alert('❌ Erreur lors de la sauvegarde');
+      showNotification('❌ Erreur lors de la sauvegarde', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -431,6 +485,7 @@ function EquipePageContent() {
           <Profile
             teamMember={teamMember}
             onImageUpload={handleImageUpload}
+            hideTitle={true}
           />
         );
       case 'info':
@@ -438,6 +493,7 @@ function EquipePageContent() {
           <PersonalInfoLocation
             teamMember={teamMember}
             onUpdate={updateTeamMember}
+            hideTitle={true}
           />
         );
       case 'contacts':
@@ -447,6 +503,7 @@ function EquipePageContent() {
             onAddContact={addContact}
             onRemoveContact={removeContact}
             onUpdateContactPrivacy={updateContactPrivacy}
+            hideTitle={true}
           />
         );
       case 'role':
@@ -454,6 +511,7 @@ function EquipePageContent() {
           <Role
             teamMember={teamMember}
             onUpdate={updateTeamMember}
+            hideTitle={true}
           />
         );
       case 'equipment':
@@ -461,6 +519,7 @@ function EquipePageContent() {
           <Equipment
             teamMember={teamMember}
             onUpdate={updateTeamMember}
+            hideTitle={true}
           />
         );
       default:
@@ -486,7 +545,7 @@ function EquipePageContent() {
             onClick={() => setShowLogin(true)}
             className={styles.loginCenterButton}
           >
-            <User size={20} />
+            <UserIcon size={20} />
             Se connecter pour créer votre profil
           </button>
         </div>
@@ -496,7 +555,6 @@ function EquipePageContent() {
     );
   }
 
-  // Afficher un message d'erreur si l'utilisateur n'est pas membre
   if (accessError) {
     return (
       <div className={styles.mainContainer}>
@@ -540,59 +598,60 @@ function EquipePageContent() {
       
       <main className={styles.content}>
         <div className={styles.pageContainer}>
-          <header className={styles.header}>
-            {/* Titre du projet */}
-            <div className={styles.projectInfo}>
-              <h1 className={styles.projectTitle}>
-                {projectTitle ? `Équipe - ${projectTitle}` : 'Équipe du projet'}
-              </h1>
-            </div>
+          <div className={styles.projectTitleRow}>
+            <h1 className={styles.projectTitle}>
+              {projectTitle ? `Équipe - ${projectTitle}` : 'Équipe du projet'}
+            </h1>
+          </div>
 
-            {/* Mobile Menu Toggle */}
-            <button
-              className={styles.mobileMenuToggle}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-            
-            <div className={`${styles.navButtons} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
-              {sections.map((section) => {
-                const Icon = section.icon;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      setActiveSection(section.id);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`${styles.navButton} ${
-                      activeSection === section.id ? styles.active : ''
-                    }`}
-                  >
-                    <Icon size={16} />
-                    <span className={styles.navLabel}>{section.label}</span>
-                    <span className={styles.navShortLabel}>{section.shortLabel}</span>
-                  </button>
-                );
-              })}
+          <header className={styles.header}>
+            <div className={styles.navLeftSection}>
+              <button
+                className={styles.mobileMenuToggle}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Menu"
+              >
+                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+              
+              <div className={`${styles.navButtons} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
+                {sections.map((section) => {
+                  const Icon = section.icon;
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => {
+                        setActiveSection(section.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`${styles.navButton} ${
+                        activeSection === section.id ? styles.active : ''
+                      }`}
+                    >
+                      <Icon size={16} />
+                      <span className={styles.navLabel}>{section.label}</span>
+                      <span className={styles.navShortLabel}>{section.shortLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             
             <div className={styles.headerActions}>
-              {/* Bouton Projets toujours visible */}
               <button
                 onClick={handleBackToProjects}
                 className={styles.projectsButton}
+                title="Retour aux projets"
               >
                 <FolderKanban size={16} />
                 <span className={styles.buttonText}>Projets</span>
               </button>
               
-              {/* Bouton Save */}
               <button
                 onClick={handleSave}
                 disabled={isSaving}
                 className={styles.saveButton}
+                title="Enregistrer"
               >
                 {isSaving ? (
                   <Loader2 size={16} className="animate-spin" />

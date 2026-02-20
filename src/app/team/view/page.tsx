@@ -3,14 +3,11 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { 
   auth, 
   setupAuthListener, 
   getProjectTeamMembers, 
-  getProject,
-  getProjectBySlug,
-  getProjectTeamMembersByProjectSlug
+  getProjectBySlug
 } from '@/utils/firebase-api';
 import { 
   User, Mail, Phone, MapPin, Monitor, Laptop, FolderKanban,
@@ -44,12 +41,14 @@ interface ProjectTeamMember {
     phone: {
       model: string;
       internet: 'wifi' | 'mobile' | 'both';
+      isPublic: boolean;
     };
     computer: {
       os: 'windows' | 'mac' | 'linux';
       ram: string;
       storage: string;
       gpu?: string;
+      isPublic: boolean;
     };
   };
   location: {
@@ -61,90 +60,47 @@ interface ProjectTeamMember {
   createdAt: Date;
 }
 
-// Définition des rôles avec leur catégorie de couleur
 const rolesData = [
-  // Direction & Management - Blanc
-  { name: 'Game Director', description: 'Supervise la vision globale et la direction créative du jeu', colorClass: 'Direction' },
-  { name: 'Creative Director', description: 'Dirige la direction artistique et créative du projet', colorClass: 'Direction' },
-  { name: 'Technical Director', description: 'Responsable des aspects techniques et de l\'architecture du jeu', colorClass: 'Direction' },
-  { name: 'Project Manager', description: 'Gère la planification, les ressources et les délais du projet', colorClass: 'Direction' },
-  { name: 'Team Coordinator', description: 'Coordonne les différentes équipes et assure la communication', colorClass: 'Direction' },
-  
-  // Design - Rouge
-  { name: 'Game Designer', description: 'Conçoit les mécaniques de jeu et les systèmes interactifs', colorClass: 'Design' },
-  { name: 'Level Designer', description: 'Crée les niveaux, l\'environnement et le parcours du joueur', colorClass: 'Design' },
-  { name: 'Gameplay Designer', description: 'Développe et équilibre les mécaniques de gameplay', colorClass: 'Design' },
-  { name: 'Narrative Designer', description: 'Élabore l\'histoire, les dialogues et l\'univers narratif', colorClass: 'Design' },
-  
-  // Programmation - Orange
-  { name: 'Game Programmer', description: 'Développe les fonctionnalités principales du jeu', colorClass: 'Programming' },
-  { name: 'Engine Programmer', description: 'Travaille sur le moteur de jeu et les outils techniques', colorClass: 'Programming' },
-  { name: 'AI Programmer', description: 'Programme l\'intelligence artificielle des ennemis et PNJ', colorClass: 'Programming' },
-  { name: 'UI Programmer', description: 'Développe les interfaces utilisateur et les systèmes HUD', colorClass: 'Programming' },
-  
-  // Art 3D - Jaune
-  { name: '3D Artist', description: 'Crée les modèles 3D des personnages et objets', colorClass: 'Art3D' },
-  { name: '3D Cinematic', description: 'Réalise les cinématiques et séquences animées en 3D', colorClass: 'Art3D' },
-  { name: 'Texture Artist', description: 'Crée les textures et matériaux pour les modèles 3D', colorClass: 'Art3D' },
-  { name: 'Prop Artist', description: 'Modélise les objets et accessoires du jeu', colorClass: 'Art3D' },
-  { name: 'Environment Artist', description: 'Construit les environnements et décors du jeu', colorClass: 'Art3D' },
-  { name: '3D Animator', description: 'Anime les personnages et créatures en 3D', colorClass: 'Art3D' },
-  { name: 'Mocap Actor', description: 'Effectue les performances pour la capture de mouvement', colorClass: 'Art3D' },
-  { name: '3D Art Support', description: 'Assiste l\'équipe artistique sur les aspects techniques 3D', colorClass: 'Art3D' },
-  { name: 'Technical Artist', description: 'Fait le pont entre artistes et programmeurs, crée des shaders', colorClass: 'Art3D' },
-  
-  // UI/UX - Vert
-  { name: 'UX Designer', description: 'Conçoit l\'expérience utilisateur et la fluidité d\'interaction', colorClass: 'UIUX' },
-  { name: 'UI Designer', description: 'Dessine les interfaces utilisateur et éléments d\'interface', colorClass: 'UIUX' },
-  { name: 'UI Artist', description: 'Crée les assets graphiques pour les interfaces', colorClass: 'UIUX' },
-  { name: 'UI Art Support', description: 'Assiste dans la création des éléments d\'interface', colorClass: 'UIUX' },
-  
-  // Audio - Turquoise
-  { name: 'Music Composer', description: 'Compose la bande-son et les thèmes musicaux', colorClass: 'Audio' },
-  { name: 'Sound Designer', description: 'Crée les effets sonores et l\'ambiance audio', colorClass: 'Audio' },
-  { name: 'Voice Actor', description: 'Prête sa voix aux personnages du jeu', colorClass: 'Audio' },
-  { name: 'Voice Director', description: 'Dirige les séances d\'enregistrement vocal', colorClass: 'Audio' },
-  
-  // Support & Marketing - Rose
-  { name: 'Community Manager', description: 'Gère la relation avec la communauté de joueurs', colorClass: 'Support' },
-  { name: 'Documentation Manager', description: 'Organise et maintient la documentation du projet', colorClass: 'Support' },
-  { name: 'Content Creator', description: 'Crée du contenu promotionnel et éducatif autour du jeu', colorClass: 'Support' },
-  { name: 'Marketing Manager', description: 'Gère la stratégie marketing et la promotion du jeu', colorClass: 'Support' },
-  { name: 'QA Tester', description: 'Teste le jeu pour identifier les bugs et problèmes', colorClass: 'Support' }
+  { name: 'Game Director', colorClass: 'Direction' },
+  { name: 'Creative Director', colorClass: 'Direction' },
+  { name: 'Technical Director', colorClass: 'Direction' },
+  { name: 'Project Manager', colorClass: 'Direction' },
+  { name: 'Team Coordinator', colorClass: 'Direction' },
+  { name: 'Game Designer', colorClass: 'Design' },
+  { name: 'Level Designer', colorClass: 'Design' },
+  { name: 'Gameplay Designer', colorClass: 'Design' },
+  { name: 'Narrative Designer', colorClass: 'Design' },
+  { name: 'Game Programmer', colorClass: 'Programming' },
+  { name: 'Engine Programmer', colorClass: 'Programming' },
+  { name: 'AI Programmer', colorClass: 'Programming' },
+  { name: 'UI Programmer', colorClass: 'Programming' },
+  { name: '3D Artist', colorClass: 'Art3D' },
+  { name: '3D Cinematic', colorClass: 'Art3D' },
+  { name: 'Texture Artist', colorClass: 'Art3D' },
+  { name: 'Prop Artist', colorClass: 'Art3D' },
+  { name: 'Environment Artist', colorClass: 'Art3D' },
+  { name: '3D Animator', colorClass: 'Art3D' },
+  { name: 'Mocap Actor', colorClass: 'Art3D' },
+  { name: '3D Art Support', colorClass: 'Art3D' },
+  { name: 'Technical Artist', colorClass: 'Art3D' },
+  { name: 'UX Designer', colorClass: 'UIUX' },
+  { name: 'UI Designer', colorClass: 'UIUX' },
+  { name: 'UI Artist', colorClass: 'UIUX' },
+  { name: 'UI Art Support', colorClass: 'UIUX' },
+  { name: 'Music Composer', colorClass: 'Audio' },
+  { name: 'Sound Designer', colorClass: 'Audio' },
+  { name: 'Voice Actor', colorClass: 'Audio' },
+  { name: 'Voice Director', colorClass: 'Audio' },
+  { name: 'Community Manager', colorClass: 'Support' },
+  { name: 'Documentation Manager', colorClass: 'Support' },
+  { name: 'Content Creator', colorClass: 'Support' },
+  { name: 'Marketing Manager', colorClass: 'Support' },
+  { name: 'QA Tester', colorClass: 'Support' }
 ];
 
 const getRoleColorClass = (roleName: string): string => {
   const role = rolesData.find(r => r.name === roleName);
   return role ? role.colorClass : '';
-};
-
-const generateContactUrl = (contact: ProjectTeamMember['contacts'][0]): string => {
-  const { type, value } = contact;
-  
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
-  }
-  
-  switch (type) {
-    case 'instagram':
-      return `https://instagram.com/${value.replace('@', '')}`;
-    case 'facebook':
-      return `https://facebook.com/${value.replace('@', '')}`;
-    case 'twitter':
-      return `https://twitter.com/${value.replace('@', '')}`;
-    case 'youtube':
-      return value.includes('://') ? value : `https://youtube.com/@${value.replace('@', '')}`;
-    case 'linkedin':
-      return value.includes('://') ? value : `https://linkedin.com/in/${value}`;
-    case 'whatsapp':
-      return `https://wa.me/${value.replace(/[^\d+]/g, '')}`;
-    case 'discord':
-      return `https://discord.com/users/${value}`;
-    case 'tiktok':
-      return `https://tiktok.com/@${value.replace('@', '')}`;
-    default:
-      return '#';
-  }
 };
 
 const getContactLucideIcon = (type: string) => {
@@ -176,9 +132,19 @@ const normalizeMemberData = (member: any): ProjectTeamMember => {
     image: member.image || '',
     contacts: member.contacts || [],
     roles: member.roles || [],
-    equipment: member.equipment || {
-      phone: { model: '', internet: 'wifi' },
-      computer: { os: 'windows', ram: '', storage: '', gpu: '' }
+    equipment: {
+      phone: {
+        model: member.equipment?.phone?.model || '',
+        internet: member.equipment?.phone?.internet || 'wifi',
+        isPublic: member.equipment?.phone?.isPublic !== undefined ? member.equipment.phone.isPublic : true
+      },
+      computer: {
+        os: member.equipment?.computer?.os || 'windows',
+        ram: member.equipment?.computer?.ram || '',
+        storage: member.equipment?.computer?.storage || '',
+        gpu: member.equipment?.computer?.gpu || '',
+        isPublic: member.equipment?.computer?.isPublic !== undefined ? member.equipment.computer.isPublic : true
+      }
     },
     location: member.location || {
       country: '',
@@ -335,24 +301,15 @@ function TeamViewContent() {
               {teamMembers.length > 0 ? (
                 <div className={styles.teamGrid}>
                   {teamMembers.map((member, index) => {
-                    const isCurrentUser = currentUser?.uid === member.userId;
-                    
                     return (
                       <motion.div
                         key={member.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`${styles.memberCard} ${isCurrentUser ? styles.currentUserCard : ''}`}
+                        className={styles.memberCard}
                         onClick={() => setSelectedMember(member)}
                       >
-                        {isCurrentUser && (
-                          <div className={styles.currentUserBadge}>
-                            <User size={12} />
-                            <span>Vous</span>
-                          </div>
-                        )}
-                        
                         <div className={styles.cardHeader}>
                           <div className={styles.avatar}>
                             {member.image ? (
@@ -438,7 +395,6 @@ function TeamViewContent() {
         </div>
       </main>
 
-      {/* Modal de détail */}
       {selectedMember && (
         <div className={styles.modalOverlay} onClick={() => setSelectedMember(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -523,28 +479,19 @@ function TeamViewContent() {
                       .filter(contact => contact.isPublic)
                       .map((contact, i) => {
                         const ContactIcon = getContactLucideIcon(contact.type);
-                        const contactUrl = generateContactUrl(contact);
                         
                         return (
-                          <a
-                            key={i}
-                            href={contactUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.modalContactLink}
-                          >
-                            <div className={styles.modalContact}>
-                              <span className={styles.contactIcon}>
-                                <ContactIcon size={20} />
-                              </span>
-                              <span className={styles.contactType}>
-                                {contact.type.charAt(0).toUpperCase() + contact.type.slice(1)}:
-                              </span>
-                              <span className={styles.contactValue}>
-                                {contact.value}
-                              </span>
-                            </div>
-                          </a>
+                          <div key={i} className={styles.modalContact}>
+                            <span className={styles.contactIcon}>
+                              <ContactIcon size={20} />
+                            </span>
+                            <span className={styles.contactType}>
+                              {contact.type.charAt(0).toUpperCase() + contact.type.slice(1)}:
+                            </span>
+                            <span className={styles.contactValue}>
+                              {contact.value}
+                            </span>
+                          </div>
                         );
                     })}
                   </div>
@@ -557,33 +504,53 @@ function TeamViewContent() {
                   <span>Matériel utilisé</span>
                 </h3>
                 <div className={styles.modalEquipment}>
-                  {selectedMember.equipment.phone.model && (
+                  {selectedMember.equipment.phone.isPublic !== false && selectedMember.equipment.phone.model && (
                     <div className={styles.equipmentItem}>
                       <strong>Téléphone:</strong> {selectedMember.equipment.phone.model}
+                      {selectedMember.equipment.phone.internet && (
+                        <span className={styles.equipmentDetail}>
+                          {" "}({selectedMember.equipment.phone.internet === 'wifi' ? 'Wi-Fi' : 
+                                  selectedMember.equipment.phone.internet === 'mobile' ? 'Mobile' : 'Wi-Fi + Mobile'})
+                        </span>
+                      )}
                     </div>
                   )}
-                  {selectedMember.equipment.computer.ram && (
-                    <div className={styles.equipmentItem}>
-                      <strong>Ordinateur:</strong> {selectedMember.equipment.computer.os} • {selectedMember.equipment.computer.ram}
-                    </div>
+                  
+                  {selectedMember.equipment.computer.isPublic !== false && (
+                    <>
+                      {selectedMember.equipment.computer.os && (
+                        <div className={styles.equipmentItem}>
+                          <strong>OS:</strong> {selectedMember.equipment.computer.os === 'windows' ? 'Windows' :
+                                                   selectedMember.equipment.computer.os === 'mac' ? 'macOS' : 'Linux'}
+                        </div>
+                      )}
+                      {selectedMember.equipment.computer.ram && (
+                        <div className={styles.equipmentItem}>
+                          <strong>RAM:</strong> {selectedMember.equipment.computer.ram}
+                        </div>
+                      )}
+                      {selectedMember.equipment.computer.storage && (
+                        <div className={styles.equipmentItem}>
+                          <strong>Stockage:</strong> {selectedMember.equipment.computer.storage}
+                        </div>
+                      )}
+                      {selectedMember.equipment.computer.gpu && (
+                        <div className={styles.equipmentItem}>
+                          <strong>GPU:</strong> {selectedMember.equipment.computer.gpu}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {selectedMember.equipment.phone.isPublic === false && 
+                   selectedMember.equipment.computer.isPublic === false && (
+                    <p className={styles.noPublicEquipment}>
+                      Informations matérielles privées
+                    </p>
                   )}
                 </div>
               </div>
             </div>
-            
-            {currentUser?.uid === selectedMember.userId && (
-              <div className={styles.modalFooter}>
-                <button
-                  onClick={() => {
-                    setSelectedMember(null);
-                    handleEditProfile();
-                  }}
-                  className={styles.modalEditButton}
-                >
-                  Modifier mon profil
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

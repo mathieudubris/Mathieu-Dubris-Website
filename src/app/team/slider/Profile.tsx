@@ -7,21 +7,24 @@ interface ProfileProps {
     image: string;
   };
   onImageUpload: () => void;
+  hideTitle?: boolean; // Nouvelle prop
 }
 
-export default function Profile({ teamMember, onImageUpload }: ProfileProps) {
+export default function Profile({ teamMember, onImageUpload, hideTitle }: ProfileProps) {
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>
-        <User size={20} />
-        <span>Photo de profil</span>
-      </h2>
+      {!hideTitle && (
+        <h2 className={styles.title}>
+          <User size={20} />
+          <span>Photo de profil</span>
+        </h2>
+      )}
       
       <div className={styles.imageContainer}>
         <div 
           onClick={onImageUpload}
-          className={styles.image}
-          title="Cliquer pour uploader une photo"
+          className={`${styles.image} ${!teamMember.image ? styles.required : ''}`}
+          title="Cliquer pour uploader une photo (obligatoire)"
         >
           {teamMember.image ? (
             <img src={teamMember.image} alt="Profile" />
@@ -33,6 +36,10 @@ export default function Profile({ teamMember, onImageUpload }: ProfileProps) {
         <button onClick={onImageUpload} className={styles.uploadButton}>
           {teamMember.image ? 'Changer la photo' : 'Uploader une photo'}
         </button>
+        
+        {!teamMember.image && (
+          <p className={styles.requiredHint}>Photo de profil obligatoire</p>
+        )}
         
         <p className={styles.hint}>
           Format recommandé: JPG ou PNG • Taille max: 5MB

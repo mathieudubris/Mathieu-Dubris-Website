@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { Monitor, Info, X } from 'lucide-react';
 import styles from './Role.module.css';
 
-// Définition des rôles avec leur description et catégorie de couleur
 const roles = [
-  // Direction & Management - Blanc
   { 
     name: 'Game Director', 
     description: 'Définit et supervise la vision créative globale du jeu. Prend les décisions finales sur le game design, l\'histoire et l\'expérience utilisateur.', 
@@ -30,8 +28,6 @@ const roles = [
     description: 'Facilite la communication quotidienne entre les membres de l\'équipe. Organise les réunions et assure le bon déroulement des processus internes.', 
     colorClass: 'Direction' 
   },
-  
-  // Design - Rouge
   { 
     name: 'Game Designer', 
     description: 'Conçoit les mécaniques de jeu, les systèmes et les règles. Crée l\'expérience ludique et documente les fonctionnalités du jeu.', 
@@ -52,8 +48,6 @@ const roles = [
     description: 'Intègre l\'histoire et les éléments narratifs dans le gameplay. Écrit les dialogues et crée un univers cohérent qui sert l\'expérience de jeu.', 
     colorClass: 'Design' 
   },
-  
-  // Programmation - Orange
   { 
     name: 'Game Programmer', 
     description: 'Développe les fonctionnalités interactives du jeu. Implémente les mécaniques de gameplay et assure leur bon fonctionnement.', 
@@ -74,15 +68,13 @@ const roles = [
     description: 'Développe les interfaces utilisateur et les systèmes d\'affichage. Assure la liaison entre les données du jeu et ce que voit le joueur.', 
     colorClass: 'Programming' 
   },
-  
-  // Art 3D - Jaune
   { 
     name: '3D Artist', 
     description: 'Crée les modèles 3D des personnages, créatures et objets. Donne vie à l\'univers visuel du jeu en respectant le style artistique établi.', 
     colorClass: 'Art3D' 
   },
   { 
-    name: '3D Cinematic Artist', 
+    name: '3D Cinematic', 
     description: 'Réalise les séquences animées et cinématiques du jeu. Met en scène les moments clés de l\'histoire avec un souci de réalisation cinématographique.', 
     colorClass: 'Art3D' 
   },
@@ -121,8 +113,6 @@ const roles = [
     description: 'Fait le pont entre les artistes et les programmeurs. Crée des shaders, optimise les assets et développe des outils pour faciliter le travail artistique.', 
     colorClass: 'Art3D' 
   },
-  
-  // UI/UX - Vert
   { 
     name: 'UX Designer', 
     description: 'Conçoit l\'expérience utilisateur globale. Étudie comment les joueurs interagissent avec le jeu et optimise la fluidité de navigation et de compréhension.', 
@@ -143,8 +133,6 @@ const roles = [
     description: 'Assiste l\'équipe UI dans la production des éléments d\'interface. Aide à l\'intégration et à la déclinaison des assets graphiques.', 
     colorClass: 'UIUX' 
   },
-  
-  // Audio - Turquoise
   { 
     name: 'Music Composer', 
     description: 'Compose la bande originale du jeu. Crée des thèmes musicaux qui soutiennent l\'émotion, l\'action et l\'immersion du joueur.', 
@@ -165,8 +153,6 @@ const roles = [
     description: 'Dirige les sessions d\'enregistrement des voix. Guide les comédiens pour obtenir des performances cohérentes avec le personnage et l\'histoire.', 
     colorClass: 'Audio' 
   },
-  
-  // Support & Marketing - Rose
   { 
     name: 'Community Manager', 
     description: 'Anime et modère la communauté autour du jeu. Communique avec les joueurs, recueille les retours et maintient l\'engagement sur les réseaux sociaux.', 
@@ -199,9 +185,10 @@ interface RoleProps {
     roles: string[];
   };
   onUpdate: (field: string, value: any) => void;
+  hideTitle?: boolean;
 }
 
-export default function Role({ teamMember, onUpdate }: RoleProps) {
+export default function Role({ teamMember, onUpdate, hideTitle }: RoleProps) {
   const [selectedInfo, setSelectedInfo] = useState<string | null>(null);
 
   const toggleRole = (roleName: string) => {
@@ -227,7 +214,6 @@ export default function Role({ teamMember, onUpdate }: RoleProps) {
     onUpdate('roles', newRoles);
   };
 
-  // Regrouper les rôles par catégorie pour l'affichage
   const categorizedRoles = {
     'Direction & Management': roles.filter(role => 
       ['Game Director', 'Creative Director', 'Technical Director', 'Project Manager', 'Team Coordinator'].includes(role.name)
@@ -254,14 +240,17 @@ export default function Role({ teamMember, onUpdate }: RoleProps) {
 
   return (
     <div className={styles.roleContainer}>
-      <div className={styles.sectionTitle}>
-        <Monitor size={20} />
-        <span>Rôles dans l'équipe</span>
-      </div>
+      {!hideTitle && (
+        <div className={styles.sectionTitle}>
+          <Monitor size={20} />
+          <span>Rôles dans l'équipe</span>
+        </div>
+      )}
       
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>
           Sélectionnez un ou plusieurs rôles (sélection multiple)
+          <span className={styles.required}> *</span>
           {teamMember.roles && teamMember.roles.length > 0 && (
             <span className={styles.selectionCount}>
               {teamMember.roles.length} sélectionné(s)
@@ -269,8 +258,7 @@ export default function Role({ teamMember, onUpdate }: RoleProps) {
           )}
         </label>
         
-        {/* Rôles sélectionnés */}
-        <div className={styles.selectedRolesContainer}>
+        <div className={`${styles.selectedRolesContainer} ${(!teamMember.roles || teamMember.roles.length === 0) ? styles.error : ''}`}>
           {(teamMember.roles || []).map((roleName) => {
             const role = roles.find(r => r.name === roleName);
             return (
@@ -286,10 +274,12 @@ export default function Role({ teamMember, onUpdate }: RoleProps) {
               </div>
             );
           })}
+          {(!teamMember.roles || teamMember.roles.length === 0) && (
+            <span className={styles.requiredMessage}>Au moins un rôle requis</span>
+          )}
         </div>
       </div>
       
-      {/* Catégories de rôles */}
       {Object.entries(categorizedRoles).map(([category, categoryRoles]) => (
         <div key={category} className={styles.roleCategory}>
           <h4 className={styles.categoryTitle}>{category}</h4>

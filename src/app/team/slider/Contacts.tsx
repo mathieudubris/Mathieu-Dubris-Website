@@ -20,6 +20,7 @@ interface ContactsProps {
   onAddContact: (contact: Omit<Contact, 'isPublic'>) => void;
   onRemoveContact: (index: number) => void;
   onUpdateContactPrivacy: (index: number, isPublic: boolean) => void;
+  hideTitle?: boolean;
 }
 
 const contactTypes = [
@@ -37,7 +38,8 @@ export default function Contacts({
   teamMember, 
   onAddContact, 
   onRemoveContact,
-  onUpdateContactPrivacy 
+  onUpdateContactPrivacy,
+  hideTitle 
 }: ContactsProps) {
   const [newContact, setNewContact] = useState({
     type: 'instagram' as const,
@@ -58,10 +60,12 @@ export default function Contacts({
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>
-        <Phone size={20} />
-        <span>Contacts</span>
-      </h2>
+      {!hideTitle && (
+        <h2 className={styles.title}>
+          <Phone size={20} />
+          <span>Contacts</span>
+        </h2>
+      )}
       
       <div className={styles.addContactSection}>
         <h3 className={styles.subtitle}>Ajouter un réseau social</h3>

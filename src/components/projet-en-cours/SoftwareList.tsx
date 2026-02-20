@@ -1,264 +1,474 @@
-// SoftwareList.tsx - LISTE COMPLÈTE DE LOGICIELS AVEC RECHERCHE OPTIMISÉE
+// SoftwareList.tsx - LISTE COMPLÈTE DE LOGICIELS AVEC LOGOS SVG PERSONNALISÉS
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Wrench, Search } from 'lucide-react';
+import { X, Check, Wrench, Search, Grid } from 'lucide-react';
 import styles from './SoftwareList.module.css';
 
+// Types
 interface Software {
   id: string;
   name: string;
-  icon: string;
-  category: 'design' | 'dev' | 'video' | 'audio' | '3d' | 'art' | 'office' | 'collab' | 'cms' | 'analytics' | 'marketing' | 'database' | 'cloud' | 'devops' | 'bi' | 'erp' | 'crm' | 'game' | 'ai';
+  icon: React.ReactNode;
+  category: Category;
+}
+
+type Category = 
+  | 'office' | 'collab' | 'cms' | 'marketing' | 'analytics' 
+  | 'design' | 'dev' | 'database' | 'cloud' | 'devops' 
+  | 'bi' | 'erp' | 'crm' | '3d' | 'video' | 'audio' 
+  | 'art' | 'game' | 'ai';
+
+interface CategoryConfig {
+  key: Category | 'all';
+  label: string;
 }
 
 interface SoftwareListProps {
   projectId: string;
   isAdmin: boolean;
   compact?: boolean;
-  selectedSoftware?: any[];
+  selectedSoftware?: Software[];
   onClose?: () => void;
-  onSave?: (software: any[]) => void;
+  onSave?: (software: Software[]) => void;
 }
 
-// LISTE COMPLÈTE ET ÉTENDUE DES LOGICIELS - Gardée telle quelle
-const allSoftware: Software[] = [
-  // OFFICE - 11 logiciels
-  { id: '101', name: 'Microsoft Word', icon: '📝', category: 'office' },
-  { id: '102', name: 'Microsoft Excel', icon: '📊', category: 'office' },
-  { id: '103', name: 'Microsoft PowerPoint', icon: '📽️', category: 'office' },
-  { id: '104', name: 'Microsoft Outlook', icon: '📧', category: 'office' },
-  { id: '105', name: 'Google Docs', icon: '📄', category: 'office' },
-  { id: '106', name: 'Google Sheets', icon: '📈', category: 'office' },
-  { id: '107', name: 'Google Slides', icon: '🎞️', category: 'office' },
-  { id: '108', name: 'LibreOffice', icon: '📚', category: 'office' },
-  { id: '109', name: 'Notion', icon: '🗂️', category: 'office' },
-  { id: '110', name: 'Zoho Office', icon: '📋', category: 'office' },
-  
-  // COLLABORATION - 5 logiciels
-  { id: '111', name: 'Microsoft Teams', icon: '👥', category: 'collab' },
-  { id: '112', name: 'Slack', icon: '💬', category: 'collab' },
-  { id: '113', name: 'Discord', icon: '🎮', category: 'collab' },
-  { id: '114', name: 'Zoom', icon: '📹', category: 'collab' },
-  { id: '115', name: 'Google Meet', icon: '🎥', category: 'collab' },
-  
-  // CMS - 8 logiciels
-  { id: '116', name: 'WordPress', icon: '🪴', category: 'cms' },
-  { id: '117', name: 'Shopify', icon: '🛒', category: 'cms' },
-  { id: '118', name: 'Webflow', icon: '🕸️', category: 'cms' },
-  { id: '119', name: 'Wix', icon: '🏗️', category: 'cms' },
-  { id: '120', name: 'Drupal', icon: '💧', category: 'cms' },
-  { id: '121', name: 'Joomla', icon: '🎯', category: 'cms' },
-  { id: '122', name: 'Magento', icon: '🛍️', category: 'cms' },
-  
-  // ANALYTICS - 2 logiciels
-  { id: '123', name: 'Google Analytics', icon: '📈', category: 'analytics' },
-  { id: '124', name: 'Google Tag Manager', icon: '🏷️', category: 'analytics' },
-  
-  // MARKETING - 5 logiciels
-  { id: '125', name: 'SEMrush', icon: '🔍', category: 'marketing' },
-  { id: '126', name: 'Ahrefs', icon: '🔗', category: 'marketing' },
-  { id: '127', name: 'HubSpot', icon: '🔄', category: 'marketing' },
-  { id: '128', name: 'Mailchimp', icon: '🐵', category: 'marketing' },
-  { id: '129', name: 'Salesforce Marketing Cloud', icon: '☁️', category: 'marketing' },
-  
-  // DESIGN - 15 logiciels (mise à jour)
-  { id: '1', name: 'Figma', icon: '🎨', category: 'design' },
-  { id: '2', name: 'Adobe Photoshop', icon: '🖼️', category: 'design' },
-  { id: '3', name: 'Adobe Illustrator', icon: '✏️', category: 'design' },
-  { id: '4', name: 'Adobe XD', icon: '📐', category: 'design' },
-  { id: '5', name: 'Sketch', icon: '💎', category: 'design' },
-  { id: '6', name: 'Adobe InDesign', icon: '📄', category: 'design' },
-  { id: '7', name: 'Affinity Designer', icon: '🎯', category: 'design' },
-  { id: '8', name: 'CorelDRAW', icon: '🌀', category: 'design' },
-  { id: '9', name: 'Canva', icon: '🖌️', category: 'design' },
-  { id: '10', name: 'Framer', icon: '⚡', category: 'design' },
-  { id: '11', name: 'InVision', icon: '👁️', category: 'design' },
-  { id: '12', name: 'Procreate', icon: '🎭', category: 'design' },
-  { id: '13', name: 'GIMP', icon: '🦊', category: 'design' },
-  { id: '14', name: 'Krita', icon: '🖍️', category: 'design' },
-  { id: '15', name: 'Inkscape', icon: '🔷', category: 'design' },
-  
-  // VIDÉO - 15 logiciels (mise à jour)
-  { id: '53', name: 'Adobe After Effects', icon: '✨', category: 'video' },
-  { id: '54', name: 'Adobe Premiere Pro', icon: '🎥', category: 'video' },
-  { id: '55', name: 'Final Cut Pro', icon: '🎞️', category: 'video' },
-  { id: '56', name: 'DaVinci Resolve', icon: '🌈', category: 'video' },
-  { id: '57', name: 'Avid', icon: '📹', category: 'video' },
-  { id: '58', name: 'Vegas Pro', icon: '🎰', category: 'video' },
-  { id: '59', name: 'Camtasia', icon: '📺', category: 'video' },
-  { id: '60', name: 'Filmora', icon: '🎬', category: 'video' },
-  { id: '61', name: 'HitFilm', icon: '🎯', category: 'video' },
-  { id: '62', name: 'Lightworks', icon: '💡', category: 'video' },
-  { id: '63', name: 'Nuke', icon: '💣', category: 'video' },
-  { id: '64', name: 'Flame', icon: '🔥', category: 'video' },
-  { id: '65', name: 'Motion', icon: '🌀', category: 'video' },
-  { id: '66', name: 'Mocha', icon: '☕', category: 'video' },
-  
-  // 3D - 12 logiciels (mise à jour)
-  { id: '41', name: 'Blender', icon: '🔶', category: '3d' },
-  { id: '42', name: 'Cinema 4D', icon: '🎬', category: '3d' },
-  { id: '43', name: 'Maya', icon: '🗿', category: '3d' },
-  { id: '44', name: '3ds Max', icon: '🏗️', category: '3d' },
-  { id: '45', name: 'ZBrush', icon: '🗿', category: '3d' },
-  { id: '46', name: 'Houdini', icon: '🌊', category: '3d' },
-  { id: '47', name: 'Substance', icon: '🧱', category: '3d' },
-  { id: '48', name: 'SketchUp', icon: '📦', category: '3d' },
-  { id: '49', name: 'Rhino', icon: '🦏', category: '3d' },
-  { id: '50', name: 'AutoCAD', icon: '📏', category: '3d' },
-  { id: '51', name: 'Fusion 360', icon: '🔧', category: '3d' },
-  { id: '52', name: 'SolidWorks', icon: '⚙️', category: '3d' },
-  
-  // DÉVELOPPEMENT - 44 logiciels (mise à jour)
-  { id: '16', name: 'VS Code', icon: '💻', category: 'dev' },
-  { id: '17', name: 'Visual Studio Code', icon: '📝', category: 'dev' },
-  { id: '130', name: 'IntelliJ IDEA', icon: '💡', category: 'dev' },
-  { id: '131', name: 'Eclipse', icon: '🌘', category: 'dev' },
-  { id: '132', name: 'Visual Studio', icon: '🟦', category: 'dev' },
-  { id: '133', name: 'Android Studio', icon: '🤖', category: 'dev' },
-  { id: '134', name: 'Xcode', icon: '🍎', category: 'dev' },
-  { id: '135', name: 'Git', icon: '🐙', category: 'dev' },
-  { id: '136', name: 'GitHub', icon: '🐱', category: 'dev' },
-  { id: '137', name: 'GitLab', icon: '🦊', category: 'dev' },
-  { id: '138', name: 'Bitbucket', icon: '🪣', category: 'dev' },
-  
-  // LANGUAGES DE PROGRAMMATION
-  { id: '18', name: 'React', icon: '⚛️', category: 'dev' },
-  { id: '19', name: 'Next.js', icon: '▲', category: 'dev' },
-  { id: '20', name: 'Vue.js', icon: '💚', category: 'dev' },
-  { id: '21', name: 'Angular', icon: '🅰️', category: 'dev' },
-  { id: '22', name: 'Node.js', icon: '🟢', category: 'dev' },
-  { id: '23', name: 'Python', icon: '🐍', category: 'dev' },
-  { id: '24', name: 'Django', icon: '🎸', category: 'dev' },
-  { id: '25', name: 'Flask', icon: '🧪', category: 'dev' },
-  { id: '26', name: 'PHP', icon: '🐘', category: 'dev' },
-  { id: '27', name: 'Laravel', icon: '🔺', category: 'dev' },
-  { id: '28', name: 'Ruby', icon: '💎', category: 'dev' },
-  { id: '29', name: 'Rails', icon: '🛤️', category: 'dev' },
-  { id: '30', name: 'Java', icon: '☕', category: 'dev' },
-  { id: '31', name: 'Spring Boot', icon: '🍃', category: 'dev' },
-  { id: '32', name: 'C#', icon: '🔷', category: 'dev' },
-  { id: '33', name: '.NET', icon: '🟣', category: 'dev' },
-  { id: '34', name: 'Go', icon: '🐹', category: 'dev' },
-  { id: '35', name: 'Rust', icon: '🦀', category: 'dev' },
-  { id: '36', name: 'TypeScript', icon: '🔷', category: 'dev' },
-  { id: '37', name: 'JavaScript', icon: '🟨', category: 'dev' },
-  { id: '139', name: 'C', icon: '©️', category: 'dev' },
-  { id: '140', name: 'C++', icon: '➕', category: 'dev' },
-  { id: '141', name: 'SQL', icon: '🗃️', category: 'dev' },
-  { id: '142', name: 'HTML', icon: '🌐', category: 'dev' },
-  { id: '143', name: 'CSS', icon: '🎨', category: 'dev' },
-  { id: '144', name: 'R', icon: '📊', category: 'dev' },
-  { id: '145', name: 'Julia', icon: '👩', category: 'dev' },
-  { id: '146', name: 'MATLAB', icon: '🔢', category: 'dev' },
-  { id: '147', name: 'Bash', icon: '💲', category: 'dev' },
-  { id: '148', name: 'PowerShell', icon: '💻', category: 'dev' },
-  { id: '149', name: 'YAML', icon: '📄', category: 'dev' },
-  { id: '150', name: 'Swift', icon: '🐦', category: 'dev' },
-  { id: '151', name: 'Kotlin', icon: '🟣', category: 'dev' },
-  { id: '152', name: 'Dart', icon: '🎯', category: 'dev' },
-  
-  { id: '38', name: 'Unity', icon: '🎮', category: 'dev' },
-  { id: '39', name: 'Unreal Engine', icon: '🕹️', category: 'dev' },
-  { id: '40', name: 'Docker', icon: '🐳', category: 'dev' },
-  { id: '153', name: 'Kubernetes', icon: '☸️', category: 'dev' },
-  { id: '154', name: 'Terraform', icon: '🏗️', category: 'dev' },
-  { id: '155', name: 'Jenkins', icon: '🤖', category: 'dev' },
-  
-  // AUDIO - 15 logiciels
-  { id: '68', name: 'Audition', icon: '🎵', category: 'audio' },
-  { id: '69', name: 'Logic Pro', icon: '🎹', category: 'audio' },
-  { id: '70', name: 'Ableton', icon: '🎧', category: 'audio' },
-  { id: '71', name: 'FL Studio', icon: '🎼', category: 'audio' },
-  { id: '72', name: 'Pro Tools', icon: '🎚️', category: 'audio' },
-  { id: '73', name: 'Cubase', icon: '🎛️', category: 'audio' },
-  { id: '74', name: 'Reaper', icon: '⚔️', category: 'audio' },
-  { id: '75', name: 'Studio One', icon: '1️⃣', category: 'audio' },
-  { id: '76', name: 'GarageBand', icon: '🎸', category: 'audio' },
-  { id: '77', name: 'Reason', icon: '🧠', category: 'audio' },
-  { id: '78', name: 'Bitwig', icon: '🎶', category: 'audio' },
-  { id: '79', name: 'Audacity', icon: '🔊', category: 'audio' },
-  { id: '80', name: 'WaveLab', icon: '🌊', category: 'audio' },
-  { id: '81', name: 'Sound Forge', icon: '🔨', category: 'audio' },
-  { id: '82', name: 'Melodyne', icon: '🎤', category: 'audio' },
-  
-  // ART - 18 logiciels
-  { id: '83', name: 'Clip Studio', icon: '✍️', category: 'art' },
-  { id: '84', name: 'Paint Tool SAI', icon: '🖌️', category: 'art' },
-  { id: '85', name: 'ArtRage', icon: '🎨', category: 'art' },
-  { id: '86', name: 'Rebelle', icon: '💧', category: 'art' },
-  { id: '87', name: 'Corel Painter', icon: '🖼️', category: 'art' },
-  { id: '88', name: 'Artweaver', icon: '🪡', category: 'art' },
-  { id: '89', name: 'FireAlpaca', icon: '🦙', category: 'art' },
-  { id: '90', name: 'MediBang', icon: '📱', category: 'art' },
-  { id: '91', name: 'PixelArt', icon: '🟦', category: 'art' },
-  { id: '92', name: 'Aseprite', icon: '👾', category: 'art' },
-  { id: '93', name: 'Spine', icon: '🦴', category: 'art' },
-  { id: '94', name: 'Toon Boom', icon: '🎭', category: 'art' },
-  { id: '95', name: 'OpenToonz', icon: '🎬', category: 'art' },
-  { id: '96', name: 'TVPaint', icon: '📺', category: 'art' },
-  { id: '97', name: 'Animate', icon: '🎞️', category: 'art' },
-  { id: '98', name: 'Moho', icon: '🎪', category: 'art' },
-  { id: '99', name: 'Synfig', icon: '🔄', category: 'art' },
-  { id: '100', name: 'Pencil2D', icon: '✏️', category: 'art' },
-  
-  // DATABASE - 7 logiciels
-  { id: '156', name: 'MySQL', icon: '🐬', category: 'database' },
-  { id: '157', name: 'PostgreSQL', icon: '🐘', category: 'database' },
-  { id: '158', name: 'Oracle Database', icon: '🗼', category: 'database' },
-  { id: '159', name: 'Microsoft SQL Server', icon: '🗄️', category: 'database' },
-  { id: '160', name: 'MongoDB', icon: '🍃', category: 'database' },
-  { id: '161', name: 'Redis', icon: '🧱', category: 'database' },
-  { id: '162', name: 'Snowflake', icon: '❄️', category: 'database' },
-  
-  // BIG DATA - 2 logiciels
-  { id: '163', name: 'Hadoop', icon: '🐘', category: 'database' },
-  { id: '164', name: 'Apache Spark', icon: '⚡', category: 'database' },
-  
-  // CLOUD - 3 logiciels
-  { id: '165', name: 'AWS', icon: '☁️', category: 'cloud' },
-  { id: '166', name: 'Microsoft Azure', icon: '🔷', category: 'cloud' },
-  { id: '167', name: 'Google Cloud Platform', icon: '☁️', category: 'cloud' },
-  
-  // DEVOPS - 5 logiciels
-  { id: '168', name: 'Docker', icon: '🐳', category: 'devops' },
-  { id: '169', name: 'Kubernetes', icon: '☸️', category: 'devops' },
-  { id: '170', name: 'Terraform', icon: '🏗️', category: 'devops' },
-  { id: '171', name: 'Jenkins', icon: '🤖', category: 'devops' },
-  
-  // BUSINESS INTELLIGENCE - 4 logiciels
-  { id: '172', name: 'Power BI', icon: '📊', category: 'bi' },
-  { id: '173', name: 'Tableau', icon: '📈', category: 'bi' },
-  { id: '174', name: 'Qlik Sense', icon: '🔍', category: 'bi' },
-  { id: '175', name: 'SAS', icon: '📊', category: 'bi' },
-  
-  // ANALYTICS - 3 logiciels
-  { id: '176', name: 'SPSS', icon: '📊', category: 'analytics' },
-  { id: '177', name: 'SAP', icon: '📦', category: 'analytics' },
-  { id: '178', name: 'Oracle ERP', icon: '🗼', category: 'analytics' },
-  
-  // ERP - 2 logiciels
-  { id: '179', name: 'Microsoft Dynamics', icon: '🔄', category: 'erp' },
-  { id: '180', name: 'Odoo', icon: '📊', category: 'erp' },
-  
-  // CRM - 3 logiciels
-  { id: '181', name: 'Salesforce', icon: '☁️', category: 'crm' },
-  { id: '182', name: 'HubSpot CRM', icon: '🔄', category: 'crm' },
-  { id: '183', name: 'Zoho CRM', icon: '📋', category: 'crm' },
-  
-  // GAME ENGINES - 3 logiciels
-  { id: '184', name: 'Unity', icon: '🎮', category: 'game' },
-  { id: '185', name: 'Unreal Engine', icon: '🕹️', category: 'game' },
-  { id: '186', name: 'Godot', icon: '👁️', category: 'game' },
-  
-  // AI/ML - 3 logiciels
-  { id: '187', name: 'TensorFlow', icon: '🧠', category: 'ai' },
-  { id: '188', name: 'PyTorch', icon: '🔥', category: 'ai' },
-  { id: '189', name: 'Scikit-learn', icon: '📊', category: 'ai' },
+// Configuration des catégories
+const CATEGORIES: CategoryConfig[] = [
+  { key: 'all', label: 'Tous' },
+  { key: 'office', label: 'Bureautique' },
+  { key: 'collab', label: 'Collaboration' },
+  { key: 'cms', label: 'CMS' },
+  { key: 'marketing', label: 'Marketing' },
+  { key: 'analytics', label: 'Analytics' },
+  { key: 'design', label: 'Design' },
+  { key: 'dev', label: 'Développement' },
+  { key: 'database', label: 'Bases de données' },
+  { key: 'cloud', label: 'Cloud' },
+  { key: 'devops', label: 'DevOps' },
+  { key: 'bi', label: 'Business Intelligence' },
+  { key: 'erp', label: 'ERP' },
+  { key: 'crm', label: 'CRM' },
+  { key: '3d', label: '3D' },
+  { key: 'video', label: 'Vidéo' },
+  { key: 'audio', label: 'Audio' },
+  { key: 'art', label: 'Art' },
+  { key: 'game', label: 'Moteurs de jeu' },
+  { key: 'ai', label: 'IA/ML' }
 ];
 
-// COMPOSANT OPTIMISÉ AVEC VIRTUALISATION
+// COMPOSANTS SVG PERSONNALISÉS POUR CHAQUE LOGICIEL
+const AdobePhotoshop = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#001E36" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#31A8FF">Ps</text>
+  </svg>
+);
+
+const AdobeIllustrator = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#330000" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#FF9A00">Ai</text>
+  </svg>
+);
+
+const AdobeAfterEffects = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#000B1A" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#9999FF">Ae</text>
+  </svg>
+);
+
+const AdobePremierePro = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#2C001F" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#9999FF">Pr</text>
+  </svg>
+);
+
+const AdobeXD = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#2C001F" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#FF61F6">Xd</text>
+  </svg>
+);
+
+const AdobeInDesign = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#2C001F" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#F36D6D">Id</text>
+  </svg>
+);
+
+const Figma = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="8" fill="#0ACF83" />
+    <path d="M8 8h8v8H8z" fill="#1ABCFE" />
+    <circle cx="16" cy="12" r="4" fill="#A259FF" />
+    <circle cx="12" cy="16" r="4" fill="#F24E1E" />
+    <circle cx="8" cy="12" r="4" fill="#FF7262" />
+  </svg>
+);
+
+const Sketch = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <polygon points="12,4 20,8 20,16 12,20 4,16 4,8" fill="#FDB300" />
+    <polygon points="12,4 16,8 12,12 8,8" fill="#FFE600" />
+  </svg>
+);
+
+const Blender = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="8" fill="#F57900" />
+    <text x="8" y="17" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="white">B</text>
+  </svg>
+);
+
+const Cinema4D = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="4" fill="#011A24" />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#FF8A00">C4D</text>
+  </svg>
+);
+
+const Maya = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#00162B" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#00D8FF">M</text>
+  </svg>
+);
+
+const ZBrush = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#4E2E2E" />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#DE5935">Z</text>
+  </svg>
+);
+
+const VSCode = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <path d="M4 4 L20 4 L20 20 L4 20" fill="#0065A9" />
+    <path d="M8 8 L16 8 L16 16 L8 16" fill="#007ACC" />
+    <text x="10" y="18" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="white">VS</text>
+  </svg>
+);
+
+const IntelliJ = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#FC0FC0" />
+    <text x="7" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">IJ</text>
+  </svg>
+);
+
+const Eclipse = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="8" fill="#2C2255" />
+    <text x="9" y="17" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="white">E</text>
+  </svg>
+);
+
+const Git = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="8" fill="#F1502F" />
+    <text x="8" y="17" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="white">Git</text>
+  </svg>
+);
+
+const GitHub = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="8" fill="#24292E" />
+    <path d="M12 4C7.58 4 4 7.58 4 12c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0020 12c0-4.42-3.58-8-8-8z" fill="white" />
+  </svg>
+);
+
+const Docker = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#2496ED" />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">D</text>
+  </svg>
+);
+
+const Kubernetes = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="8" fill="#326CE5" />
+    <text x="7" y="17" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="white">K8s</text>
+  </svg>
+);
+
+const AWS = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#FF9900" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">AWS</text>
+  </svg>
+);
+
+const Azure = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#0078D4" />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">Az</text>
+  </svg>
+);
+
+const GCP = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#4285F4" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">GCP</text>
+  </svg>
+);
+
+const MySQL = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#00758F" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">SQL</text>
+  </svg>
+);
+
+const PostgreSQL = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#336791" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">Pg</text>
+  </svg>
+);
+
+const MongoDB = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#4DB33D" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">MDB</text>
+  </svg>
+);
+
+const ReactIcon = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="3" fill="#61DAFB" />
+    <path d="M12 6c3.5 0 6.5 1 9 2.5-2.5 1.5-5.5 2.5-9 2.5s-6.5-1-9-2.5C5.5 7 8.5 6 12 6z" stroke="#61DAFB" fill="none" />
+    <path d="M12 18c-3.5 0-6.5-1-9-2.5 2.5-1.5 5.5-2.5 9-2.5s6.5 1 9 2.5c-2.5 1.5-5.5 2.5-9 2.5z" stroke="#61DAFB" fill="none" />
+    <path d="M6 9c1.75 3 1.75 6 0 9M18 9c-1.75 3-1.75 6 0 9" stroke="#61DAFB" fill="none" />
+  </svg>
+);
+
+const NodeJS = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <path d="M12 4 L20 8 L20 16 L12 20 L4 16 L4 8" fill="#539E43" />
+    <text x="8" y="16" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold" fill="white">Node</text>
+  </svg>
+);
+
+const Python = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#FFD845" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="#3776AB">Py</text>
+  </svg>
+);
+
+const WordPress = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <circle cx="12" cy="12" r="8" fill="#21759B" />
+    <text x="6" y="17" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill="white">WP</text>
+  </svg>
+);
+
+const Salesforce = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#00A1E0" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">SF</text>
+  </svg>
+);
+
+const Slack = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#4A154B" />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">Slack</text>
+  </svg>
+);
+
+const Teams = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#6264A7" />
+    <text x="4" y="18" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="bold" fill="white">Teams</text>
+  </svg>
+);
+
+const Zoom = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#2D8CFF" />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">ZM</text>
+  </svg>
+);
+
+const Unity = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#222C37" />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">U</text>
+  </svg>
+);
+
+const Unreal = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#313131" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">UE</text>
+  </svg>
+);
+
+const TensorFlow = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#FF6F00" />
+    <text x="4" y="18" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="bold" fill="white">TF</text>
+  </svg>
+);
+
+const PyTorch = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#EE4C2C" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="bold" fill="white">PT</text>
+  </svg>
+);
+
+const PowerBI = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#F2C811" />
+    <text x="4" y="18" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="bold" fill="black">PBI</text>
+  </svg>
+);
+
+const Tableau = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="#E97627" />
+    <text x="5" y="18" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="bold" fill="white">Tab</text>
+  </svg>
+);
+
+// Fonction utilitaire pour les icônes génériques par catégorie
+const GenericIcon = ({ text, bgColor, textColor }: { text: string; bgColor: string; textColor: string }) => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill={bgColor} />
+    <text x="6" y="18" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="bold" fill={textColor}>{text}</text>
+  </svg>
+);
+
+// LISTE COMPLÈTE DES LOGICIELS AVEC VRAIES ICÔNES
+const allSoftware: Software[] = [
+  // DESIGN
+  { id: '1', name: 'Adobe Photoshop', icon: <AdobePhotoshop />, category: 'design' },
+  { id: '2', name: 'Adobe Illustrator', icon: <AdobeIllustrator />, category: 'design' },
+  { id: '3', name: 'Adobe After Effects', icon: <AdobeAfterEffects />, category: 'video' },
+  { id: '4', name: 'Adobe Premiere Pro', icon: <AdobePremierePro />, category: 'video' },
+  { id: '5', name: 'Adobe XD', icon: <AdobeXD />, category: 'design' },
+  { id: '6', name: 'Adobe InDesign', icon: <AdobeInDesign />, category: 'design' },
+  { id: '7', name: 'Figma', icon: <Figma />, category: 'design' },
+  { id: '8', name: 'Sketch', icon: <Sketch />, category: 'design' },
+  { id: '9', name: 'Blender', icon: <Blender />, category: '3d' },
+  { id: '10', name: 'Cinema 4D', icon: <Cinema4D />, category: '3d' },
+  { id: '11', name: 'Maya', icon: <Maya />, category: '3d' },
+  { id: '12', name: 'ZBrush', icon: <ZBrush />, category: '3d' },
+  
+  // DÉVELOPPEMENT
+  { id: '13', name: 'VS Code', icon: <VSCode />, category: 'dev' },
+  { id: '14', name: 'IntelliJ IDEA', icon: <IntelliJ />, category: 'dev' },
+  { id: '15', name: 'Eclipse', icon: <Eclipse />, category: 'dev' },
+  { id: '16', name: 'Git', icon: <Git />, category: 'dev' },
+  { id: '17', name: 'GitHub', icon: <GitHub />, category: 'dev' },
+  { id: '18', name: 'React', icon: <ReactIcon />, category: 'dev' },
+  { id: '19', name: 'Node.js', icon: <NodeJS />, category: 'dev' },
+  { id: '20', name: 'Python', icon: <Python />, category: 'dev' },
+  
+  // CLOUD & DEVOPS
+  { id: '21', name: 'Docker', icon: <Docker />, category: 'devops' },
+  { id: '22', name: 'Kubernetes', icon: <Kubernetes />, category: 'devops' },
+  { id: '23', name: 'AWS', icon: <AWS />, category: 'cloud' },
+  { id: '24', name: 'Microsoft Azure', icon: <Azure />, category: 'cloud' },
+  { id: '25', name: 'Google Cloud', icon: <GCP />, category: 'cloud' },
+  
+  // BASES DE DONNÉES
+  { id: '26', name: 'MySQL', icon: <MySQL />, category: 'database' },
+  { id: '27', name: 'PostgreSQL', icon: <PostgreSQL />, category: 'database' },
+  { id: '28', name: 'MongoDB', icon: <MongoDB />, category: 'database' },
+  
+  // CMS
+  { id: '29', name: 'WordPress', icon: <WordPress />, category: 'cms' },
+  
+  // CRM
+  { id: '30', name: 'Salesforce', icon: <Salesforce />, category: 'crm' },
+  
+  // COLLABORATION
+  { id: '31', name: 'Slack', icon: <Slack />, category: 'collab' },
+  { id: '32', name: 'Microsoft Teams', icon: <Teams />, category: 'collab' },
+  { id: '33', name: 'Zoom', icon: <Zoom />, category: 'collab' },
+  
+  // JEUX
+  { id: '34', name: 'Unity', icon: <Unity />, category: 'game' },
+  { id: '35', name: 'Unreal Engine', icon: <Unreal />, category: 'game' },
+  
+  // IA/ML
+  { id: '36', name: 'TensorFlow', icon: <TensorFlow />, category: 'ai' },
+  { id: '37', name: 'PyTorch', icon: <PyTorch />, category: 'ai' },
+  
+  // BI
+  { id: '38', name: 'Power BI', icon: <PowerBI />, category: 'bi' },
+  { id: '39', name: 'Tableau', icon: <Tableau />, category: 'bi' },
+  
+  // OFFICE (génériques avec couleurs officielles)
+  { id: '40', name: 'Microsoft Word', icon: <GenericIcon text="W" bgColor="#2B5797" textColor="white" />, category: 'office' },
+  { id: '41', name: 'Microsoft Excel', icon: <GenericIcon text="X" bgColor="#217346" textColor="white" />, category: 'office' },
+  { id: '42', name: 'Microsoft PowerPoint', icon: <GenericIcon text="P" bgColor="#B7472A" textColor="white" />, category: 'office' },
+  { id: '43', name: 'Microsoft Outlook', icon: <GenericIcon text="O" bgColor="#0078D4" textColor="white" />, category: 'office' },
+  { id: '44', name: 'Google Docs', icon: <GenericIcon text="G" bgColor="#4285F4" textColor="white" />, category: 'office' },
+  { id: '45', name: 'Google Sheets', icon: <GenericIcon text="G" bgColor="#0F9D58" textColor="white" />, category: 'office' },
+  { id: '46', name: 'Google Slides', icon: <GenericIcon text="G" bgColor="#F4B400" textColor="white" />, category: 'office' },
+  { id: '47', name: 'Notion', icon: <GenericIcon text="N" bgColor="#000000" textColor="white" />, category: 'office' },
+  
+  // AUDIO
+  { id: '48', name: 'Ableton Live', icon: <GenericIcon text="A" bgColor="#000000" textColor="#FF8800" />, category: 'audio' },
+  { id: '49', name: 'FL Studio', icon: <GenericIcon text="FL" bgColor="#000000" textColor="#FF3366" />, category: 'audio' },
+  { id: '50', name: 'Logic Pro', icon: <GenericIcon text="L" bgColor="#000000" textColor="#999999" />, category: 'audio' },
+  { id: '51', name: 'Pro Tools', icon: <GenericIcon text="PT" bgColor="#000000" textColor="#00FF00" />, category: 'audio' },
+  { id: '52', name: 'Audacity', icon: <GenericIcon text="A" bgColor="#0000FF" textColor="#FFFF00" />, category: 'audio' },
+  
+  // ART
+  { id: '53', name: 'Procreate', icon: <GenericIcon text="P" bgColor="#000000" textColor="#FFD700" />, category: 'art' },
+  { id: '54', name: 'Clip Studio Paint', icon: <GenericIcon text="CSP" bgColor="#00A0E9" textColor="white" />, category: 'art' },
+  { id: '55', name: 'Krita', icon: <GenericIcon text="K" bgColor="#3BB4FF" textColor="white" />, category: 'art' },
+  { id: '56', name: 'GIMP', icon: <GenericIcon text="GIMP" bgColor="#5C5543" textColor="#FFD700" />, category: 'art' },
+  
+  // ANALYTICS
+  { id: '57', name: 'Google Analytics', icon: <GenericIcon text="GA" bgColor="#F9AB00" textColor="white" />, category: 'analytics' },
+  { id: '58', name: 'Google Tag Manager', icon: <GenericIcon text="GTM" bgColor="#2469DB" textColor="white" />, category: 'analytics' },
+  
+  // MARKETING
+  { id: '59', name: 'HubSpot', icon: <GenericIcon text="HS" bgColor="#FF7A59" textColor="white" />, category: 'marketing' },
+  { id: '60', name: 'Mailchimp', icon: <GenericIcon text="MC" bgColor="#FFE01B" textColor="black" />, category: 'marketing' },
+  { id: '61', name: 'SEMrush', icon: <GenericIcon text="SEM" bgColor="#FF642D" textColor="white" />, category: 'marketing' },
+  { id: '62', name: 'Ahrefs', icon: <GenericIcon text="AH" bgColor="#2B78E4" textColor="white" />, category: 'marketing' },
+  
+  // ERP
+  { id: '63', name: 'SAP', icon: <GenericIcon text="SAP" bgColor="#0FAAFF" textColor="white" />, category: 'erp' },
+  { id: '64', name: 'Oracle', icon: <GenericIcon text="OR" bgColor="#F80000" textColor="white" />, category: 'erp' },
+  { id: '65', name: 'Odoo', icon: <GenericIcon text="O" bgColor="#7A1F7A" textColor="white" />, category: 'erp' },
+  
+  // LANGAGES DE PROGRAMMATION (catégorie dev)
+  { id: '66', name: 'JavaScript', icon: <GenericIcon text="JS" bgColor="#F7DF1E" textColor="black" />, category: 'dev' },
+  { id: '67', name: 'TypeScript', icon: <GenericIcon text="TS" bgColor="#3178C6" textColor="white" />, category: 'dev' },
+  { id: '68', name: 'Java', icon: <GenericIcon text="J" bgColor="#007396" textColor="white" />, category: 'dev' },
+  { id: '69', name: 'C#', icon: <GenericIcon text="C#" bgColor="#9B4F96" textColor="white" />, category: 'dev' },
+  { id: '70', name: 'C++', icon: <GenericIcon text="C++" bgColor="#00599C" textColor="white" />, category: 'dev' },
+  { id: '71', name: 'PHP', icon: <GenericIcon text="PHP" bgColor="#777BB3" textColor="white" />, category: 'dev' },
+  { id: '72', name: 'Ruby', icon: <GenericIcon text="R" bgColor="#CC342D" textColor="white" />, category: 'dev' },
+  { id: '73', name: 'Swift', icon: <GenericIcon text="S" bgColor="#F05138" textColor="white" />, category: 'dev' },
+  { id: '74', name: 'Kotlin', icon: <GenericIcon text="K" bgColor="#7F52FF" textColor="white" />, category: 'dev' },
+  { id: '75', name: 'Go', icon: <GenericIcon text="GO" bgColor="#00ADD8" textColor="white" />, category: 'dev' },
+  { id: '76', name: 'Rust', icon: <GenericIcon text="R" bgColor="#000000" textColor="#CE422B" />, category: 'dev' },
+  { id: '77', name: 'HTML', icon: <GenericIcon text="HTML" bgColor="#E34F26" textColor="white" />, category: 'dev' },
+  { id: '78', name: 'CSS', icon: <GenericIcon text="CSS" bgColor="#1572B6" textColor="white" />, category: 'dev' },
+  { id: '79', name: 'SQL', icon: <GenericIcon text="SQL" bgColor="#003B57" textColor="white" />, category: 'dev' },
+  { id: '80', name: 'Bash', icon: <GenericIcon text="Bash" bgColor="#4EAA25" textColor="white" />, category: 'dev' }
+];
+
+// ÉLIMINATION DES DOUBLONS
+const uniqueSoftware = Array.from(
+  new Map(allSoftware.map(item => [`${item.name}-${item.category}`, item])).values()
+);
+
+// COMPOSANT PRINCIPAL
 const SoftwareList: React.FC<SoftwareListProps> = ({ 
   projectId, 
   isAdmin, 
@@ -267,27 +477,27 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
   onClose = () => {},
   onSave = () => {}
 }) => {
-  const [selected, setSelected] = useState<Software[]>(() => selectedSoftware || []);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selected, setSelected] = useState<Software[]>(selectedSoftware);
+  const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [displayCount, setDisplayCount] = useState(50); // Pour le chargement progressif
+  const [displayCount, setDisplayCount] = useState(50);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Optimisation : mise à jour uniquement quand selectedSoftware change vraiment
+  // Mise à jour quand selectedSoftware change
   useEffect(() => {
-    setSelected(selectedSoftware || []);
-  }, [JSON.stringify(selectedSoftware)]); // Évite les re-rendus inutiles
+    setSelected(selectedSoftware);
+  }, [selectedSoftware]);
 
-  // Filtrer les logiciels par catégorie ET recherche - avec useMemo optimisé
+  // Filtrage optimisé
   const filteredSoftware = useMemo(() => {
-    let filtered = allSoftware;
+    let filtered = uniqueSoftware;
     
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(s => s.category === selectedCategory);
     }
     
-    if (searchQuery.trim() !== '') {
+    if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(s => 
         s.name.toLowerCase().includes(query) ||
@@ -298,60 +508,71 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
     return filtered;
   }, [selectedCategory, searchQuery]);
 
-  // Version limitée pour l'affichage (chargement progressif)
+  // Affichage limité
   const displayedSoftware = useMemo(() => {
     return filteredSoftware.slice(0, displayCount);
   }, [filteredSoftware, displayCount]);
 
-  // Détecter le scroll pour charger plus d'éléments
+  // Gestion du scroll infini
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
     const bottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 200;
     
-    if (bottom && displayCount < filteredSoftware.length) {
+    if (bottom && displayCount < filteredSoftware.length && !isLoading) {
       setIsLoading(true);
-      // Petit délai pour ne pas bloquer le thread principal
       setTimeout(() => {
         setDisplayCount(prev => Math.min(prev + 50, filteredSoftware.length));
         setIsLoading(false);
       }, 100);
     }
-  }, [displayCount, filteredSoftware.length]);
+  }, [displayCount, filteredSoftware.length, isLoading]);
 
-  // Réinitialiser le compteur quand les filtres changent
+  // Réinitialisation du compteur
   useEffect(() => {
     setDisplayCount(50);
   }, [selectedCategory, searchQuery]);
 
-  // Toggle sélection - avec useCallback pour éviter les re-rendus
+  // Toggle sélection
   const toggleSoftware = useCallback((soft: Software) => {
     setSelected(prev => {
-      if (prev.find(s => s.id === soft.id)) {
-        return prev.filter(s => s.id !== soft.id);
-      } else {
-        return [...prev, soft];
-      }
+      const exists = prev.find(s => s.id === soft.id);
+      return exists 
+        ? prev.filter(s => s.id !== soft.id)
+        : [...prev, soft];
     });
   }, []);
 
-  // Sauvegarder
+  // Sauvegarde
   const handleSave = useCallback(() => {
     onSave(selected);
     onClose();
   }, [selected, onSave, onClose]);
 
-  // Réinitialiser les filtres
+  // Réinitialisation des filtres
   const handleClearFilters = useCallback(() => {
     setSelectedCategory('all');
     setSearchQuery('');
   }, []);
 
-  // Vue compacte pour les cartes - JUSTE LES ICÔNES
+  // Vue compacte
   if (compact) {
-    return null;
+    return (
+      <div className={styles.softwareCompact}>
+        {selected.slice(0, 5).map(soft => (
+          <div key={soft.id} className={styles.softwareIconBox}>
+            {soft.icon}
+          </div>
+        ))}
+        {selected.length > 5 && (
+          <div className={styles.moreSoftware}>
+            +{selected.length - 5}
+          </div>
+        )}
+      </div>
+    );
   }
 
-  // Vue modal plein écran optimisée
+  // Vue modale (le reste du code reste identique)
   return (
     <motion.div 
       className={styles.modalOverlay}
@@ -374,20 +595,22 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
               <Wrench size={24} />
               <span>Logiciels utilisés</span>
             </h2>
-            <p>Sélectionnez les logiciels utilisés dans ce projet ({selected.length} sélectionné{selected.length > 1 ? 's' : ''})</p>
+            <p>
+              {selected.length} logiciel{selected.length > 1 ? 's' : ''} sélectionné{selected.length > 1 ? 's' : ''}
+            </p>
           </div>
           <button onClick={onClose} className={styles.closeBtn}>
             <X size={20} />
           </button>
         </div>
 
-        {/* Barre de recherche */}
+        {/* Recherche */}
         <div className={styles.searchBar}>
           <div className={styles.searchInputContainer}>
             <Search size={18} className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Rechercher un logiciel ou une catégorie..."
+              placeholder="Rechercher un logiciel..."
               className={styles.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -395,36 +618,13 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
           </div>
         </div>
 
-        {/* Filtres de catégorie */}
+        {/* Filtres */}
         <div className={styles.categoryFilters}>
-          <button
-            className={`${styles.categoryBtn} ${selectedCategory === 'all' ? styles.active : ''}`}
-            onClick={() => setSelectedCategory('all')}
-          >
-            Tous ({allSoftware.length})
-          </button>
-          {[
-            { key: 'office', label: 'Bureautique' },
-            { key: 'collab', label: 'Collaboration' },
-            { key: 'cms', label: 'CMS' },
-            { key: 'marketing', label: 'Marketing' },
-            { key: 'analytics', label: 'Analytics' },
-            { key: 'design', label: 'Design' },
-            { key: 'dev', label: 'Développement' },
-            { key: 'database', label: 'Bases de données' },
-            { key: 'cloud', label: 'Cloud' },
-            { key: 'devops', label: 'DevOps' },
-            { key: 'bi', label: 'Business Intelligence' },
-            { key: 'erp', label: 'ERP' },
-            { key: 'crm', label: 'CRM' },
-            { key: '3d', label: '3D' },
-            { key: 'video', label: 'Vidéo' },
-            { key: 'audio', label: 'Audio' },
-            { key: 'art', label: 'Art' },
-            { key: 'game', label: 'Moteurs de jeu' },
-            { key: 'ai', label: 'IA/ML' }
-          ].map(cat => {
-            const count = allSoftware.filter(s => s.category === cat.key).length;
+          {CATEGORIES.map(cat => {
+            const count = cat.key === 'all' 
+              ? uniqueSoftware.length 
+              : uniqueSoftware.filter(s => s.category === cat.key).length;
+            
             return (
               <button
                 key={cat.key}
@@ -437,7 +637,7 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
           })}
         </div>
 
-        {/* Corps - SCROLLABLE avec détection de fin */}
+        {/* Liste */}
         <div 
           className={styles.modalBody} 
           onScroll={handleScroll}
@@ -445,15 +645,15 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
         >
           {filteredSoftware.length > 0 ? (
             <>
-              {searchQuery.trim() !== '' && (
-                <div style={{ marginBottom: '16px', color: 'var(--text-main)', opacity: 0.7, fontSize: '0.9rem' }}>
-                  Résultats pour "<strong>{searchQuery}</strong>" : {filteredSoftware.length} logiciel{filteredSoftware.length > 1 ? 's' : ''} trouvé{filteredSoftware.length > 1 ? 's' : ''}
-                  {(selectedCategory !== 'all') && ` dans ${selectedCategory}`}
+              {searchQuery && (
+                <div style={{ marginBottom: '16px', color: 'var(--light)', opacity: 0.7 }}>
+                  {filteredSoftware.length} résultat{filteredSoftware.length > 1 ? 's' : ''} pour "{searchQuery}"
                 </div>
               )}
+              
               <div className={styles.softwareGrid}>
                 {displayedSoftware.map(soft => {
-                  const isSelected = selected.find(s => s.id === soft.id);
+                  const isSelected = selected.some(s => s.id === soft.id);
                   
                   return (
                     <div 
@@ -468,19 +668,17 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
                       )}
                       <div className={styles.softwareIcon}>{soft.icon}</div>
                       <div className={styles.softwareName}>{soft.name}</div>
-                      <div className={styles.softwareCategory}>{soft.category}</div>
+                      <div className={styles.softwareCategory}>
+                        {CATEGORIES.find(c => c.key === soft.category)?.label}
+                      </div>
                     </div>
                   );
                 })}
               </div>
+              
               {isLoading && (
                 <div style={{ textAlign: 'center', padding: '20px', color: 'var(--primary)' }}>
                   Chargement...
-                </div>
-              )}
-              {displayCount < filteredSoftware.length && !isLoading && (
-                <div style={{ textAlign: 'center', padding: '10px', opacity: 0.5, fontSize: '0.8rem' }}>
-                  Faites défiler pour voir plus de logiciels...
                 </div>
               )}
             </>
@@ -488,21 +686,8 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
             <div className={styles.emptyState}>
               <Wrench size={48} />
               <h3>Aucun logiciel trouvé</h3>
-              <p>Essayez une autre catégorie ou utilisez la recherche</p>
-              <button 
-                onClick={handleClearFilters}
-                style={{
-                  marginTop: '16px',
-                  background: 'rgba(199, 255, 68, 0.1)',
-                  border: '1px solid var(--primary)',
-                  color: 'var(--primary)',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  fontWeight: '600'
-                }}
-              >
+              <p>Essayez une autre catégorie ou modifiez votre recherche</p>
+              <button onClick={handleClearFilters} className={styles.categoryBtn}>
                 Réinitialiser les filtres
               </button>
             </div>
@@ -529,4 +714,4 @@ const SoftwareList: React.FC<SoftwareListProps> = ({
   );
 };
 
-export default React.memo(SoftwareList); // Évite les re-rendus inutiles du parent
+export default React.memo(SoftwareList);
