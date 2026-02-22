@@ -1,0 +1,214 @@
+.container {
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skillsSection {
+  width: 100%;
+
+}
+
+.skillsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--light);
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.privacyToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.privacyLabel {
+  font-size: 0.85rem;
+  color: var(--light);
+  opacity: 0.8;
+  min-width: 45px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--dark);
+  transition: .4s;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--light);
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+  background-color: var(--dark);
+}
+
+.wordCount {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  background: color-mix(in srgb, var(--dark) 80%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  color: var(--light);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.wordCount.warning {
+  background: var(--orange);
+  color: var(--black);
+  border-color: var(--orange);
+}
+
+.wordCount.maximum {
+  background: var(--dark-red);
+  color: var(--light);
+  border-color: var(--dark-red);
+}
+
+.textarea {
+  width: 100%;
+  height: 300px;
+  background: color-mix(in srgb, var(--dark) 70%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  color: var(--light);
+  font-family: var(--font-main);
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.textarea::placeholder {
+  color: var(--light);
+  opacity: 0.4;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .skillsSection {
+    padding: 1.25rem;
+  }
+  
+  .title {
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .skillsHeader {
+    flex-wrap: wrap;
+  }
+  
+  .headerLeft {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .label {
+    font-size: 0.9rem;
+    white-space: normal;
+  }
+  
+  .textarea {
+    font-size: 0.95rem;
+    padding: 1rem;
+    min-height: 600px;
+  }
+}
+
+@media (max-width: 480px) {
+  .skillsSection {
+    padding: 1rem;
+  }
+  
+  .headerLeft {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .privacyToggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .textarea {
+    min-height: 250px;
+    font-size: 0.9rem;
+    padding: 0.875rem;
+  }
+}

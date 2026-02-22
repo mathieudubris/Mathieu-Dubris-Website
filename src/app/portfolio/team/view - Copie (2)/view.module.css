@@ -1,0 +1,267 @@
+/* =====================
+   view.module.css
+   ===================== */
+
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--dark);
+  color: var(--light);
+  font-family: var(--font-main);
+}
+
+.content {
+  flex: 1;
+  padding-top: 80px;
+  min-height: calc(100svh - 80px);
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  background-color: var(--dark);
+}
+
+.viewContainer {
+  width: 100%;
+  max-width: 1400px;
+  padding: 2rem 1.5rem;
+}
+
+/* Login Center */
+.loginCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100svh - 80px - 4rem);
+  width: 100%;
+}
+
+.loginCenterButton {
+  background-color: var(--primary);
+  color: var(--dark);
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.loginCenterButton:hover {
+  background-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Page Header */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.pageSubtitle {
+  color: var(--light);
+  opacity: 0.7;
+  text-align: left;
+  font-size: 1.1rem;
+}
+
+/* Project Title */
+.projectTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--light);
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: rgba(14, 14, 14, 0.7);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editProfileButton {
+  background-color: var(--primary);
+  color: var(--dark);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.editProfileButton:hover {
+  background-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* Team Grid */
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.emptyStateIcon {
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+}
+
+.emptyStateTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--light);
+  margin-bottom: 1rem;
+}
+
+.emptyStateText {
+  color: var(--light);
+  opacity: 0.7;
+  margin-bottom: 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.emptyStateButton {
+  background-color: var(--primary);
+  color: var(--dark);
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.emptyStateButton:hover {
+  background-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Loading states */
+.loadingContainer {
+  min-height: calc(100svh - 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--dark);
+  gap: 1.5rem;
+}
+
+.loadingSpinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(199, 255, 68, 0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
+  color: var(--primary);
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+/* Badge membre */
+.memberBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--primary);
+  color: var(--dark);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+}
+
+.memberBadge svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .teamGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .loginCenterButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .projectTitle {
+    font-size: 18px;
+    padding: 10px;
+  }
+
+  .pageTitle {
+    font-size: 2rem;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .editProfileButton {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .teamGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .projectTitle {
+    font-size: 16px;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

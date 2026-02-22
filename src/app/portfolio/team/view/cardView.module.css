@@ -1,0 +1,263 @@
+/* =====================
+   CardView.module.css
+   ===================== */
+
+.card {
+  background-color: var(--dark);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  border-color: var(--primary);
+}
+
+/* ---- Photo ---- */
+.photoWrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Arrondi futuriste en bas de la photo */
+  border-radius: 0 0 20px 20px;
+  position: relative;
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.photoPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--line);
+}
+
+/* ---- Body ---- */
+.body {
+  padding: 0.75rem 0.85rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--dark);
+  flex: 1;
+}
+
+/* Last name — bold, white, ellipsis */
+.lastName {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--light);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* First name — regular, white, ellipsis */
+.firstName {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--light);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+/* Age — primary color, always present (keeps space) */
+.age {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary);
+  margin: 2px 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  min-height: 1.1em;
+}
+
+.agePlaceholder {
+  display: inline-block;
+  visibility: hidden;
+  font-size: 0.75rem;
+}
+
+/* Location */
+.location {
+  font-size: 0.7rem;
+  color: var(--line);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  min-height: 1.1em;
+}
+
+.locationIcon {
+  flex-shrink: 0;
+}
+
+.location span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Roles ---- */
+.rolesWrap {
+  margin-top: 2px;
+  height: 26px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Static state */
+.rolesStatic {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+/* Marquee clip */
+.marqueeClip {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.marqueeTrack {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+/* Role tag base */
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background-color: var(--dark);
+  color: var(--light);
+  border: 1px solid var(--line);
+}
+
+/* +N badge */
+.moreTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--line);
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: transparent;
+}
+
+/* ---- Role Color Classes ---- */
+.roleTag.Direction {
+  background-color: var(--white);
+  color: var(--black);
+  border-color: var(--white);
+}
+
+.roleTag.Design {
+  background-color: var(--red);
+  color: var(--black);
+  border-color: var(--red);
+}
+
+.roleTag.Programming {
+  background-color: var(--orange);
+  color: var(--black);
+  border-color: var(--orange);
+}
+
+.roleTag.Art3D {
+  background-color: var(--yellow);
+  color: var(--black);
+  border-color: var(--yellow);
+}
+
+.roleTag.UIUX {
+  background-color: var(--green);
+  color: var(--black);
+  border-color: var(--green);
+}
+
+.roleTag.Audio {
+  background-color: var(--teal);
+  color: var(--black);
+  border-color: var(--teal);
+}
+
+.roleTag.Support {
+  background-color: var(--pink);
+  color: var(--black);
+  border-color: var(--pink);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 480px) {
+  .body {
+    padding: 0.6rem 0.7rem;
+  }
+
+  .lastName {
+    font-size: 0.8rem;
+  }
+
+  .firstName {
+    font-size: 0.75rem;
+  }
+
+  .age {
+    font-size: 0.7rem;
+  }
+
+  .location {
+    font-size: 0.65rem;
+  }
+
+  .roleTag {
+    font-size: 0.6rem;
+    padding: 0.12rem 0.35rem;
+  }
+}

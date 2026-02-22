@@ -269,7 +269,7 @@ export default function ProjetEnCoursPage() {
 
   const handleEditProfile = () => {
     if (selectedProject && currentUser) {
-      router.push(`/team?project=${selectedProject.id}`);
+      router.push(`/portfolio/team?project=${selectedProject.id}`);
     }
   };
 

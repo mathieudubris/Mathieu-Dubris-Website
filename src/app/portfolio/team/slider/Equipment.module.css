@@ -1,0 +1,213 @@
+.container {
+  width: 100%;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.section {
+  background: var(--dark);
+  border: 1px solid var(--light);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--light);
+}
+
+.formGroup {
+  margin-bottom: 1.25rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--light);
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.optional {
+  opacity: 0.5;
+  font-weight: normal;
+  font-size: 0.75rem;
+}
+
+.input {
+  width: 100%;
+  background: var(--dark);
+  border: 1px solid var(--light);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: var(--light);
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  border-color: var(--primary);
+}
+
+.internetButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.internetButton {
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--light);
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--light);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+
+
+.internetButton.active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 60%, transparent);
+  color: var(--light);
+}
+
+.osButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.osButton {
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--light);
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.osButton.active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 50%, transparent);
+  color: var(--light);
+}
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.sectionHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.privacyToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--dark);
+  transition: .4s;
+  border-radius: 24px;
+  border: 1px solid var(--light);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--light);
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+  background-color: var(--dark);
+}
+
+.privacyLabel {
+  font-size: 0.75rem;
+  color: var(--light);
+  opacity: 0.7;
+  min-width: 45px;
+}

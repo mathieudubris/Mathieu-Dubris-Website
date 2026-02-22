@@ -21,7 +21,6 @@ import {
   addDoc,
   updateDoc,
   Timestamp,
-  increment,
   runTransaction
 } from "firebase/firestore";
 
@@ -73,15 +72,15 @@ export interface Project {
   updatedAt: any;
   teamMembers: string[];
   views: number;
-  visibility?: 'public' | 'early_access'; // Nouvelle propriété
+  visibility?: 'public' | 'early_access';
 }
 
-// Interface pour un membre d'équipe PAR PROJET - AVEC SLUG
+// Interface pour un membre d'équipe PAR PROJET - AVEC SLUG ET COMPÉTENCES
 export interface ProjectTeamMember {
   id?: string;
   userId: string;
   projectId: string;
-  slug?: string; // NOUVEAU
+  slug?: string;
   image: string;
   firstName: string;
   lastName: string;
@@ -89,6 +88,8 @@ export interface ProjectTeamMember {
   agePublic: boolean;
   email: string;
   phone: string;
+  skills?: string;
+  skillsPublic?: boolean;
   contacts: {
     type: 'instagram' | 'whatsapp' | 'discord' | 'tiktok' | 'youtube' | 'facebook' | 'twitter' | 'linkedin';
     value: string;
@@ -100,12 +101,14 @@ export interface ProjectTeamMember {
     phone: {
       model: string;
       internet: 'wifi' | 'mobile' | 'both';
+      isPublic: boolean;
     };
     computer: {
       os: 'windows' | 'mac' | 'linux';
       ram: string;
       storage: string;
       gpu?: string;
+      isPublic: boolean;
     };
   };
   location: {
@@ -126,19 +129,19 @@ export interface UserPreferences {
   updatedAt: any;
 }
 
-// NOUVEAU: Fonction pour générer un slug à partir du titre
+// Fonction pour générer un slug à partir du titre
 export const generateSlug = (title: string): string => {
   return title
     .toLowerCase()
-    .normalize('NFD') // Normaliser les caractères accentués
-    .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
-    .replace(/[^a-z0-9\s-]/g, '') // Garder seulement lettres, chiffres, espaces et tirets
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-') // Remplacer espaces par tirets
-    .replace(/-+/g, '-'); // Supprimer tirets multiples
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 };
 
-// NOUVEAU: Fonction pour vérifier si un slug existe déjà
+// Fonction pour vérifier si un slug existe déjà
 export const slugExists = async (slug: string, excludeProjectId?: string): Promise<boolean> => {
   try {
     const projectsCollection = collection(db, 'projects');
@@ -147,7 +150,6 @@ export const slugExists = async (slug: string, excludeProjectId?: string): Promi
     
     if (snapshot.empty) return false;
     
-    // Si on met à jour un projet, on exclut son propre ID
     if (excludeProjectId) {
       return snapshot.docs.some(doc => doc.id !== excludeProjectId);
     }
@@ -159,7 +161,7 @@ export const slugExists = async (slug: string, excludeProjectId?: string): Promi
   }
 };
 
-// NOUVEAU: Générer un slug unique
+// Générer un slug unique
 export const generateUniqueSlug = async (title: string, excludeProjectId?: string): Promise<string> => {
   let slug = generateSlug(title);
   let counter = 1;
@@ -172,7 +174,7 @@ export const generateUniqueSlug = async (title: string, excludeProjectId?: strin
   return slug;
 };
 
-// NOUVEAU: Fonction pour générer un slug d'équipe unique
+// Fonction pour générer un slug d'équipe unique
 export const generateTeamSlug = (projectSlug: string, userFirstName: string, userLastName: string): string => {
   const firstName = userFirstName.toLowerCase()
     .normalize('NFD')
@@ -187,7 +189,7 @@ export const generateTeamSlug = (projectSlug: string, userFirstName: string, use
   return `${projectSlug}-${firstName}-${lastName}`;
 };
 
-// NOUVEAU: Récupérer un membre d'équipe par slug
+// Récupérer un membre d'équipe par slug
 export const getProjectTeamMemberBySlug = async (slug: string): Promise<ProjectTeamMember | null> => {
   try {
     const teamCollection = collection(db, 'project_team_members');
@@ -205,14 +207,12 @@ export const getProjectTeamMemberBySlug = async (slug: string): Promise<ProjectT
   }
 };
 
-// NOUVEAU: Récupérer tous les membres d'une équipe par slug du projet
+// Récupérer tous les membres d'une équipe par slug du projet
 export const getProjectTeamMembersByProjectSlug = async (projectSlug: string): Promise<ProjectTeamMember[]> => {
   try {
-    // D'abord, récupérer le projet par son slug
     const project = await getProjectBySlug(projectSlug);
     if (!project || !project.id) return [];
     
-    // Ensuite, récupérer les membres avec l'ID du projet
     return await getProjectTeamMembers(project.id);
   } catch (error) {
     console.error('Erreur lors du chargement des membres par slug projet:', error);
@@ -271,8 +271,6 @@ export const canEditTeamMember = async (userId: string, projectId: string, curre
 };
 
 // Fonction pour récupérer les membres de l'équipe POUR UN PROJET SPÉCIFIQUE
-// Accessible à tous les utilisateurs connectés (projets publics)
-// La règle Firestore autorise la lecture publique pour project_team_members
 export const getProjectTeamMembers = async (projectId: string): Promise<ProjectTeamMember[]> => {
   try {
     const db = getFirestore();
@@ -303,7 +301,7 @@ export const getProjects = async (): Promise<Project[]> => {
       const data = doc.data();
       projects.push({ 
         id: doc.id,
-        slug: data.slug || generateSlug(data.title), // NOUVEAU: fallback si pas de slug
+        slug: data.slug || generateSlug(data.title),
         ...data,
         carouselImages: data.carouselImages || [],
         progress: data.progress || 0,
@@ -321,7 +319,7 @@ export const getProjects = async (): Promise<Project[]> => {
   }
 };
 
-// NOUVEAU: Fonction pour récupérer un projet par son slug
+// Fonction pour récupérer un projet par son slug
 export const getProjectBySlug = async (slug: string): Promise<Project | null> => {
   try {
     const projectsCollection = collection(db, 'projects');
@@ -360,7 +358,7 @@ export const getProject = async (projectId: string): Promise<Project | null> => 
       const data = projectDoc.data();
       return { 
         id: projectDoc.id,
-        slug: data.slug || generateSlug(data.title), // NOUVEAU: fallback
+        slug: data.slug || generateSlug(data.title),
         ...data,
         carouselImages: data.carouselImages || [],
         progress: data.progress || 0,
@@ -377,15 +375,14 @@ export const getProject = async (projectId: string): Promise<Project | null> => 
   }
 };
 
-// Fonction pour créer un projet - MISE À JOUR AVEC SLUG
+// Fonction pour créer un projet
 export const createProject = async (project: Omit<Project, 'id'>): Promise<string> => {
   try {
-    // Générer un slug unique si pas fourni
     const slug = project.slug || await generateUniqueSlug(project.title);
     
     const docRef = await addDoc(collection(db, 'projects'), {
       ...project,
-      slug, // NOUVEAU: ajouter le slug
+      slug,
       teamMembers: project.teamMembers || [],
       carouselImages: project.carouselImages || [],
       progress: project.progress || 0,
@@ -402,10 +399,9 @@ export const createProject = async (project: Omit<Project, 'id'>): Promise<strin
   }
 };
 
-// Fonction pour mettre à jour un projet - MISE À JOUR AVEC SLUG
+// Fonction pour mettre à jour un projet
 export const updateProject = async (projectId: string, projectData: Partial<Project>): Promise<void> => {
   try {
-    // Si le titre change, régénérer le slug
     if (projectData.title) {
       const newSlug = await generateUniqueSlug(projectData.title, projectId);
       projectData.slug = newSlug;
@@ -422,12 +418,11 @@ export const updateProject = async (projectId: string, projectData: Partial<Proj
   }
 };
 
-// ✅ FONCTION CORRIGÉE POUR INCRÉMENTER LES VUES
+// Fonction pour incrémenter les vues
 export const incrementProjectViews = async (projectId: string): Promise<void> => {
   try {
     const projectRef = doc(db, 'projects', projectId);
     
-    // Utiliser une transaction pour garantir l'atomicité
     await runTransaction(db, async (transaction) => {
       const projectDoc = await transaction.get(projectRef);
       if (!projectDoc.exists()) {
@@ -444,7 +439,6 @@ export const incrementProjectViews = async (projectId: string): Promise<void> =>
     console.log(`Vues incrémentées pour le projet ${projectId}`);
   } catch (error) {
     console.error('Erreur lors de l\'incrémentation des vues:', error);
-    // Ne pas bloquer l'expérience utilisateur si l'incrémentation échoue
   }
 };
 
@@ -474,7 +468,7 @@ export const getUserProjects = async (userId: string): Promise<Project[]> => {
       const data = doc.data();
       projects.push({ 
         id: doc.id,
-        slug: data.slug || generateSlug(data.title), // NOUVEAU: fallback
+        slug: data.slug || generateSlug(data.title),
         ...data,
         carouselImages: data.carouselImages || [],
         progress: data.progress || 0,
@@ -542,15 +536,24 @@ export const isAdmin = (userEmail: string | null): boolean => {
 };
 
 // Fonction pour vérifier si un utilisateur a accès à un projet
-// Les projets publics sont visibles par tous les utilisateurs connectés
-// Les projets early_access sont réservés aux membres uniquement
 export const hasAccessToProject = (project: Project, userId: string | null): boolean => {
   if (!userId) return false;
-  // Si le projet est public (ou n'a pas de visibilité définie = public par défaut), tout le monde y a accès
   if (!project.visibility || project.visibility === 'public') return true;
-  // Pour les projets early_access, seuls les membres ont accès
   const members = project.teamMembers || [];
   return members.includes(userId) || project.createdBy === userId;
+};
+
+// Fonction pour vérifier si un utilisateur est membre d'un projet
+export const isUserMemberOfProject = (project: Project, userId: string | null): boolean => {
+  if (!userId) return false;
+  const members = project.teamMembers || [];
+  return members.includes(userId) || project.createdBy === userId;
+};
+
+// === NOUVELLE FONCTION POUR LA COMPATIBILITÉ ===
+// Alias de isUserMemberOfProject pour assurer la compatibilité avec le code existant
+export const isUserInProject = (project: Project, userId: string | null): boolean => {
+  return isUserMemberOfProject(project, userId);
 };
 
 // Fonction pour récupérer tous les utilisateurs
@@ -569,13 +572,6 @@ export const getAllUsers = async (): Promise<UserData[]> => {
     console.error('Erreur lors du chargement des utilisateurs:', error);
     return [];
   }
-};
-
-// Fonction pour vérifier si un utilisateur est dans un projet
-export const isUserInProject = (project: Project, userId: string | null): boolean => {
-  if (!userId) return false;
-  const members = project.teamMembers || [];
-  return members.includes(userId) || project.createdBy === userId;
 };
 
 // Fonction pour récupérer le profil d'équipe d'un utilisateur POUR UN PROJET SPÉCIFIQUE
@@ -600,14 +596,12 @@ export const getUserProjectTeamProfile = async (userId: string, projectId: strin
   }
 };
 
-// Fonction pour sauvegarder un membre d'équipe - AVEC SLUG
+// Fonction pour sauvegarder un membre d'équipe - AVEC SLUG ET COMPÉTENCES
 export const saveProjectTeamMember = async (userId: string, projectId: string, data: Partial<ProjectTeamMember>): Promise<void> => {
   try {
-    // Récupérer le projet pour obtenir son slug
     const project = await getProject(projectId);
     if (!project) throw new Error('Projet non trouvé');
     
-    // Chercher si l'utilisateur a déjà un profil pour ce projet
     const teamCollection = collection(db, 'project_team_members');
     const q = query(
       teamCollection, 
@@ -616,7 +610,6 @@ export const saveProjectTeamMember = async (userId: string, projectId: string, d
     );
     const snapshot = await getDocs(q);
     
-    // Générer le slug si c'est un nouveau profil
     if (snapshot.empty) {
       const slug = generateTeamSlug(project.slug, data.firstName || '', data.lastName || '');
       
@@ -624,12 +617,13 @@ export const saveProjectTeamMember = async (userId: string, projectId: string, d
         ...data,
         userId,
         projectId,
-        slug, // NOUVEAU: ajout du slug
+        slug,
+        skills: data.skills || '',
+        skillsPublic: data.skillsPublic !== undefined ? data.skillsPublic : true,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       });
     } else {
-      // Mise à jour - garder le slug existant
       const docRef = snapshot.docs[0].ref;
       await updateDoc(docRef, {
         ...data,

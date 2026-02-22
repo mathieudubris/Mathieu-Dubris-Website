@@ -135,17 +135,17 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
 
   const handleViewAllMembers = () => {
     if (project.slug) {
-      router.push(`/team/view?project=${project.slug}`);
+      router.push(`/portfolio/team/view?project=${project.slug}`);
     } else if (project.id) {
-      router.push(`/team/view?project=${project.id}`);
+      router.push(`/portfolio/team/view?project=${project.id}`);
     }
   };
 
   const handleEditProfileClick = () => {
     if (project.slug && currentUser) {
-      router.push(`/team?project=${project.slug}`);
+      router.push(`/portfolio/team?project=${project.slug}`);
     } else if (project.id && currentUser) {
-      router.push(`/team?project=${project.id}`);
+      router.push(`/portfolio/team?project=${project.id}`);
     }
   };
 
