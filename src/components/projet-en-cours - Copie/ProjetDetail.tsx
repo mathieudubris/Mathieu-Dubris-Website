@@ -9,19 +9,19 @@ import {
   ChevronLeft,
   Info,
   Users,
-  Wrench,
-  Map
+  Wrench
 } from 'lucide-react';
 import { 
   isUserInProject, 
   Project as FirebaseProject,
+  getProjectTeamMembers,
+  getUserProjectTeamProfile,
   incrementProjectViews
 } from '@/utils/firebase-api';
 
 import APropos from './APropos';
 import Membres from './Membres';
 import Logiciels from './Logiciels';
-import Roadmap from './Roadmap';
 import styles from './ProjetDetail.module.css';
 
 type Project = FirebaseProject;
@@ -58,7 +58,7 @@ interface ProjetDetailProps {
   onEditProfile: () => void;
 }
 
-type TabType = 'apropos' | 'roadmap' | 'membres' | 'logiciels';
+type TabType = 'apropos' | 'membres' | 'logiciels';
 
 const ProjetDetail: React.FC<ProjetDetailProps> = ({
   project,
@@ -74,12 +74,11 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [views, setViews] = useState(project.views || 0);
 
+  // Images du carousel
   const carouselImages = [
     project.image || '/default-project.jpg',
     ...(project.carouselImages || [])
   ];
-
-  const roadmapLinks = (project as any).roadmapLinks || [];
 
   useEffect(() => {
     if (currentUser && project) {
@@ -88,6 +87,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     }
   }, [currentUser, project]);
 
+  // Carousel automatique
   useEffect(() => {
     if (carouselImages.length > 1) {
       const interval = setInterval(() => {
@@ -107,9 +107,17 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     }
   };
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
-  const goToSlide = (index: number) => setCurrentSlide(index);
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
 
   const formatDate = (date: any) => {
     if (!date) return '';
@@ -141,7 +149,9 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     }
   };
 
-  const handleCreateProfile = () => handleEditProfileClick();
+  const handleCreateProfile = () => {
+    handleEditProfileClick(); // Même action pour créer ou modifier
+  };
 
   return (
     <div className={styles.modalOverlay} onClick={onBack}>
@@ -176,30 +186,41 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
             
             <div className={styles.imageOverlay}></div>
 
+            {/* Flèches de navigation */}
             {carouselImages.length > 1 && (
               <>
                 <button 
                   className={`${styles.carouselArrow} ${styles.prev}`}
-                  onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevSlide();
+                  }}
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button 
                   className={`${styles.carouselArrow} ${styles.next}`}
-                  onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextSlide();
+                  }}
                 >
                   <ChevronRight size={24} />
                 </button>
               </>
             )}
 
+            {/* Dots de navigation */}
             {carouselImages.length > 1 && (
               <div className={styles.carouselControls}>
                 {carouselImages.map((_, index) => (
                   <button
                     key={index}
                     className={`${styles.carouselDot} ${index === currentSlide ? styles.active : ''}`}
-                    onClick={(e) => { e.stopPropagation(); goToSlide(index); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goToSlide(index);
+                    }}
                   />
                 ))}
               </div>
@@ -213,7 +234,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
           </div>
         </div>
 
-        {/* Onglets : À propos → Roadmap → Membres → Logiciels */}
+        {/* Navigation par onglets */}
         <div className={styles.tabsContainer}>
           <button 
             className={`${styles.tabButton} ${activeTab === 'apropos' ? styles.active : ''}`}
@@ -221,18 +242,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
           >
             <Info size={16} />
             <span>À propos</span>
-          </button>
-          <button 
-            className={`${styles.tabButton} ${activeTab === 'roadmap' ? styles.active : ''}`}
-            onClick={() => setActiveTab('roadmap')}
-          >
-            <Map size={16} />
-            <span>
-              Roadmap
-              {roadmapLinks.length > 0 && (
-                <span className={styles.tabBadge}>{roadmapLinks.length}</span>
-              )}
-            </span>
           </button>
           <button 
             className={`${styles.tabButton} ${activeTab === 'membres' ? styles.active : ''}`}
@@ -250,7 +259,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
           </button>
         </div>
 
-        {/* Contenu */}
+        {/* Contenu selon l'onglet actif */}
         <div className={styles.tabContent}>
           {activeTab === 'apropos' && (
             <APropos 
@@ -258,10 +267,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
               views={views}
               formatDate={formatDate}
             />
-          )}
-
-          {activeTab === 'roadmap' && (
-            <Roadmap roadmapLinks={roadmapLinks} />
           )}
 
           {activeTab === 'membres' && (

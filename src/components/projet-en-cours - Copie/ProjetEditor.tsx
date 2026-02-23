@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Send, Info, Image as ImageIcon, Settings, AlertCircle, Map } from 'lucide-react';
+import { X, Send, Info, Image as ImageIcon, Settings, AlertCircle } from 'lucide-react';
 import { createProject, updateProject, isAdmin, Project as FirebaseProject, getAllUsers, generateSlug } from '@/utils/firebase-api';
 import { Timestamp } from 'firebase/firestore';
 import AProposEditor from './AProposEditor';
 import ImagesEditor from './ImagesEditor';
 import AutreEditor from './AutreEditor';
-import RoadmapEditor, { RoadmapLink } from './RoadmapEditor';
 import styles from './ProjetEditor.module.css';
 
 type Project = FirebaseProject;
@@ -20,7 +19,7 @@ interface ProjetEditorProps {
   currentUser: any;
 }
 
-type TabType = 'apropos' | 'images' | 'roadmap' | 'autre';
+type TabType = 'apropos' | 'images' | 'autre';
 
 const ProjetEditor: React.FC<ProjetEditorProps> = ({ 
   project, 
@@ -40,13 +39,13 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
   const [software, setSoftware] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<'public' | 'early_access'>('public');
-  const [roadmapLinks, setRoadmapLinks] = useState<RoadmapLink[]>([]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [allUsers, setAllUsers] = useState<any[]>([]);
 
   useEffect(() => {
+    // Charger tous les utilisateurs
     const loadUsers = async () => {
       try {
         const users = await getAllUsers();
@@ -68,7 +67,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
       setSoftware(project.software || []);
       setTeamMembers(project.teamMembers || []);
       setVisibility(project.visibility || 'public');
-      setRoadmapLinks((project as any).roadmapLinks || []);
     } else {
       setTitle('');
       setSlug('');
@@ -79,10 +77,10 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
       setSoftware([]);
       setTeamMembers(currentUser?.uid ? [currentUser.uid] : []);
       setVisibility('public');
-      setRoadmapLinks([]);
     }
   }, [project, currentUser]);
 
+  // Vérifier si l'utilisateur est admin
   if (!isAdmin(currentUser?.email)) {
     return (
       <div className={styles.overlay} onClick={onClose}>
@@ -103,6 +101,7 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
     );
   }
 
+  // Fonction pour enrichir les membres avec leurs données
   const enrichMembers = (userIds: string[]) => {
     return userIds.map(userId => {
       const user = allUsers.find(u => u.uid === userId);
@@ -132,7 +131,10 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
     setError('');
 
     try {
+      // Enrichir les membres avant sauvegarde
       const enrichedMembers = enrichMembers(teamMembers);
+      
+      // Générer le slug si nécessaire
       const finalSlug = slug.trim() || generateSlug(title.trim());
       
       const projectData: Omit<Project, 'id'> = {
@@ -149,10 +151,8 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
         updatedAt: Timestamp.now(),
         teamMembers: teamMembers,
         views: project?.views || 0,
-        visibility: visibility,
-        // Ajout des liens roadmap
-        roadmapLinks: roadmapLinks,
-      } as any;
+        visibility: visibility
+      };
 
       if (project?.id) {
         await updateProject(project.id, projectData);
@@ -223,13 +223,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
             <span>Images</span>
           </button>
           <button 
-            className={`${styles.tabButton} ${activeTab === 'roadmap' ? styles.active : ''}`}
-            onClick={() => setActiveTab('roadmap')}
-          >
-            <Map size={16} />
-            <span>Roadmap</span>
-          </button>
-          <button 
             className={`${styles.tabButton} ${activeTab === 'autre' ? styles.active : ''}`}
             onClick={() => setActiveTab('autre')}
           >
@@ -265,13 +258,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
                 carouselImages={carouselImages}
                 onMainImageChange={setImage}
                 onCarouselImagesChange={setCarouselImages}
-              />
-            )}
-
-            {activeTab === 'roadmap' && (
-              <RoadmapEditor
-                links={roadmapLinks}
-                onLinksChange={setRoadmapLinks}
               />
             )}
 

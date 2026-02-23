@@ -1,0 +1,469 @@
+/* ProjetDetail.module.css - AVEC NAVIGATION PAR ONGLETS - PROPORTIONS CORRIGÉES */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 3000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.modalContent {
+  background: var(--dark);
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.closeBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--light);
+  border: 1px solid var(--light);
+  color: var(--dark);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4000;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.closeBtn:hover {
+  background: var(--primary);
+  color: var(--dark);
+  transform: rotate(90deg);
+}
+
+/* Header avec CAROUSEL - PROPORTIONS AJUSTÉES */
+.modalHeader {
+  position: relative;
+  width: 100%;
+  height: 25vh; /* Utilisation de viewport height pour des proportions cohérentes */
+  min-height: 200px;
+  max-height: 300px; /* Limite maximale sur desktop */
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.carouselWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carouselSlide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.carouselSlide.active {
+  opacity: 1;
+}
+
+.carouselImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carouselControls {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.carouselDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.carouselDot.active {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 5px;
+}
+
+.carouselArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--light);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.carouselArrow:hover {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+}
+
+.carouselArrow.prev {
+  left: 15px;
+}
+
+.carouselArrow.next {
+  right: 15px;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0.2) 0%, 
+    rgba(0, 0, 0, 0.5) 50%, 
+    var(--dark) 100%);
+  pointer-events: none;
+}
+
+.headerContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 0;
+  color: var(--light);
+  z-index: 2;
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 24px;
+}
+
+.projectTitle {
+  font-size: clamp(1.3rem, 3vw, 1.8rem); /* Réduit sur desktop */
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: var(--light);
+  font-family: var(--font-main);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Navigation par onglets */
+.tabsContainer {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--dark);
+  padding: 0 24px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tabButton {
+  background: transparent;
+  border: none;
+  color: var(--light);
+  opacity: 0.6;
+  padding: 12px 20px; /* Réduit le padding vertical */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-main);
+}
+
+.tabButton:hover {
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tabButton.active {
+  opacity: 1;
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tabButton svg {
+  flex-shrink: 0;
+}
+
+/* Contenu des onglets - prend tout l'espace restant */
+.tabContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.tabContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tabContent::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.tabContent::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+/* Responsive */
+
+/* Desktop - Grands écrans */
+@media (min-width: 1280px) {
+  .modalHeader {
+    height: 220px; /* Hauteur fixe sur desktop */
+    max-height: 220px;
+  }
+  
+  .container {
+    padding: 0 32px;
+  }
+  
+  .tabsContainer {
+    padding: 0 32px;
+  }
+  
+  .tabContent {
+    padding: 24px 32px;
+  }
+  
+  .projectTitle {
+    font-size: 1.8rem;
+  }
+}
+
+/* Desktop - Écrans moyens */
+@media (min-width: 1025px) and (max-width: 1279px) {
+  .modalHeader {
+    height: 200px;
+    max-height: 200px;
+  }
+  
+  .container {
+    padding: 0 28px;
+  }
+  
+  .tabsContainer {
+    padding: 0 28px;
+  }
+  
+  .tabContent {
+    padding: 20px 28px;
+  }
+  
+  .projectTitle {
+    font-size: 1.6rem;
+  }
+}
+
+/* Tablettes */
+@media (max-width: 1024px) {
+  .modalHeader {
+    height: 25vh;
+    min-height: 180px;
+    max-height: 250px;
+  }
+  
+  .projectTitle {
+    font-size: 1.8rem;
+  }
+  
+  .tabsContainer {
+    padding: 0 20px;
+  }
+  
+  .tabButton {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+  }
+  
+  .tabContent {
+    padding: 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .closeBtn {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .modalHeader {
+    height: 25vh;
+    min-height: 160px;
+    max-height: 220px;
+  }
+  
+  .carouselArrow {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .carouselArrow.prev {
+    left: 10px;
+  }
+  
+  .carouselArrow.next {
+    right: 10px;
+  }
+  
+  .carouselControls {
+    bottom: 10px;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .projectTitle {
+    font-size: 1.5rem;
+  }
+  
+  .tabsContainer {
+    padding: 0 12px;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  
+  .tabsContainer::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .tabButton {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  
+  .tabButton span {
+    display: none;
+  }
+  
+  .tabButton.active span {
+    display: inline;
+  }
+  
+  .tabButton svg {
+    margin-right: 0;
+  }
+  
+  .tabButton.active svg {
+    margin-right: 4px;
+  }
+  
+  .tabContent {
+    padding: 16px;
+  }
+}
+
+/* Petits mobiles */
+@media (max-width: 480px) {
+  .closeBtn {
+    width: 36px;
+    height: 36px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .modalHeader {
+    height: 22vh; /* Un peu plus petit sur très petits écrans */
+    min-height: 140px;
+    max-height: 180px;
+  }
+  
+  .projectTitle {
+    font-size: 1.3rem;
+  }
+  
+  .container {
+    padding: 0 12px;
+  }
+  
+  .headerContent {
+    padding: 15px 0;
+  }
+  
+  .tabContent {
+    padding: 12px;
+  }
+  
+  .tabsContainer {
+    padding: 0 8px;
+  }
+  
+  .tabButton {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Très petits écrans */
+@media (max-width: 360px) {
+  .modalHeader {
+    height: 20vh;
+    min-height: 120px;
+  }
+  
+  .projectTitle {
+    font-size: 1.1rem;
+  }
+}
+
+/* Portrait mobile - écrans très hauts */
+@media (min-height: 800px) and (max-width: 480px) {
+  .modalHeader {
+    height: 18vh; /* Encore plus petit sur les écrans très hauts */
+    min-height: 140px;
+  }
+}
