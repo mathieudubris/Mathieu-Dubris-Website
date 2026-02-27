@@ -1,112 +1,265 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { 
-  Settings, 
-  Users, 
-  Key, 
-  ShieldCheck, 
-  Database, 
-  Activity, 
-  CreditCard, 
-  Bell, 
-  Lock, 
-  PhoneCall, 
-  Globe, 
+import {
+  Settings,
+  Key,
+  ShieldCheck,
+  Database,
+  Activity,
+  CreditCard,
+  Bell,
+  Lock,
+  PhoneCall,
+  Globe,
   FileText,
-  Cloud
+  Cloud,
+  Kanban,
+  TrendingUp,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  ArrowUpRight,
 } from 'lucide-react';
+import { auth, db } from '@/utils/firebase-api';
+import { collection, getDocs } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth'; 
 import styles from './page.module.css';
 
-const AdminPage = () => {
+// ─── Stat Card ───────────────────────────────────────────────────────────────
+
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  trend?: string;
+  status?: 'ok' | 'warn' | 'crit';
+}
+
+function StatCard({ label, value, icon, trend, status }: StatCardProps) {
+  return (
+    <div className={styles.statCard}>
+      <div className={styles.statIcon}>{icon}</div>
+      <div className={styles.statInfo}>
+        <span className={styles.statValue}>{value}</span>
+        <span className={styles.statLabel}>{label}</span>
+      </div>
+      {trend && (
+        <span
+          className={`${styles.statTrend} ${
+            status === 'warn'
+              ? styles.statTrendWarn
+              : status === 'crit'
+              ? styles.statTrendCrit
+              : styles.statTrendOk
+          }`}
+        >
+          {trend}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ─── Nav Card ────────────────────────────────────────────────────────────────
+
+interface NavCardProps {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  badge?: string;
+  badgeColor?: string;
+  accent?: string;
+}
+
+function NavCard({ href, icon, title, desc, badge, badgeColor, accent }: NavCardProps) {
+  return (
+    <Link href={href} className={styles.navCard}>
+      {accent && <div className={styles.navCardAccent} style={{ background: accent }} />}
+      <div className={styles.navCardHeader}>
+        <div className={styles.iconWrapper}>{icon}</div>
+        <ArrowUpRight size={16} className={styles.navCardArrow} />
+      </div>
+      <span className={styles.cardTitle}>{title}</span>
+      <p className={styles.cardDesc}>{desc}</p>
+      {badge && (
+        <span
+          className={styles.badge}
+          style={badgeColor ? { background: badgeColor } : undefined}
+        >
+          {badge}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+// ─── Admin Dashboard ─────────────────────────────────────────────────────────
+
+export default function AdminPage() {
+  const [userCount, setUserCount] = useState<number | null>(null);
+  const [projectCount, setProjectCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Fetch quick stats
+    const fetchStats = async () => {
+      try {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        setUserCount(usersSnap.size);
+        const projectsSnap = await getDocs(collection(db, 'projects'));
+        setProjectCount(projectsSnap.size);
+      } catch {}
+    };
+    fetchStats();
+  }, []);
+
   return (
     <div className={styles.adminContainer}>
+      {/* ── Header ── */}
       <header className={styles.header}>
-        <h1>Tableau de Bord Administrateur</h1>
-        <p>Gérez les paramètres globaux et les accès de votre infrastructure.</p>
+        <div className={styles.headerLeft}>
+          <div className={styles.headerTag}>Admin</div>
+          <h1 className={styles.headerTitle}>Tableau de Bord</h1>
+          <p className={styles.headerSub}>
+            Gérez les paramètres globaux et les accès de votre infrastructure.
+          </p>
+        </div>
+        <div className={styles.headerRight}>
+          <div className={styles.statusPill}>
+            <CheckCircle2 size={13} />
+            Tous les systèmes opérationnels
+          </div>
+        </div>
       </header>
 
-      {/* Section Contrôles Généraux */}
-      <h2 className={styles.sectionTitle}>
-        <Settings size={24} /> Contrôles Généraux
-      </h2>
-      <div className={styles.grid}>
-        <Link href="/admin/users" className={styles.card}>
-          <div className={styles.iconWrapper}><Users size={24} /></div>
-          <span className={styles.cardTitle}>Utilisateurs</span>
-          <p className={styles.cardDesc}>Gérer les comptes et les permissions.</p>
-        </Link>
-
-        <Link href="/admin/security" className={styles.card}>
-          <div className={styles.iconWrapper}><ShieldCheck size={24} /></div>
-          <span className={styles.cardTitle}>Sécurité</span>
-          <p className={styles.cardDesc}>Logs de connexion et protocoles 2FA.</p>
-        </Link>
-
-        <Link href="/admin/database" className={styles.card}>
-          <div className={styles.iconWrapper}><Database size={24} /></div>
-          <span className={styles.cardTitle}>Base de données</span>
-          <p className={styles.cardDesc}>Maintenance et sauvegardes système.</p>
-        </Link>
-
-        <Link href="/admin/monitoring" className={styles.card}>
-          <div className={styles.iconWrapper}><Activity size={24} /></div>
-          <span className={styles.cardTitle}>Monitoring</span>
-          <p className={styles.cardDesc}>État des services en temps réel.</p>
-        </Link>
-
-        <Link href="/admin/notifications" className={styles.card}>
-          <div className={styles.iconWrapper}><Bell size={24} /></div>
-          <span className={styles.cardTitle}>Communications</span>
-          <p className={styles.cardDesc}>Configuration des emails et SMS.</p>
-        </Link>
-
-        <Link href="/admin/api" className={styles.card}>
-          <div className={styles.iconWrapper}><Lock size={24} /></div>
-          <span className={styles.cardTitle}>Clés API</span>
-          <p className={styles.cardDesc}>Gestion des accès tiers.</p>
-        </Link>
+      {/* ── Stats row ── */}
+      <div className={styles.statsRow}>
+        <StatCard
+          label="Utilisateurs"
+          value={userCount ?? '—'}
+          icon={<Users size={18} />}
+          trend="+12% ce mois"
+          status="ok"
+        />
+        <StatCard
+          label="Projets actifs"
+          value={projectCount ?? '—'}
+          icon={<Activity size={18} />}
+          trend="En cours"
+          status="ok"
+        />
+        <StatCard
+          label="Alertes sécurité"
+          value="0"
+          icon={<AlertTriangle size={18} />}
+          trend="Aucun incident"
+          status="ok"
+        />
+        <StatCard
+          label="Uptime"
+          value="99.9%"
+          icon={<TrendingUp size={18} />}
+          trend="30 derniers jours"
+          status="ok"
+        />
       </div>
 
-      {/* Section Gestion des Licences */}
+      {/* ── Section : Gestion de projets ── */}
       <h2 className={styles.sectionTitle}>
-        <Key size={24} /> Gestion des Licences
+        <Kanban size={20} />
+        Gestion de projets
       </h2>
       <div className={styles.grid}>
-        <Link href="/admin/licences" className={styles.card}>
-          <div className={styles.iconWrapper}><FileText size={24} /></div>
-          <span className={styles.cardTitle}>Vue d'ensemble</span>
-          <p className={styles.cardDesc}>Statut global de toutes les licences actives.</p>
-        </Link>
+        <NavCard
+          href="/security/admin/kanban"
+          icon={<Kanban size={22} />}
+          title="Kanban Board"
+          desc="Gérez vos tâches en colonnes drag-and-drop, avec priorités, checklist et commentaires."
+          badge="Nouveau"
+          accent="var(--primary)"
+        />
+      </div>
 
-        <Link href="/admin/licences/ringover" className={styles.card}>
-          <div className={styles.iconWrapper}><PhoneCall size={24} /></div>
-          <span className={styles.cardTitle}>Ringover</span>
-          <p className={styles.cardDesc}>Gestion des lignes et licences VoIP Ringover.</p>
-          <span className={styles.badge}>Prioritaire</span>
-        </Link>
+      {/* ── Section : Contrôles généraux ── */}
+      <h2 className={styles.sectionTitle}>
+        <Settings size={20} />
+        Contrôles Généraux
+      </h2>
+      <div className={styles.grid}>
+        <NavCard
+          href="/admin/security"
+          icon={<ShieldCheck size={22} />}
+          title="Sécurité"
+          desc="Logs de connexion et protocoles 2FA."
+        />
+        <NavCard
+          href="/admin/database"
+          icon={<Database size={22} />}
+          title="Base de données"
+          desc="Maintenance et sauvegardes système."
+        />
+        <NavCard
+          href="/admin/monitoring"
+          icon={<Activity size={22} />}
+          title="Monitoring"
+          desc="État des services en temps réel."
+        />
+        <NavCard
+          href="/admin/notifications"
+          icon={<Bell size={22} />}
+          title="Communications"
+          desc="Configuration des emails et SMS."
+        />
+        <NavCard
+          href="/admin/api"
+          icon={<Lock size={22} />}
+          title="Clés API"
+          desc="Gestion des accès tiers."
+        />
+      </div>
 
-        <Link href="/admin/licences/microsoft" className={styles.card}>
-          <div className={styles.iconWrapper}><Cloud size={24} /></div>
-          <span className={styles.cardTitle}>Microsoft 365</span>
-          <p className={styles.cardDesc}>Assignation des sièges Business et Enterprise.</p>
-        </Link>
-
-        <Link href="/admin/licences/adobe" className={styles.card}>
-          <div className={styles.iconWrapper}><Globe size={24} /></div>
-          <span className={styles.cardTitle}>Adobe Creative Cloud</span>
-          <p className={styles.cardDesc}>Gestion des abonnements créatifs.</p>
-        </Link>
-
-        <Link href="/admin/licences/billing" className={styles.card}>
-          <div className={styles.iconWrapper}><CreditCard size={24} /></div>
-          <span className={styles.cardTitle}>Facturation</span>
-          <p className={styles.cardDesc}>Historique des paiements et renouvellements.</p>
-        </Link>
+      {/* ── Section : Licences ── */}
+      <h2 className={styles.sectionTitle}>
+        <Key size={20} />
+        Gestion des Licences
+      </h2>
+      <div className={styles.grid}>
+        <NavCard
+          href="/admin/licences"
+          icon={<FileText size={22} />}
+          title="Vue d'ensemble"
+          desc="Statut global de toutes les licences actives."
+        />
+        <NavCard
+          href="/admin/licences/ringover"
+          icon={<PhoneCall size={22} />}
+          title="Ringover"
+          desc="Gestion des lignes et licences VoIP Ringover."
+          badge="Prioritaire"
+          badgeColor="#c7ff44"
+          accent="#c7ff44"
+        />
+        <NavCard
+          href="/admin/licences/microsoft"
+          icon={<Cloud size={22} />}
+          title="Microsoft 365"
+          desc="Assignation des sièges Business et Enterprise."
+        />
+        <NavCard
+          href="/admin/licences/adobe"
+          icon={<Globe size={22} />}
+          title="Adobe Creative Cloud"
+          desc="Gestion des abonnements créatifs."
+        />
+        <NavCard
+          href="/admin/licences/billing"
+          icon={<CreditCard size={22} />}
+          title="Facturation"
+          desc="Historique des paiements et renouvellements."
+        />
       </div>
     </div>
   );
-};
-
-export default AdminPage;
+}

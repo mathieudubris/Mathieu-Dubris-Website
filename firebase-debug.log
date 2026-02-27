@@ -1,0 +1,88 @@
+[debug] [2026-02-26T08:01:45.838Z] ----------------------------------------------------------------------
+[debug] [2026-02-26T08:01:45.849Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MIARANTSOA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-02-26T08:01:45.850Z] CLI Version:   15.5.1
+[debug] [2026-02-26T08:01:45.850Z] Platform:      win32
+[debug] [2026-02-26T08:01:45.850Z] Node Version:  v25.2.1
+[debug] [2026-02-26T08:01:45.851Z] Time:          Thu Feb 26 2026 09:01:45 GMT+0100 (heure normale d’Europe centrale)
+[debug] [2026-02-26T08:01:45.853Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-26T08:01:45.858Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-02-26T08:02:55.595Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-26T08:02:55.631Z] > authorizing via signed-in user (mathieudubris@gmail.com)
+[debug] [2026-02-26T08:02:55.631Z] [iam] checking project mathieu-dubris for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-02-26T08:02:55.633Z] Checked if tokens are valid: false, expires at: 1771801476480
+[debug] [2026-02-26T08:02:55.633Z] Checked if tokens are valid: false, expires at: 1771801476480
+[debug] [2026-02-26T08:02:55.633Z] > refreshing access token with scopes: []
+[debug] [2026-02-26T08:02:55.641Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-26T08:02:55.642Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-26T08:02:56.424Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-02-26T08:02:56.425Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-02-26T08:02:56.577Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-26T08:02:56.577Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-26T08:02:56.629Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions [none]
+[debug] [2026-02-26T08:02:56.629Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions  x-goog-user-project=mathieu-dubris
+[debug] [2026-02-26T08:02:56.629Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-26T08:02:58.810Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions 200
+[debug] [2026-02-26T08:02:58.810Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-26T08:02:58.812Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:02:58.812Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:02:58.813Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris [none]
+[debug] [2026-02-26T08:02:59.951Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris 200
+[debug] [2026-02-26T08:02:59.951Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris {"projectId":"mathieu-dubris","projectNumber":"1008303076758","displayName":"Mathieu Dubris","name":"projects/mathieu-dubris","resources":{"hostingSite":"mathieu-dubris"},"state":"ACTIVE","etag":"1_cb766782-97d6-46a8-8822-1dfd2f430ecc"}
+[debug] [2026-02-26T08:03:26.060Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:03:26.060Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:03:26.060Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites pageToken=&pageSize=10
+[debug] [2026-02-26T08:03:28.530Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites 200
+[debug] [2026-02-26T08:03:28.530Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites {"sites":[{"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}]}
+[debug] [2026-02-26T08:03:28.531Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:03:28.531Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:03:28.531Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config [none]
+[debug] [2026-02-26T08:03:29.735Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config 200
+[debug] [2026-02-26T08:03:29.735Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config {"projectId":"mathieu-dubris","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","storageBucket":"mathieu-dubris.firebasestorage.app","apiKey":"AIzaSyBrHGF359udLSaLuuCCarl4ovzCMYD-HDg","authDomain":"mathieu-dubris.firebaseapp.com","messagingSenderId":"1008303076758","measurementId":"G-B3ZL2MHVVN","projectNumber":"1008303076758","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-02-26T08:03:42.395Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:03:42.395Z] Checked if tokens are valid: true, expires at: 1772096575578
+[debug] [2026-02-26T08:03:42.395Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris [none]
+[debug] [2026-02-26T08:03:44.502Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris 200
+[debug] [2026-02-26T08:03:44.502Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris {"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 20.5s
+
+[info]   Running TypeScript ...
+
+[info] Failed to compile.
+
+
+[info] ./src/utils/kanban-api.ts:218:60
+Type error: Conversion of type '{ boardId: string; columnId: string; title: string; description: string; position: number; priority: "medium"; labels: never[]; assignees: never[]; checklist: never[]; comments: never[]; attachments: never[]; ... 5 more ...; updatedAt: Timestamp; }' to type 'KanbanCard' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'coverColor' are incompatible.
+    Type 'null' is not comparable to type 'string | undefined'.
+
+  216 |   position: number
+  217 | ): Promise<string> => {
+> 218 |   const ref = await addDoc(collection(db, "kanban_cards"), {
+      |                                                            ^
+  219 |     boardId,
+  220 |     columnId,
+  221 |     title,
+
+[info] Next.js build worker exited with code: 1 and signal: null
+
+[debug] [2026-02-26T08:04:37.220Z] Error: ENOENT: no such file or directory, open 'D:\PROJET\PROJET REACT\Mathieu Dubris\.next\export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.
