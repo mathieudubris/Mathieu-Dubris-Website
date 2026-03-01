@@ -8,7 +8,6 @@ import { Timestamp } from 'firebase/firestore';
 import AProposEditor from './AProposEditor';
 import ImagesEditor from './ImagesEditor';
 import AutreEditor from './AutreEditor';
-import RoadmapEditor, { RoadmapLink } from './RoadmapEditor';
 import styles from './ProjetEditor.module.css';
 
 type Project = FirebaseProject;
@@ -40,7 +39,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
   const [software, setSoftware] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<'public' | 'early_access'>('public');
-  const [roadmapLinks, setRoadmapLinks] = useState<RoadmapLink[]>([]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -68,7 +66,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
       setSoftware(project.software || []);
       setTeamMembers(project.teamMembers || []);
       setVisibility(project.visibility || 'public');
-      setRoadmapLinks((project as any).roadmapLinks || []);
     } else {
       setTitle('');
       setSlug('');
@@ -79,7 +76,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
       setSoftware([]);
       setTeamMembers(currentUser?.uid ? [currentUser.uid] : []);
       setVisibility('public');
-      setRoadmapLinks([]);
     }
   }, [project, currentUser]);
 
@@ -150,8 +146,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
         teamMembers: teamMembers,
         views: project?.views || 0,
         visibility: visibility,
-        // Ajout des liens roadmap
-        roadmapLinks: roadmapLinks,
       } as any;
 
       if (project?.id) {
@@ -265,13 +259,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
                 carouselImages={carouselImages}
                 onMainImageChange={setImage}
                 onCarouselImagesChange={setCarouselImages}
-              />
-            )}
-
-            {activeTab === 'roadmap' && (
-              <RoadmapEditor
-                links={roadmapLinks}
-                onLinksChange={setRoadmapLinks}
               />
             )}
 

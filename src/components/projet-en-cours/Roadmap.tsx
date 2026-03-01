@@ -1,109 +1,104 @@
-// Roadmap.tsx - Updated version with error handling
+// Roadmap.tsx - Version avec boutons GDD, SPRINT, KANBAN et Next.js
 "use client";
 
-import React, { useState } from 'react';
-import { Map, ExternalLink, AlertCircle } from 'lucide-react';
+import React from 'react';
+import { FileText, Repeat, Kanban, ExternalLink } from 'lucide-react';
 import styles from './Roadmap.module.css';
 
-interface RoadmapLink {
-  id: string;
-  label: string;
-  url: string;
-}
-
 interface RoadmapProps {
-  roadmapLinks: RoadmapLink[];
+  // On garde la prop pour compatibilité, mais on ne l'utilise plus
+  roadmapLinks?: any[];
 }
 
-const Roadmap: React.FC<RoadmapProps> = ({ roadmapLinks }) => {
-  const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [iframeError, setIframeError] = useState<boolean>(false);
+const Roadmap: React.FC<RoadmapProps> = () => {
+  // Liens fixes pour les différents boutons
+  const buttons = [
+    {
+      id: 'gdd',
+      label: 'GDD',
+      fullLabel: 'Game Design Document',
+      url: 'https://docs.google.com/document/d/1exemple_gdd', // À remplacer par le vrai lien
+      icon: FileText,
+      color: '#10b981' // Vert
+    },
+    {
+      id: 'sprint',
+      label: 'SPRINT',
+      fullLabel: 'Sprint Planning',
+      url: 'https://docs.google.com/document/d/1exemple_sprint', // À remplacer par le vrai lien
+      icon: Repeat,
+      color: '#f59e0b' // Orange
+    },
+    {
+      id: 'kanban',
+      label: 'KANBAN',
+      fullLabel: 'Tableau Kanban',
+      url: 'https://docs.google.com/document/d/1exemple_kanban', // À remplacer par le vrai lien
+      icon: Kanban,
+      color: '#6366f1' // Indigo
+    },
+    {
+      id: 'nextjs',
+      label: 'NEXT JS',
+      fullLabel: 'Documentation Next.js',
+      url: 'https://nextjs.org/docs', // Lien Next.js
+      icon: ExternalLink,
+      color: '#ffffff' // Blanc
+    }
+  ];
 
-  if (roadmapLinks.length === 0) {
-    return (
-      <div className={styles.roadmap}>
-        <div className={styles.emptyState}>
-          <Map size={48} className={styles.emptyIcon} />
-          <h3>Aucune roadmap</h3>
-          <p>Aucun lien roadmap n'a encore été ajouté à ce projet.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const activeLink = roadmapLinks[activeIndex];
-
-  const handleIframeError = () => {
-    setIframeError(true);
-  };
-
-  const handleTabChange = (index: number) => {
-    setActiveIndex(index);
-    setIframeError(false); // Reset error state when changing tabs
-  };
-
-  const openInNewTab = () => {
-    window.open(activeLink.url, '_blank', 'noopener,noreferrer');
+  const openInNewTab = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
     <div className={styles.roadmap}>
-      {/* Sélecteur de liens (si plusieurs) */}
-      {roadmapLinks.length > 1 && (
-        <div className={styles.tabSelector}>
-          {roadmapLinks.map((link, index) => (
-            <button
-              key={link.id}
-              className={`${styles.selectorTab} ${index === activeIndex ? styles.selectorTabActive : ''}`}
-              onClick={() => handleTabChange(index)}
-            >
-              <span className={styles.selectorIndex}>{index + 1}</span>
-              <span className={styles.selectorLabel}>{link.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Header with open button */}
+      {/* Header avec le titre */}
       <div className={styles.iframeHeader}>
         <div className={styles.iframeTitle}>
-          <Map size={15} />
-          <span>{activeLink.label}</span>
+          <FileText size={15} />
+          <span>Ressources du projet</span>
         </div>
-        <button 
-          className={styles.openButton}
-          onClick={openInNewTab}
-          title="Ouvrir dans un nouvel onglet"
-        >
-          <ExternalLink size={14} />
-          <span>Ouvrir</span>
-        </button>
       </div>
 
-      {/* Iframe embarquée ou message d'erreur */}
-      <div className={styles.iframeWrapper}>
-        {!iframeError ? (
-          <iframe
-            key={activeLink.id}
-            src={activeLink.url}
-            className={styles.iframe}
-            title={activeLink.label}
-            allowFullScreen
-            loading="lazy"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox allow-top-navigation"
-            onError={handleIframeError}
-          />
-        ) : (
-          <div className={styles.errorState}>
-            <AlertCircle size={48} className={styles.errorIcon} />
-            <h4>Impossible d'afficher cette page</h4>
-            <p>Cette page ne peut pas être affichée dans l'iframe en raison de ses paramètres de sécurité.</p>
-            <button onClick={openInNewTab} className={styles.openInNewTabBtn}>
-              <ExternalLink size={16} />
-              Ouvrir dans un nouvel onglet
+      {/* Boutons de navigation */}
+      <div className={styles.buttonsContainer}>
+        {buttons.map((button) => {
+          const Icon = button.icon;
+          return (
+            <button
+              key={button.id}
+              className={styles.navButton}
+              onClick={() => openInNewTab(button.url)}
+              style={{ '--button-color': button.color } as React.CSSProperties}
+              title={button.fullLabel}
+            >
+              <Icon size={18} />
+              <span>{button.label}</span>
             </button>
-          </div>
-        )}
+          );
+        })}
+      </div>
+
+      {/* Description des ressources */}
+      <div className={styles.descriptionContainer}>
+        <p className={styles.description}>
+          Accédez rapidement aux ressources essentielles du projet :
+        </p>
+        <ul className={styles.resourcesList}>
+          <li>
+            <strong>GDD</strong> : Document de conception du jeu
+          </li>
+          <li>
+            <strong>SPRINT</strong> : Planning et objectifs du sprint
+          </li>
+          <li>
+            <strong>KANBAN</strong> : Suivi des tâches et progression
+          </li>
+          <li>
+            <strong>NEXT JS</strong> : Documentation officielle
+          </li>
+        </ul>
       </div>
     </div>
   );
