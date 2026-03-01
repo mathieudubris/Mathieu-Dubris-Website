@@ -1,0 +1,159 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #1f1f1f;
+  background: #0a0a0a;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.btnIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--line);
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-main);
+}
+
+.btnIcon:hover {
+  background: #1a1a1a;
+  color: var(--light);
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.boardTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--light);
+  padding: 0.25rem 0;
+}
+
+.titleEditor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 400px;
+}
+
+.titleInput {
+  flex: 1;
+  background: #1a1a1a;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  color: var(--light);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  outline: none;
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: #080808;
+  border-bottom: 1px solid #1a1a1a;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.55rem;
+  color: var(--line);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem 0.45rem 2rem;
+  color: var(--light);
+  font-size: 0.82rem;
+  font-family: var(--font-main);
+  outline: none;
+  transition: border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchInput:focus {
+  border-color: var(--primary);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 0.4rem;
+  background: transparent;
+  border: none;
+  color: var(--line);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.clearSearch:hover {
+  background: #1a1a1a;
+  color: var(--light);
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #2a2a2a;
+  font-family: var(--font-main);
+  background: #111;
+  color: var(--line);
+}
+
+.filterChipActive {
+  composes: filterChip;
+  border-color: var(--primary);
+  color: var(--primary);
+}

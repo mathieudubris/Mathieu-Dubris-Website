@@ -74,17 +74,17 @@
 }
 
 .selectedRoleTag.Design {
-  background-color: var(--red);
+  background-color: var(--green);
   color: var(--black);
 }
 
 .selectedRoleTag.Programming {
-  background-color: var(--orange);
+  background-color: var(--red);
   color: var(--black);
 }
 
 .selectedRoleTag.Art3D {
-  background-color: var(--yellow);
+  background-color: var(--orange);
   color: var(--black);
 }
 
@@ -99,7 +99,7 @@
 }
 
 .selectedRoleTag.Support {
-  background-color: var(--pink);
+  background-color: var(--purple);
   color: var(--black);
 }
 
@@ -198,7 +198,7 @@
 
 /* Design - Rouge */
 .roleButton.Design {
-  background-color: var(--red);
+  background-color: var(--green);
   color: var(--black);
 }
 
@@ -212,7 +212,7 @@
 
 /* Programmation - Orange */
 .roleButton.Programming {
-  background-color: var(--orange);
+  background-color: var(--red);
   color: var(--black);
 }
 
@@ -226,7 +226,7 @@
 
 /* Art 3D - Jaune */
 .roleButton.Art3D {
-  background-color: var(--yellow);
+  background-color: var(--orange);
   color: var(--black);
 }
 
@@ -240,7 +240,7 @@
 
 /* UI/UX - Vert */
 .roleButton.UIUX {
-  background-color: var(--green);
+  background-color: var(--blue);
   color: var(--black);
 }
 
@@ -254,7 +254,7 @@
 
 /* Audio - Turquoise */
 .roleButton.Audio {
-  background-color: var(--teal);
+  background-color: var(--yellow);
   color: var(--black);
 }
 
@@ -268,7 +268,7 @@
 
 /* Support & Marketing - Rose */
 .roleButton.Support {
-  background-color: var(--pink);
+  background-color: var(--purple);
   color: var(--black);
 }
 

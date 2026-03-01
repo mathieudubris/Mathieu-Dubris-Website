@@ -218,7 +218,7 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
                     <button 
                       className={styles.quoteBtn} 
                       style={{ width: '100%', padding: '12px' }} 
-                      onClick={() => { setIsOpen(false); router.push('/admin'); }}
+                      onClick={() => { setIsOpen(false); router.push('/security/admin'); }}
                     >
                       Accéder à l'administration
                     </button>

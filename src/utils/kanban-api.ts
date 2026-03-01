@@ -72,7 +72,7 @@ export interface KanbanColumn {
   boardId: string;
   position: number;
   color?: string;                    // couleur d'en-tête
-  cardLimit?: number;                // WIP limit
+  cardLimit?: number | null;                // WIP limit (peut être null)
   createdAt: any;
   updatedAt: any;
 }
@@ -151,14 +151,14 @@ export const createColumn = async (
   title: string,
   position: number,
   color?: string,
-  cardLimit?: number
+  cardLimit?: number | null
 ): Promise<string> => {
   const columnData: Omit<KanbanColumn, 'id'> = {
     boardId,
     title,
     position,
-    color: color ?? undefined,
-    cardLimit: cardLimit ?? undefined,
+    color: color ?? undefined,  // Utiliser undefined au lieu de null
+    cardLimit: cardLimit ?? undefined,  // Utiliser undefined au lieu de null
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
   };
@@ -181,8 +181,14 @@ export const updateColumn = async (
   columnId: string,
   data: Partial<KanbanColumn>
 ): Promise<void> => {
+  // S'assurer que cardLimit n'est pas undefined
+  const cleanData = { ...data };
+  if (cleanData.cardLimit === undefined) {
+    delete cleanData.cardLimit;
+  }
+  
   await updateDoc(doc(db, "kanban_columns", columnId), {
-    ...data,
+    ...cleanData,
     updatedAt: Timestamp.now(),
   });
 };
@@ -409,8 +415,10 @@ export const seedDefaultColumns = async (
     { title: "À faire", color: "#a3a3a3" },
     { title: "En cours", color: "#c7ff44" },
     { title: "En révision", color: "#f59e0b" },
+    { title: "Blocage", color: "#ef4444" },  // Ajout de la colonne Blocage
     { title: "Terminé", color: "#22c55e" },
   ];
+  
   const batch = writeBatch(db);
   defaults.forEach(({ title, color }, i) => {
     const ref = doc(collection(db, "kanban_columns"));
@@ -419,7 +427,7 @@ export const seedDefaultColumns = async (
       title,
       position: i,
       color,
-      cardLimit: undefined,
+      cardLimit: null,  // Utiliser null au lieu de undefined
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
