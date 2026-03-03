@@ -174,13 +174,13 @@ const Footer = () => {
               <a href="mailto:mathieudubris@gmail.com" className={styles.socialBtn} title="Email">
                 <Mail size={18} />
               </a>
-              <a href="https://youtube.com/@mathieu_dubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="YouTube">
+              <a href="https://youtube.com/@mathieudubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="YouTube">
                 <Youtube size={18} />
               </a>
-              <a href="https://instagram.com/mathieu_dubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="Instagram">
+              <a href="https://instagram.com/mathieudubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="Instagram">
                 <Instagram size={18} />
               </a>
-              <a href="https://discord.gg/mathieu_dubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="Discord">
+              <a href="https://discord.gg/mathieudubris" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="Discord">
                 <MessageSquare size={18} />
               </a>
               <a href="https://wa.me/0342526948" target="_blank" rel="noopener noreferrer" className={styles.socialBtn} title="WhatsApp">

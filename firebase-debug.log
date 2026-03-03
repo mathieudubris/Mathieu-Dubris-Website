@@ -1,0 +1,110 @@
+[debug] [2026-03-03T17:51:31.807Z] ----------------------------------------------------------------------
+[debug] [2026-03-03T17:51:31.813Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MIARANTSOA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-03-03T17:51:31.815Z] CLI Version:   15.5.1
+[debug] [2026-03-03T17:51:31.815Z] Platform:      win32
+[debug] [2026-03-03T17:51:31.815Z] Node Version:  v25.2.1
+[debug] [2026-03-03T17:51:31.816Z] Time:          Tue Mar 03 2026 18:51:31 GMT+0100 (heure normale d’Europe centrale)
+[debug] [2026-03-03T17:51:31.816Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-03T17:51:31.822Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-03-03T17:52:49.659Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-03T17:52:49.659Z] > authorizing via signed-in user (mathieudubris@gmail.com)
+[debug] [2026-03-03T17:52:49.660Z] [iam] checking project mathieu-dubris for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-03T17:52:49.661Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:52:49.661Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:52:49.661Z] > refreshing access token with scopes: []
+[debug] [2026-03-03T17:52:49.663Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-03T17:52:49.663Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-03T17:53:00.950Z] *** [apiv2] error from fetch(https://www.googleapis.com/oauth2/v3/token, {"headers":{},"method":"POST","body":{"_overheadLength":545,"_valueLength":212,"_valuesToMeasure":[],"writable":false,"readable":true,"dataSize":0,"maxDataSize":2097152,"pauseStreams":true,"_released":true,"_streams":[],"_currentStream":null,"_insideLoop":false,"_pendingNext":false,"_boundary":"--------------------------1226917a6381bcf07c04c27c","_events":{},"_eventsCount":1}}): FetchError: request to https://www.googleapis.com/oauth2/v3/token failed, reason: getaddrinfo ENOTFOUND www.googleapis.com
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-03-03T17:53:00.951Z] [iam] error while checking permissions, command may fail: Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-03-03T17:53:00.953Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:53:00.953Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:53:00.953Z] > refreshing access token with scopes: []
+[debug] [2026-03-03T17:53:00.954Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-03T17:53:00.954Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-03T17:53:00.962Z] *** [apiv2] error from fetch(https://www.googleapis.com/oauth2/v3/token, {"headers":{},"method":"POST","body":{"_overheadLength":545,"_valueLength":212,"_valuesToMeasure":[],"writable":false,"readable":true,"dataSize":0,"maxDataSize":2097152,"pauseStreams":true,"_released":true,"_streams":[],"_currentStream":null,"_insideLoop":false,"_pendingNext":false,"_boundary":"--------------------------e42d1bd289760d53c14b8353","_events":{},"_eventsCount":1}}): FetchError: request to https://www.googleapis.com/oauth2/v3/token failed, reason: getaddrinfo ENOTFOUND www.googleapis.com
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-03-03T17:53:00.963Z] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-03-03T17:53:00.968Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:53:00.968Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:53:00.968Z] > refreshing access token with scopes: []
+[debug] [2026-03-03T17:53:00.969Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-03T17:53:00.969Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-03T17:53:00.972Z] *** [apiv2] error from fetch(https://www.googleapis.com/oauth2/v3/token, {"headers":{},"method":"POST","body":{"_overheadLength":545,"_valueLength":212,"_valuesToMeasure":[],"writable":false,"readable":true,"dataSize":0,"maxDataSize":2097152,"pauseStreams":true,"_released":true,"_streams":[],"_currentStream":null,"_insideLoop":false,"_pendingNext":false,"_boundary":"--------------------------ef0d6c4b0745f6b3c73f0d71","_events":{},"_eventsCount":1}}): FetchError: request to https://www.googleapis.com/oauth2/v3/token failed, reason: getaddrinfo ENOTFOUND www.googleapis.com
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-03-03T17:53:00.973Z] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-03-03T17:53:32.375Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:53:32.375Z] Checked if tokens are valid: false, expires at: 1772306546397
+[debug] [2026-03-03T17:53:32.375Z] > refreshing access token with scopes: []
+[debug] [2026-03-03T17:53:32.376Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-03T17:53:32.376Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-03T17:53:32.380Z] *** [apiv2] error from fetch(https://firebase-public.firebaseio.com/cli.json, {"headers":{},"method":"GET"}): FetchError: request to https://firebase-public.firebaseio.com/cli.json failed, reason: 
+[warn] !  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection. 
+[debug] [2026-03-03T17:53:32.383Z] Failed to fetch MOTD FirebaseError: Failed to make request to https://firebase-public.firebaseio.com/cli.json
+[debug] [2026-03-03T17:53:33.679Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-03T17:53:33.680Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-03T17:53:33.970Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites pageToken=&pageSize=10
+[debug] [2026-03-03T17:53:36.106Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites 200
+[debug] [2026-03-03T17:53:36.106Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites {"sites":[{"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}]}
+[debug] [2026-03-03T17:53:36.107Z] Checked if tokens are valid: true, expires at: 1772564012680
+[debug] [2026-03-03T17:53:36.107Z] Checked if tokens are valid: true, expires at: 1772564012680
+[debug] [2026-03-03T17:53:36.108Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config [none]
+[debug] [2026-03-03T17:53:37.691Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config 200
+[debug] [2026-03-03T17:53:37.692Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config {"projectId":"mathieu-dubris","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","storageBucket":"mathieu-dubris.firebasestorage.app","apiKey":"AIzaSyBrHGF359udLSaLuuCCarl4ovzCMYD-HDg","authDomain":"mathieu-dubris.firebaseapp.com","messagingSenderId":"1008303076758","measurementId":"G-B3ZL2MHVVN","projectNumber":"1008303076758","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-03-03T17:53:48.011Z] Checked if tokens are valid: true, expires at: 1772564012680
+[debug] [2026-03-03T17:53:48.011Z] Checked if tokens are valid: true, expires at: 1772564012680
+[debug] [2026-03-03T17:53:48.011Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris [none]
+[debug] [2026-03-03T17:53:49.545Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris 200
+[debug] [2026-03-03T17:53:49.545Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris {"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 32.4s
+
+[info]   Running TypeScript ...
+
+[info] Failed to compile.
+
+./src/components/projet-en-cours/ProjetDetail.tsx:24:21
+Type error: File 'D:/PROJET/PROJET REACT/Mathieu Dubris/src/components/projet-en-cours/Roadmap.tsx' is not a module.
+
+  22 | import Membres from './Membres';
+  23 | import Logiciels from './Logiciels';
+> 24 | import Roadmap from './Roadmap';
+     |                     ^
+  25 | import styles from './ProjetDetail.module.css';
+  26 |
+  27 | type Project = FirebaseProject;
+
+[info] Next.js build worker exited with code: 1 and signal: null
+
+[debug] [2026-03-03T17:55:00.602Z] Error: ENOENT: no such file or directory, open 'D:\PROJET\PROJET REACT\Mathieu Dubris\.next\export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.

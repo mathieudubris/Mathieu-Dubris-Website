@@ -7,7 +7,6 @@
   padding: 4px 0;
 }
 
-/* Métadonnées */
 .projectMeta {
   display: flex;
   gap: 20px;
@@ -29,7 +28,6 @@
   flex-shrink: 0;
 }
 
-/* Sections */
 .sectionTitle {
   font-size: 1rem;
   font-weight: 700;
@@ -56,7 +54,6 @@
   word-break: break-word;
 }
 
-/* Tags technologies */
 .techGrid {
   display: flex;
   flex-wrap: wrap;
@@ -71,7 +68,6 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-family: var(--font-main);
-  transition: all 0.2s ease;
 }
 
 .techTag:hover {
@@ -79,39 +75,15 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
-  .aPropos {
-    gap: 20px;
-  }
-  
-  .projectMeta {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .metaItem {
-    font-size: 0.8rem;
-  }
-  
-  .sectionTitle {
-    font-size: 0.95rem;
-    margin-bottom: 10px;
-  }
-  
-  .projectDescription {
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
+  .aPropos { gap: 20px; }
+  .projectMeta { flex-direction: column; gap: 8px; }
+  .metaItem { font-size: 0.8rem; }
+  .sectionTitle { font-size: 0.95rem; margin-bottom: 10px; }
+  .projectDescription { font-size: 0.9rem; line-height: 1.5; }
 }
 
 @media (max-width: 480px) {
-  .projectDescription {
-    font-size: 0.85rem;
-  }
-  
-  .techTag {
-    font-size: 0.75rem;
-    padding: 3px 10px;
-  }
+  .projectDescription { font-size: 0.85rem; }
+  .techTag { font-size: 0.75rem; padding: 3px 10px; }
 }

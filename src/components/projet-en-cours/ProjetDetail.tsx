@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { 
-  X, 
-  ChevronRight,
-  ChevronLeft,
+import {
+  X,
   Info,
   Users,
   Wrench,
-  Map
+  Map,
+  Menu,
+  Images
 } from 'lucide-react';
-import { 
-  isUserInProject, 
+import {
+  isUserInProject,
   Project as FirebaseProject,
   incrementProjectViews
 } from '@/utils/firebase-api';
@@ -22,6 +22,7 @@ import APropos from './APropos';
 import Membres from './Membres';
 import Logiciels from './Logiciels';
 import Roadmap from './Roadmap';
+import Galerie from './Galerie';
 import styles from './ProjetDetail.module.css';
 
 type Project = FirebaseProject;
@@ -58,7 +59,15 @@ interface ProjetDetailProps {
   onEditProfile: () => void;
 }
 
-type TabType = 'apropos' | 'roadmap' | 'membres' | 'logiciels';
+type TabType = 'apropos' | 'roadmap' | 'membres' | 'logiciels' | 'galerie';
+
+const TABS: { id: TabType; label: string; Icon: React.FC<any> }[] = [
+  { id: 'apropos',   label: 'A propos', Icon: Info   },
+  { id: 'roadmap',  label: 'Roadmaps', Icon: Map    },
+  { id: 'membres',  label: 'Membres',  Icon: Users  },
+  { id: 'logiciels',label: 'Logiciel', Icon: Wrench },
+  { id: 'galerie',  label: 'Galerie',  Icon: Images },
+];
 
 const ProjetDetail: React.FC<ProjetDetailProps> = ({
   project,
@@ -70,16 +79,12 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
 }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('apropos');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isInTeam, setIsInTeam] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [views, setViews] = useState(project.views || 0);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const carouselImages = [
-    project.image || '/default-project.jpg',
-    ...(project.carouselImages || [])
-  ];
-
-  const roadmapLinks = (project as any).roadmapLinks || [];
+  const carouselImages: string[] = project.carouselImages || [];
 
   useEffect(() => {
     if (currentUser && project) {
@@ -89,13 +94,14 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
   }, [currentUser, project]);
 
   useEffect(() => {
-    if (carouselImages.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [carouselImages.length]);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const incrementViews = async () => {
     if (!project.id) return;
@@ -103,168 +109,110 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
       await incrementProjectViews(project.id);
       setViews((prev) => prev + 1);
     } catch (error) {
-      console.error('Erreur lors de l\'incrémentation des vues:', error);
+      console.error("Erreur lors de l'incrémentation des vues:", error);
     }
   };
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
-  const goToSlide = (index: number) => setCurrentSlide(index);
-
   const formatDate = (date: any) => {
-    if (!date) return '';
+    if (!date) return '—';
     try {
-      const dateObj = date.toDate ? date.toDate() : new Date(date);
-      return dateObj.toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-    } catch (error) {
-      return '';
-    }
+      const d = date.toDate ? date.toDate() : new Date(date);
+      return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch { return '—'; }
   };
 
   const handleViewAllMembers = () => {
-    if (project.slug) {
-      router.push(`/portfolio/team/view?project=${project.slug}`);
-    } else if (project.id) {
-      router.push(`/portfolio/team/view?project=${project.id}`);
-    }
+    const key = project.slug || project.id;
+    if (key) router.push(`/portfolio/team/view?project=${key}`);
   };
 
   const handleEditProfileClick = () => {
-    if (project.slug && currentUser) {
-      router.push(`/portfolio/team?project=${project.slug}`);
-    } else if (project.id && currentUser) {
-      router.push(`/portfolio/team?project=${project.id}`);
-    }
+    const key = project.slug || project.id;
+    if (key && currentUser) router.push(`/portfolio/team?project=${key}`);
   };
 
-  const handleCreateProfile = () => handleEditProfileClick();
+  const selectTab = (tab: TabType) => {
+    setActiveTab(tab);
+    setMenuOpen(false);
+  };
 
   return (
     <div className={styles.modalOverlay} onClick={onBack}>
-      <motion.div 
+      <motion.div
         className={styles.modalContent}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Bouton de fermeture */}
-        <button className={styles.closeBtn} onClick={onBack}>
-          <X size={24} />
-        </button>
-
-        {/* Header avec CAROUSEL */}
+        {/* ── TOPBAR ── */}
         <div className={styles.modalHeader}>
-          <div className={styles.carouselWrapper}>
-            {carouselImages.map((img, index) => (
-              <div 
-                key={index}
-                className={`${styles.carouselSlide} ${index === currentSlide ? styles.active : ''}`}
+          <img
+            src={project.image || '/default-project.jpg'}
+            alt={project.title}
+            className={styles.projectThumb}
+          />
+          <h1 className={styles.projectTitle}>{project.title}</h1>
+
+          <div className={styles.separator} />
+
+          {/* Onglets DESKTOP */}
+          <div className={styles.tabsContainer}>
+            {TABS.map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                className={`${styles.tabButton} ${activeTab === id ? styles.active : ''}`}
+                onClick={() => selectTab(id)}
               >
-                <img 
-                  src={img} 
-                  alt={`${project.title} - Image ${index + 1}`} 
-                  className={styles.carouselImage} 
-                />
-              </div>
+                <Icon size={14} />
+                <span>{label}</span>
+              </button>
             ))}
-            
-            <div className={styles.imageOverlay}></div>
-
-            {carouselImages.length > 1 && (
-              <>
-                <button 
-                  className={`${styles.carouselArrow} ${styles.prev}`}
-                  onClick={(e) => { e.stopPropagation(); prevSlide(); }}
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                <button 
-                  className={`${styles.carouselArrow} ${styles.next}`}
-                  onClick={(e) => { e.stopPropagation(); nextSlide(); }}
-                >
-                  <ChevronRight size={24} />
-                </button>
-              </>
-            )}
-
-            {carouselImages.length > 1 && (
-              <div className={styles.carouselControls}>
-                {carouselImages.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`${styles.carouselDot} ${index === currentSlide ? styles.active : ''}`}
-                    onClick={(e) => { e.stopPropagation(); goToSlide(index); }}
-                  />
-                ))}
-              </div>
-            )}
           </div>
 
-          <div className={styles.headerContent}>
-            <div className={styles.container}>
-              <h1 className={styles.projectTitle}>{project.title}</h1>
+          {/* Hamburger MOBILE */}
+          <div ref={menuRef} style={{ position: 'relative' }}>
+            <button
+              className={`${styles.hamburgerBtn} ${menuOpen ? styles.open : ''}`}
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Navigation"
+            >
+              <Menu size={20} />
+            </button>
+
+            <div className={`${styles.mobileMenu} ${menuOpen ? styles.open : ''}`}>
+              <button className={styles.mobileMenuClose} onClick={() => setMenuOpen(false)}>
+                <X size={18} />
+              </button>
+
+              {TABS.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  className={`${styles.mobileTabBtn} ${activeTab === id ? styles.active : ''}`}
+                  onClick={() => selectTab(id)}
+                >
+                  <Icon size={22} />
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
-        </div>
 
-        {/* Onglets : À propos → Roadmap → Membres → Logiciels */}
-        <div className={styles.tabsContainer}>
-          <button 
-            className={`${styles.tabButton} ${activeTab === 'apropos' ? styles.active : ''}`}
-            onClick={() => setActiveTab('apropos')}
-          >
-            <Info size={16} />
-            <span>À propos</span>
-          </button>
-          <button 
-            className={`${styles.tabButton} ${activeTab === 'roadmap' ? styles.active : ''}`}
-            onClick={() => setActiveTab('roadmap')}
-          >
-            <Map size={16} />
-            <span>
-              Roadmap
-              {roadmapLinks.length > 0 && (
-                <span className={styles.tabBadge}>{roadmapLinks.length}</span>
-              )}
-            </span>
-          </button>
-          <button 
-            className={`${styles.tabButton} ${activeTab === 'membres' ? styles.active : ''}`}
-            onClick={() => setActiveTab('membres')}
-          >
-            <Users size={16} />
-            <span>Membres ({teamMembers.length})</span>
-          </button>
-          <button 
-            className={`${styles.tabButton} ${activeTab === 'logiciels' ? styles.active : ''}`}
-            onClick={() => setActiveTab('logiciels')}
-          >
-            <Wrench size={16} />
-            <span>Logiciels</span>
+          <button className={styles.closeBtn} onClick={onBack}>
+            <X size={17} />
           </button>
         </div>
 
-        {/* Contenu */}
-        <div className={styles.tabContent}>
-          {activeTab === 'apropos' && (
-            <APropos 
-              project={project}
-              views={views}
-              formatDate={formatDate}
-            />
-          )}
-
-          {activeTab === 'roadmap' && (
-            <Roadmap roadmapLinks={roadmapLinks} />
-          )}
-
-          {activeTab === 'membres' && (
+        {/* ── ZONE CONTENU ── */}
+        <div className={styles.contentArea}>
+          <div className={`${styles.tabContent} ${activeTab === 'apropos' ? styles.visible : ''}`}>
+            <APropos project={project} views={views} formatDate={formatDate} />
+          </div>
+          <div className={`${styles.tabContent} ${activeTab === 'roadmap' ? styles.visible : ''}`}>
+            <Roadmap />
+          </div>
+          <div className={`${styles.tabContent} ${activeTab === 'membres' ? styles.visible : ''}`}>
             <Membres
               project={project}
               teamMembers={teamMembers}
@@ -272,14 +220,16 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
               userTeamProfile={userTeamProfile}
               isInTeam={isInTeam}
               onViewAllMembers={handleViewAllMembers}
-              onCreateProfile={handleCreateProfile}
+              onCreateProfile={handleEditProfileClick}
               onEditProfile={handleEditProfileClick}
             />
-          )}
-
-          {activeTab === 'logiciels' && (
+          </div>
+          <div className={`${styles.tabContent} ${activeTab === 'logiciels' ? styles.visible : ''}`}>
             <Logiciels software={project.software || []} />
-          )}
+          </div>
+          <div className={`${styles.tabContent} ${activeTab === 'galerie' ? styles.visible : ''}`}>
+            <Galerie images={carouselImages} projectTitle={project.title} />
+          </div>
         </div>
       </motion.div>
     </div>

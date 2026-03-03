@@ -1,104 +1,65 @@
-// Roadmap.tsx - Version avec boutons GDD, SPRINT, KANBAN et Next.js
 "use client";
 
-import React from 'react';
-import { FileText, Repeat, Kanban, ExternalLink } from 'lucide-react';
-import styles from './Roadmap.module.css';
+import React from "react";
+import { FileText, Repeat, Kanban, ArrowUpRight } from "lucide-react";
+import styles from "./Roadmap.module.css";
 
-interface RoadmapProps {
-  // On garde la prop pour compatibilité, mais on ne l'utilise plus
-  roadmapLinks?: any[];
-}
+const buttons = [
+  {
+    id: "gdd",
+    label: "GDD",
+    fullLabel: "Game Design Document",
+    url: "https://docs.google.com/document/d/1exemple_gdd",
+    icon: FileText,
+    stat: "12 pages",
+  },
+  {
+    id: "sprint",
+    label: "Sprint",
+    fullLabel: "Sprint Planning",
+    url: "https://docs.google.com/document/d/1exemple_sprint",
+    icon: Repeat,
+    stat: "Semaine 4",
+  },
+  {
+    id: "kanban",
+    label: "Kanban",
+    fullLabel: "Tableau Kanban",
+    url: "https://docs.google.com/document/d/1exemple_kanban",
+    icon: Kanban,
+    stat: "8 tâches",
+  },
+];
 
-const Roadmap: React.FC<RoadmapProps> = () => {
-  // Liens fixes pour les différents boutons
-  const buttons = [
-    {
-      id: 'gdd',
-      label: 'GDD',
-      fullLabel: 'Game Design Document',
-      url: 'https://docs.google.com/document/d/1exemple_gdd', // À remplacer par le vrai lien
-      icon: FileText,
-      color: '#10b981' // Vert
-    },
-    {
-      id: 'sprint',
-      label: 'SPRINT',
-      fullLabel: 'Sprint Planning',
-      url: 'https://docs.google.com/document/d/1exemple_sprint', // À remplacer par le vrai lien
-      icon: Repeat,
-      color: '#f59e0b' // Orange
-    },
-    {
-      id: 'kanban',
-      label: 'KANBAN',
-      fullLabel: 'Tableau Kanban',
-      url: 'https://docs.google.com/document/d/1exemple_kanban', // À remplacer par le vrai lien
-      icon: Kanban,
-      color: '#6366f1' // Indigo
-    },
-    {
-      id: 'nextjs',
-      label: 'NEXT JS',
-      fullLabel: 'Documentation Next.js',
-      url: 'https://nextjs.org/docs', // Lien Next.js
-      icon: ExternalLink,
-      color: '#ffffff' // Blanc
-    }
-  ];
-
-  const openInNewTab = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
+const Roadmap: React.FC = () => {
+  const open = (url: string) =>
+    window.open(url, "_blank", "noopener,noreferrer");
 
   return (
-    <div className={styles.roadmap}>
-      {/* Header avec le titre */}
-      <div className={styles.iframeHeader}>
-        <div className={styles.iframeTitle}>
-          <FileText size={15} />
-          <span>Ressources du projet</span>
-        </div>
+    <div className={styles.dashboard}>
+      <div className={styles.header}>
+        <span className={styles.headerTitle}>Ressources</span>
+        <span className={styles.headerBadge}>Projet</span>
       </div>
 
-      {/* Boutons de navigation */}
-      <div className={styles.buttonsContainer}>
-        {buttons.map((button) => {
-          const Icon = button.icon;
-          return (
-            <button
-              key={button.id}
-              className={styles.navButton}
-              onClick={() => openInNewTab(button.url)}
-              style={{ '--button-color': button.color } as React.CSSProperties}
-              title={button.fullLabel}
-            >
-              <Icon size={18} />
-              <span>{button.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Description des ressources */}
-      <div className={styles.descriptionContainer}>
-        <p className={styles.description}>
-          Accédez rapidement aux ressources essentielles du projet :
-        </p>
-        <ul className={styles.resourcesList}>
-          <li>
-            <strong>GDD</strong> : Document de conception du jeu
-          </li>
-          <li>
-            <strong>SPRINT</strong> : Planning et objectifs du sprint
-          </li>
-          <li>
-            <strong>KANBAN</strong> : Suivi des tâches et progression
-          </li>
-          <li>
-            <strong>NEXT JS</strong> : Documentation officielle
-          </li>
-        </ul>
+      <div className={styles.grid}>
+        {buttons.map(({ id, label, fullLabel, url, icon: Icon, stat }) => (
+          <button
+            key={id}
+            className={styles.card}
+            onClick={() => open(url)}
+            title={fullLabel}
+          >
+            <div className={styles.cardTop}>
+              <div className={styles.iconWrap}>
+                <Icon size={16} />
+              </div>
+              <ArrowUpRight size={14} className={styles.arrow} />
+            </div>
+            <div className={styles.cardLabel}>{label}</div>
+            <div className={styles.cardStat}>{stat}</div>
+          </button>
+        ))}
       </div>
     </div>
   );

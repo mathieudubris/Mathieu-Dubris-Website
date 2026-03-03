@@ -1,16 +1,15 @@
 /* Membres.module.css */
 
 .membres {
-  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 4px 0;
 }
 
 .teamSection {
-  height: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .sectionHeader {
@@ -33,50 +32,13 @@
   font-family: var(--font-main);
 }
 
-.toggleButton {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--light);
-  padding: 4px 10px;
-  border-radius: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.7rem;
-  transition: all 0.3s ease;
-  font-family: var(--font-main);
-}
-
-.toggleButton:hover {
-  background: var(--primary);
-  color: var(--dark);
-  border-color: var(--primary);
-}
-
-/* Liste des membres en grille */
+/* Liste des membres en grille — pas de hauteur max, pas de scroll, tout s'affiche */
 .teamList {
-  flex: 1;
-  overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  padding-right: 4px;
   margin-bottom: 16px;
-  max-height: 400px;
-}
-
-.teamList::-webkit-scrollbar {
-  width: 6px;
-}
-
-.teamList::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.teamList::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
+  width: 100%;
 }
 
 .memberItem {
@@ -88,8 +50,8 @@
   gap: 12px;
   transition: all 0.3s ease;
   background: rgba(0, 0, 0, 0.2);
-  height: 140px; /* Hauteur fixe */
-  min-width: 0; /* Empêche le débordement */
+  min-height: 140px;
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -131,8 +93,6 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
 }
 
 .memberName {
@@ -150,8 +110,6 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  flex: 1;
-  overflow: hidden;
 }
 
 .detailItem {
@@ -173,8 +131,6 @@
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
-  max-height: 40px;
-  overflow: hidden;
 }
 
 .roleTag {
@@ -188,41 +144,14 @@
   white-space: nowrap;
 }
 
-/* Classes de couleur pour les tags de rôle */
-.roleTag.Direction {
-  background-color: var(--white);
-  color: var(--black);
-}
-
-.roleTag.Design {
-  background-color: var(--green);
-  color: var(--black);
-}
-
-.roleTag.Programming {
-  background-color: var(--red);
-  color: var(--black);
-}
-
-.roleTag.Art3D {
-  background-color: var(--orange);
-  color: var(--black);
-}
-
-.roleTag.UIUX {
-  background-color: var(--blue);
-  color: var(--black);
-}
-
-.roleTag.Audio {
-  background-color: var(--yellow);
-  color: var(--black);
-}
-
-.roleTag.Support {
-  background-color: var(--purple);
-  color: var(--black);
-}
+/* Couleurs des rôles */
+.roleTag.Direction  { background-color: var(--white);  color: var(--black); }
+.roleTag.Design     { background-color: var(--green);  color: var(--black); }
+.roleTag.Programming{ background-color: var(--red);    color: var(--black); }
+.roleTag.Art3D      { background-color: var(--orange); color: var(--black); }
+.roleTag.UIUX       { background-color: var(--blue);   color: var(--black); }
+.roleTag.Audio      { background-color: var(--yellow); color: var(--black); }
+.roleTag.Support    { background-color: var(--purple); color: var(--black); }
 
 .moreRoles {
   color: var(--light);
@@ -237,7 +166,6 @@
 .emptyTeam {
   text-align: center;
   padding: 30px 16px;
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -245,8 +173,7 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   margin-bottom: 16px;
-  grid-column: 1 / -1;
-  height: 140px; /* Même hauteur que les cartes */
+  min-height: 140px;
 }
 
 .emptyIcon {
@@ -272,9 +199,9 @@
   font-family: var(--font-main);
 }
 
-/* Footer avec actions côte à côte */
+/* Footer */
 .footerActions {
-  margin-top: auto;
+  margin-top: 8px;
   display: flex;
   gap: 12px;
   align-items: center;
@@ -305,7 +232,6 @@
   border-color: var(--primary);
 }
 
-/* Actions profil */
 .profileActions {
   flex: 1;
 }
@@ -340,42 +266,70 @@
   color: var(--dark);
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
+/* ─── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 1200px) {
   .teamList {
-    max-height: 350px;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .teamList {
-    max-height: 300px;
-    gap: 8px;
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
-  
+
   .memberItem {
     padding: 12px;
-    height: 130px; /* Hauteur légèrement réduite sur tablette */
+    min-height: 130px;
   }
-  
+
   .memberAvatar {
     width: 42px;
     height: 42px;
   }
-  
+
   .memberName {
     font-size: 0.9rem;
   }
-  
-  .emptyTeam {
-    height: 130px;
+}
+
+@media (max-width: 600px) {
+  .membres {
+    /* Evite que le composant soit écrasé à 50% sur mobile */
+    width: 100%;
+    min-width: 0;
   }
-  
+
+  .teamList {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .memberItem {
+    padding: 10px;
+    gap: 8px;
+    min-height: 120px;
+  }
+
+  .memberAvatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .memberName {
+    font-size: 0.85rem;
+  }
+
+  .detailItem {
+    font-size: 0.7rem;
+  }
+
   .footerActions {
     gap: 8px;
   }
-  
+
   .viewAllMembersButton,
   .createProfileButton,
   .editProfileButton {
@@ -384,57 +338,21 @@
   }
 }
 
-@media (max-width: 480px) {
-  .sectionHeader {
-    margin-bottom: 12px;
-  }
-  
+@media (max-width: 400px) {
   .teamList {
-    max-height: 250px;
+    grid-template-columns: 1fr;
   }
-  
-  .memberItem {
-    padding: 10px;
-    gap: 8px;
-    height: 120px; /* Hauteur encore plus réduite sur mobile */
-  }
-  
-  .memberAvatar {
-    width: 38px;
-    height: 38px;
-  }
-  
-  .memberName {
-    font-size: 0.85rem;
-  }
-  
-  .detailItem {
-    font-size: 0.7rem;
-  }
-  
-  .emptyTeam {
-    padding: 20px 12px;
-    height: 120px;
-  }
-  
-  .emptyTeam h3 {
-    font-size: 0.95rem;
-  }
-  
-  .emptyTeam p {
-    font-size: 0.8rem;
-  }
-  
+
   .footerActions {
     flex-direction: column;
     gap: 6px;
   }
-  
+
   .viewAllMembersButton,
+  .profileActions,
   .createProfileButton,
   .editProfileButton {
     width: 100%;
-    font-size: 0.8rem;
-    padding: 10px 12px;
+    flex: unset;
   }
 }

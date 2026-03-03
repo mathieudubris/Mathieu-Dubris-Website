@@ -1,4 +1,4 @@
-/* ProjetEditor.module.css - Version avec onglets */
+/* ProjetEditor.module.css */
 
 .overlay {
   position: fixed;
@@ -8,8 +8,6 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(20px);
   z-index: 4000;
   display: flex;
   justify-content: center;
@@ -21,18 +19,16 @@
 .editorPanel {
   background: var(--dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0;
   width: 100vw;
   height: 100vh;
   margin: 0;
-  box-shadow: none;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* Panel d'erreur (admin non autorisé) */
+/* Panel d'erreur */
 .errorPanel {
   background: var(--dark);
   border: 1px solid var(--dark-red);
@@ -55,7 +51,7 @@
 }
 
 .errorPanel p {
-  color: var(--grey);
+  color: var(--line);
   font-size: 0.9rem;
   margin-bottom: 20px;
 }
@@ -68,12 +64,6 @@
   border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.closeErrorBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
 }
 
 /* Header */
@@ -116,18 +106,12 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  transition: 0.2s;
   white-space: nowrap;
 }
 
 .publishBtnTop:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.publishBtnTop:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(199, 255, 68, 0.3);
 }
 
 .closeBtn {
@@ -141,7 +125,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
   z-index: 10;
   flex-shrink: 0;
 }
@@ -149,10 +132,9 @@
 .closeBtn:hover {
   background: var(--dark-red);
   border-color: var(--dark-red);
-  transform: rotate(90deg);
 }
 
-/* Navigation par onglets - MÊME STYLE QUE DANS PROJET DETAIL */
+/* Tabs */
 .tabsContainer {
   display: flex;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -165,6 +147,7 @@
 .tabButton {
   background: transparent;
   border: none;
+  border-bottom: 2px solid transparent;
   color: var(--light);
   opacity: 0.6;
   padding: 12px 20px;
@@ -174,15 +157,11 @@
   gap: 8px;
   font-size: 0.9rem;
   font-weight: 600;
-  transition: all 0.3s ease;
-  position: relative;
-  border-bottom: 2px solid transparent;
   font-family: var(--font-main);
 }
 
 .tabButton:hover {
   opacity: 0.9;
-  background: rgba(255, 255, 255, 0.02);
 }
 
 .tabButton.active {
@@ -228,12 +207,12 @@
   .tabsContainer {
     padding: 0 20px;
   }
-  
+
   .tabButton {
     padding: 12px 16px;
     font-size: 0.85rem;
   }
-  
+
   .editorForm {
     padding: 20px;
   }
@@ -244,49 +223,49 @@
     padding: 12px 15px;
     gap: 15px;
   }
-  
+
   .headerTitle {
     font-size: 0.8rem;
   }
-  
+
   .publishBtnTop {
     padding: 8px 15px;
     font-size: 0.8rem;
   }
-  
+
   .tabsContainer {
     padding: 0 12px;
     gap: 4px;
     overflow-x: auto;
     scrollbar-width: none;
   }
-  
+
   .tabsContainer::-webkit-scrollbar {
     display: none;
   }
-  
+
   .tabButton {
     padding: 10px 12px;
     font-size: 0.8rem;
     white-space: nowrap;
   }
-  
+
   .tabButton span {
     display: none;
   }
-  
+
   .tabButton.active span {
     display: inline;
   }
-  
+
   .tabButton svg {
     margin-right: 0;
   }
-  
+
   .tabButton.active svg {
     margin-right: 4px;
   }
-  
+
   .editorForm {
     padding: 15px;
   }
@@ -296,12 +275,12 @@
   .tabsContainer {
     padding: 0 8px;
   }
-  
+
   .tabButton {
     padding: 8px 10px;
     font-size: 0.75rem;
   }
-  
+
   .editorForm {
     padding: 12px;
   }
