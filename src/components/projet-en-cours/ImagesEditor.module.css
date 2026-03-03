@@ -9,23 +9,9 @@
   padding-right: 8px;
 }
 
-.imagesEditor::-webkit-scrollbar {
-  width: 6px;
-}
-
-.imagesEditor::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.imagesEditor::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 3px;
-  opacity: 0.5;
-}
-
-.imagesEditor::-webkit-scrollbar-thumb:hover {
-  opacity: 0.8;
-}
+.imagesEditor::-webkit-scrollbar { width: 6px; }
+.imagesEditor::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+.imagesEditor::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; opacity: 0.5; }
 
 .section {
   display: flex;
@@ -39,22 +25,19 @@
   gap: 8px;
   font-size: 0.85rem;
   text-transform: uppercase;
-  color: var(--grey);
+  color: var(--line);
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-.sectionLabel svg {
-  color: var(--primary);
-  flex-shrink: 0;
-}
+.sectionLabel svg { color: var(--primary); flex-shrink: 0; }
 
 .featuredUpload {
   width: 100%;
-  max-width: 600px; /* Limite la largeur maximale */
+  max-width: 600px;
   height: auto;
   min-height: 200px;
-  max-height: 350px; /* Limite la hauteur maximale */
+  max-height: 350px;
   background: rgba(0, 0, 0, 0.2);
   border: 2px dashed rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -63,8 +46,7 @@
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s ease;
-  margin: 0 auto; /* Centre l'élément */
+  margin: 0 auto;
 }
 
 .featuredUpload:hover {
@@ -75,9 +57,9 @@
 .featuredImage {
   width: 100%;
   height: 100%;
-  max-height: 350px; /* Même limite que le conteneur */
-  object-fit: contain; /* Change de cover à contain pour voir l'image entière */
-  background: rgba(0, 0, 0, 0.1); /* Fond pour les espaces vides */
+  max-height: 350px;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .imagePlaceholder {
@@ -85,19 +67,14 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  color: var(--grey);
+  color: var(--line);
   text-align: center;
   padding: 20px;
 }
 
-.imagePlaceholder svg {
-  opacity: 0.5;
-}
+.imagePlaceholder svg { opacity: 0.5; }
 
-.imagePlaceholder span {
-  font-size: 0.9rem;
-  max-width: 250px;
-}
+.imagePlaceholder span { font-size: 0.9rem; max-width: 250px; }
 
 .carouselContainer {
   display: flex;
@@ -117,19 +94,9 @@
   min-height: 120px;
 }
 
-.carouselGrid::-webkit-scrollbar {
-  width: 4px;
-}
-
-.carouselGrid::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.carouselGrid::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 2px;
-  opacity: 0.5;
-}
+.carouselGrid::-webkit-scrollbar { width: 4px; }
+.carouselGrid::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+.carouselGrid::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; opacity: 0.5; }
 
 .carouselItem {
   position: relative;
@@ -138,13 +105,9 @@
   overflow: hidden;
   background: rgba(0, 0, 0, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
 }
 
-.carouselItem:hover {
-  border-color: var(--primary);
-  transform: scale(1.02);
-}
+.carouselItem:hover { border-color: var(--primary); }
 
 .carouselNumber {
   position: absolute;
@@ -163,11 +126,7 @@
   z-index: 1;
 }
 
-.carouselImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.carouselImage { width: 100%; height: 100%; object-fit: cover; }
 
 .removeBtn {
   position: absolute;
@@ -184,19 +143,13 @@
   justify-content: center;
   cursor: pointer;
   opacity: 0;
-  transition: all 0.3s ease;
   padding: 0;
   z-index: 1;
 }
 
-.carouselItem:hover .removeBtn {
-  opacity: 1;
-}
+.carouselItem:hover .removeBtn { opacity: 1; }
 
-.removeBtn:hover {
-  background: rgba(192, 20, 20, 0.9);
-  transform: scale(1.1);
-}
+.removeBtn:hover { background: rgba(192, 20, 20, 0.9); }
 
 .addCarouselBtn {
   aspect-ratio: 1;
@@ -209,7 +162,6 @@
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
   color: var(--primary);
   padding: 10px;
 }
@@ -219,47 +171,24 @@
   background: rgba(199, 255, 68, 0.05);
 }
 
-.addCarouselBtn span {
-  font-size: 0.7rem;
-}
+.addCarouselBtn span { font-size: 0.7rem; }
 
 .fieldHint {
   font-size: 0.75rem;
-  color: var(--grey);
+  color: var(--line);
   opacity: 0.7;
   margin-top: 4px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
-  .featuredUpload {
-    max-height: 250px;
-  }
-  
-  .featuredImage {
-    max-height: 250px;
-  }
-  
-  .carouselGrid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  }
-  
-  .imagePlaceholder span {
-    font-size: 0.8rem;
-  }
+  .featuredUpload { max-height: 250px; }
+  .featuredImage { max-height: 250px; }
+  .carouselGrid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+  .imagePlaceholder span { font-size: 0.8rem; }
 }
 
 @media (max-width: 480px) {
-  .featuredUpload {
-    max-height: 200px;
-  }
-  
-  .featuredImage {
-    max-height: 200px;
-  }
-  
-  .carouselGrid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 8px;
-  }
+  .featuredUpload { max-height: 200px; }
+  .featuredImage { max-height: 200px; }
+  .carouselGrid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
 }

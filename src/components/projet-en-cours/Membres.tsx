@@ -11,25 +11,20 @@ import {
 import { Project as FirebaseProject } from '@/utils/firebase-api';
 import styles from './Membres.module.css';
 
-// Définition des rôles avec leur catégorie de couleur
 const rolesData = [
-  // Direction & Management
   { name: 'Game Director', colorClass: 'Direction' },
   { name: 'Creative Director', colorClass: 'Direction' },
   { name: 'Technical Director', colorClass: 'Direction' },
   { name: 'Project Manager', colorClass: 'Direction' },
   { name: 'Team Coordinator', colorClass: 'Direction' },
-  // Design
   { name: 'Game Designer', colorClass: 'Design' },
   { name: 'Level Designer', colorClass: 'Design' },
   { name: 'Gameplay Designer', colorClass: 'Design' },
   { name: 'Narrative Designer', colorClass: 'Design' },
-  // Programmation
   { name: 'Game Programmer', colorClass: 'Programming' },
   { name: 'Engine Programmer', colorClass: 'Programming' },
   { name: 'AI Programmer', colorClass: 'Programming' },
   { name: 'UI Programmer', colorClass: 'Programming' },
-  // Art 3D
   { name: '3D Artist', colorClass: 'Art3D' },
   { name: '3D Cinematic', colorClass: 'Art3D' },
   { name: 'Texture Artist', colorClass: 'Art3D' },
@@ -39,17 +34,14 @@ const rolesData = [
   { name: 'Mocap Actor', colorClass: 'Art3D' },
   { name: '3D Art Support', colorClass: 'Art3D' },
   { name: 'Technical Artist', colorClass: 'Art3D' },
-  // UI/UX
   { name: 'UX Designer', colorClass: 'UIUX' },
   { name: 'UI Designer', colorClass: 'UIUX' },
   { name: 'UI Artist', colorClass: 'UIUX' },
   { name: 'UI Art Support', colorClass: 'UIUX' },
-  // Audio
   { name: 'Music Composer', colorClass: 'Audio' },
   { name: 'Sound Designer', colorClass: 'Audio' },
   { name: 'Voice Actor', colorClass: 'Audio' },
   { name: 'Voice Director', colorClass: 'Audio' },
-  // Support & Marketing
   { name: 'Community Manager', colorClass: 'Support' },
   { name: 'Documentation Manager', colorClass: 'Support' },
   { name: 'Content Creator', colorClass: 'Support' },
@@ -110,11 +102,39 @@ const Membres: React.FC<MembresProps> = ({
   return (
     <div className={styles.membres}>
       <div className={styles.teamSection}>
+
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>
             <Users size={20} />
             <span>Équipe ({teamMembers.length})</span>
           </h2>
+        </div>
+
+        {/* Boutons EN HAUT, avant la grille */}
+        <div className={styles.footerActions}>
+          <button onClick={onViewAllMembers} className={styles.viewAllMembersButton}>
+            <Users size={16} />
+            <span>Voir tous les membres</span>
+            <ChevronRight size={16} />
+          </button>
+
+          {isInTeam && (
+            <div className={styles.profileActions}>
+              {!userTeamProfile ? (
+                <button onClick={onCreateProfile} className={styles.createProfileButton}>
+                  <Settings size={16} />
+                  <span>Créer mon profil</span>
+                  <ChevronRight size={16} />
+                </button>
+              ) : (
+                <button onClick={onEditProfile} className={styles.editProfileButton}>
+                  <Settings size={16} />
+                  <span>Modifier mon profil</span>
+                  <ChevronRight size={16} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {teamMembers.length > 0 ? (
@@ -181,35 +201,6 @@ const Membres: React.FC<MembresProps> = ({
           </div>
         )}
 
-        {/* Footer avec actions côte à côte */}
-        <div className={styles.footerActions}>
-          <button
-            onClick={onViewAllMembers}
-            className={styles.viewAllMembersButton}
-          >
-            <Users size={16} />
-            <span>Voir tous les membres</span>
-            <ChevronRight size={16} />
-          </button>
-
-          {isInTeam && (
-            <div className={styles.profileActions}>
-              {!userTeamProfile ? (
-                <button onClick={onCreateProfile} className={styles.createProfileButton}>
-                  <Settings size={16} />
-                  <span>Créer mon profil</span>
-                  <ChevronRight size={16} />
-                </button>
-              ) : (
-                <button onClick={onEditProfile} className={styles.editProfileButton}>
-                  <Settings size={16} />
-                  <span>Modifier mon profil</span>
-                  <ChevronRight size={16} />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

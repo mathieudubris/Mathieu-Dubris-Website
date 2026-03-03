@@ -32,7 +32,6 @@
   font-family: var(--font-main);
 }
 
-/* Liste des membres en grille — pas de hauteur max, pas de scroll, tout s'affiche */
 .teamList {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -48,7 +47,6 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  transition: all 0.3s ease;
   background: rgba(0, 0, 0, 0.2);
   min-height: 140px;
   min-width: 0;
@@ -69,11 +67,7 @@
   flex-shrink: 0;
 }
 
-.memberAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.memberAvatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .avatarPlaceholder {
   width: 100%;
@@ -144,14 +138,13 @@
   white-space: nowrap;
 }
 
-/* Couleurs des rôles */
-.roleTag.Direction  { background-color: var(--white);  color: var(--black); }
-.roleTag.Design     { background-color: var(--green);  color: var(--black); }
-.roleTag.Programming{ background-color: var(--red);    color: var(--black); }
-.roleTag.Art3D      { background-color: var(--orange); color: var(--black); }
-.roleTag.UIUX       { background-color: var(--blue);   color: var(--black); }
-.roleTag.Audio      { background-color: var(--yellow); color: var(--black); }
-.roleTag.Support    { background-color: var(--purple); color: var(--black); }
+.roleTag.Direction   { background-color: var(--white);  color: var(--black); }
+.roleTag.Design      { background-color: var(--green);  color: var(--black); }
+.roleTag.Programming { background-color: var(--red);    color: var(--black); }
+.roleTag.Art3D       { background-color: var(--orange); color: var(--black); }
+.roleTag.UIUX        { background-color: var(--blue);   color: var(--black); }
+.roleTag.Audio       { background-color: var(--yellow); color: var(--black); }
+.roleTag.Support     { background-color: var(--purple); color: var(--black); }
 
 .moreRoles {
   color: var(--light);
@@ -160,6 +153,69 @@
   font-style: italic;
   font-family: var(--font-main);
   white-space: nowrap;
+}
+
+/* Footer — en haut, avant la grille */
+.footerActions {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.viewAllMembersButton {
+  background: var(--dark);
+  border: 1px solid var(--line);
+  color: var(--light);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: var(--font-main);
+  flex: 1;
+}
+
+.viewAllMembersButton:hover {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+}
+
+.profileActions { flex: 1; }
+
+.createProfileButton,
+.editProfileButton {
+  background: var(--dark);
+  border: 1px solid var(--line);
+  color: var(--light);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  width: 100%;
+  font-family: var(--font-main);
+}
+
+.createProfileButton {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--primary);
+}
+
+.createProfileButton:hover,
+.editProfileButton:hover {
+  background: var(--primary);
+  color: var(--dark);
 }
 
 /* État vide */
@@ -176,11 +232,7 @@
   min-height: 140px;
 }
 
-.emptyIcon {
-  color: var(--primary);
-  opacity: 0.3;
-  margin-bottom: 12px;
-}
+.emptyIcon { color: var(--primary); opacity: 0.3; margin-bottom: 12px; }
 
 .emptyTeam h3 {
   font-size: 1rem;
@@ -199,160 +251,36 @@
   font-family: var(--font-main);
 }
 
-/* Footer */
-.footerActions {
-  margin-top: 8px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
-}
-
-.viewAllMembersButton {
-  background: var(--dark);
-  border: 1px solid var(--grey);
-  color: var(--light);
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-  font-family: var(--font-main);
-  flex: 1;
-}
-
-.viewAllMembersButton:hover {
-  background: var(--primary);
-  color: var(--dark);
-  border-color: var(--primary);
-}
-
-.profileActions {
-  flex: 1;
-}
-
-.createProfileButton,
-.editProfileButton {
-  background: var(--dark);
-  border: 1px solid var(--grey);
-  color: var(--light);
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-  width: 100%;
-  font-family: var(--font-main);
-}
-
-.createProfileButton {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--primary);
-}
-
-.createProfileButton:hover,
-.editProfileButton:hover {
-  background: var(--primary);
-  color: var(--dark);
-}
-
-/* ─── Responsive ─────────────────────────────────────────── */
-
+/* Responsive */
 @media (max-width: 1200px) {
-  .teamList {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .teamList { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 900px) {
-  .teamList {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
-  .memberItem {
-    padding: 12px;
-    min-height: 130px;
-  }
-
-  .memberAvatar {
-    width: 42px;
-    height: 42px;
-  }
-
-  .memberName {
-    font-size: 0.9rem;
-  }
+  .teamList { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .memberItem { padding: 12px; min-height: 130px; }
+  .memberAvatar { width: 42px; height: 42px; }
+  .memberName { font-size: 0.9rem; }
 }
 
 @media (max-width: 600px) {
-  .membres {
-    /* Evite que le composant soit écrasé à 50% sur mobile */
-    width: 100%;
-    min-width: 0;
-  }
-
-  .teamList {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .memberItem {
-    padding: 10px;
-    gap: 8px;
-    min-height: 120px;
-  }
-
-  .memberAvatar {
-    width: 38px;
-    height: 38px;
-  }
-
-  .memberName {
-    font-size: 0.85rem;
-  }
-
-  .detailItem {
-    font-size: 0.7rem;
-  }
-
-  .footerActions {
-    gap: 8px;
-  }
-
+  .membres { width: 100%; min-width: 0; }
+  .teamList { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .memberItem { padding: 10px; gap: 8px; min-height: 120px; }
+  .memberAvatar { width: 38px; height: 38px; }
+  .memberName { font-size: 0.85rem; }
+  .detailItem { font-size: 0.7rem; }
+  .footerActions { gap: 8px; }
   .viewAllMembersButton,
   .createProfileButton,
-  .editProfileButton {
-    padding: 10px 12px;
-    font-size: 0.8rem;
-  }
+  .editProfileButton { padding: 10px 12px; font-size: 0.8rem; }
 }
 
 @media (max-width: 400px) {
-  .teamList {
-    grid-template-columns: 1fr;
-  }
-
-  .footerActions {
-    flex-direction: column;
-    gap: 6px;
-  }
-
+  .teamList { grid-template-columns: 1fr; }
+  .footerActions { flex-direction: column; gap: 6px; }
   .viewAllMembersButton,
   .profileActions,
   .createProfileButton,
-  .editProfileButton {
-    width: 100%;
-    flex: unset;
-  }
+  .editProfileButton { width: 100%; flex: unset; }
 }
