@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { ThemeProvider } from '@/components/ThemeProvider';
+import { ThemeProvider } from '@/utils/ThemeProvider';
 import { UsersProvider } from '@/utils/UserContext';
 import Script from 'next/script';
 
@@ -73,6 +73,7 @@ export default function RootLayout({
     <html lang="fr">
       <head>
         <link rel="canonical" href="https://mathieu-dubris.web.app" />
+        <meta name="theme-color" content="#0a0a0a" />
         <meta name="format-detection" content="telephone=no" />
         {/* Google Analytics */}
         <Script

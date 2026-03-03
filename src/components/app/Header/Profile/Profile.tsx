@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { auth, signOut, User, saveUserPreferences, getUserPreferences, onAuthStateChanged } from '@/utils/firebase-api';
+import { auth, signOut, User, onAuthStateChanged } from '@/utils/firebase-api';
+import { useTheme } from '@/utils/ThemeProvider';
 import styles from './Profile.module.css';
 
 interface Props {
@@ -10,73 +11,15 @@ interface Props {
 }
 
 const ProfilContent: React.FC<Props> = ({ user, onClose }) => {
-  const [activeTheme, setActiveTheme] = useState('dark');
-  const [isLoading, setIsLoading] = useState(true);
+  const { theme, setTheme } = useTheme();
   const [currentUser, setCurrentUser] = useState<User | null>(user);
 
-  // S'assurer que l'utilisateur est à jour
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
     });
-    
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      loadUserPreferences();
-    }
-  }, [currentUser]);
-
-  const loadUserPreferences = async () => {
-    setIsLoading(true);
-    try {
-      let theme = 'dark';
-      
-      if (currentUser) {
-        const prefs = await getUserPreferences(currentUser.uid);
-        theme = prefs?.theme || 'dark';
-      } else {
-        const savedTheme = localStorage.getItem('theme');
-        theme = savedTheme || 'dark';
-      }
-      
-      setActiveTheme(theme);
-      applyTheme(theme);
-    } catch (error) {
-      console.error("Erreur lors du chargement des préférences:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const changeTheme = async (theme: string) => {
-    setActiveTheme(theme);
-    applyTheme(theme);
-    
-    // Sauvegarder dans localStorage
-    localStorage.setItem('theme', theme);
-    
-    // Sauvegarder dans Firestore pour les utilisateurs connectés
-    if (currentUser) {
-      try {
-        await saveUserPreferences(currentUser.uid, { theme: theme as 'dark' | 'light' });
-      } catch (error) {
-        console.error("Erreur lors de la sauvegarde du thème:", error);
-      }
-    }
-  };
-
-  const applyTheme = (theme: string) => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('light-theme');
-      document.body.classList.add('light-theme');
-    } else {
-      document.documentElement.classList.remove('light-theme');
-      document.body.classList.remove('light-theme');
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -88,16 +31,6 @@ const ProfilContent: React.FC<Props> = ({ user, onClose }) => {
   };
 
   if (!currentUser) return null;
-  
-  if (isLoading) {
-    return (
-      <div className={styles.profilOverlayWrapper}>
-        <div className={styles.profilCard}>
-          <p>Chargement des préférences...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.profilOverlayWrapper}>
@@ -119,15 +52,15 @@ const ProfilContent: React.FC<Props> = ({ user, onClose }) => {
           <div className={styles.settingBlock}>
             <label>Thème</label>
             <div className={styles.toggleGroup}>
-              <button 
-                onClick={() => changeTheme('dark')} 
-                className={activeTheme === 'dark' ? styles.active : ''}
+              <button
+                onClick={() => setTheme('dark')}
+                className={theme === 'dark' ? styles.active : ''}
               >
                 Sombre
               </button>
-              <button 
-                onClick={() => changeTheme('light')} 
-                className={activeTheme === 'light' ? styles.active : ''}
+              <button
+                onClick={() => setTheme('light')}
+                className={theme === 'light' ? styles.active : ''}
               >
                 Clair
               </button>
