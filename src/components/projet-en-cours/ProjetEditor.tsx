@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Send, Info, Image as ImageIcon, Settings, AlertCircle, Map } from 'lucide-react';
-import { createProject, updateProject, isAdmin, Project as FirebaseProject, getAllUsers, generateSlug } from '@/utils/firebase-api';
+import { X, Send, Info, Image as ImageIcon, Settings, AlertCircle, Map, Star } from 'lucide-react';
+import { createProject, updateProject, isAdmin, Project as FirebaseProject, getAllUsers, generateSlug, deleteProject } from '@/utils/firebase-api';
 import { Timestamp } from 'firebase/firestore';
 import AProposEditor from './AProposEditor';
 import ImagesEditor from './ImagesEditor';
 import AutreEditor from './AutreEditor';
+import NouveauteModal from '@/components/NouveauteModal/NouveauteModal';
 import styles from './ProjetEditor.module.css';
 
 type Project = FirebaseProject;
@@ -43,6 +44,9 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [showNouveauteModal, setShowNouveauteModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -163,6 +167,28 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (!project?.id) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteProject(project.id);
+      onSave();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la suppression');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  // Lien simplifié vers la page projet
+  const projectLink = '/portfolio/projet-en-cours';
+
+  // Membres enrichis pour le modal
+  const enrichedMembersForModal = enrichMembers(teamMembers);
+
   return (
     <motion.div 
       className={styles.overlay}
@@ -193,6 +219,32 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
               <Send size={16} />
               {isSubmitting ? "Enregistrement..." : (project ? "Mettre à jour" : "Créer")}
             </button>
+
+            {/* ── Bouton Nouveauté (uniquement si projet existant) ── */}
+            {project?.id && (
+              <button
+                type="button"
+                className={styles.nouveauteBtn}
+                onClick={() => setShowNouveauteModal(true)}
+                title="Ajouter / gérer dans la section Nouveautés"
+              >
+                <Star size={15} />
+                Nouveauté
+              </button>
+            )}
+
+            {/* ── Bouton Supprimer (uniquement si projet existant) ── */}
+            {project?.id && (
+              <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={() => setShowDeleteConfirm(true)}
+                title="Supprimer le projet"
+              >
+                <X size={16} />
+                Supprimer
+              </button>
+            )}
           </div>
           
           <button onClick={onClose} className={styles.closeBtn}>
@@ -278,7 +330,48 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({
             )}
           </div>
         </form>
+
+        {/* Modal de confirmation de suppression */}
+        {showDeleteConfirm && (
+          <div className={styles.confirmOverlay}>
+            <div className={styles.confirmModal}>
+              <h3>Supprimer le projet</h3>
+              <p>Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible.</p>
+              <div className={styles.confirmActions}>
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className={styles.cancelBtn}
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className={styles.confirmDeleteBtn}
+                >
+                  {isDeleting ? "Suppression..." : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </motion.div>
+
+      {/* Modal Nouveauté */}
+      {showNouveauteModal && project?.id && (
+        <NouveauteModal
+          sourceId={project.id}
+          type="project"
+          title={title}
+          description={description.slice(0, 160)}
+          image={image || '/default-project.jpg'}
+          link={projectLink}
+          members={enrichedMembersForModal}
+          software={software}
+          progress={progress}
+          onClose={() => setShowNouveauteModal(false)}
+        />
+      )}
     </motion.div>
   );
 };

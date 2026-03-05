@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { auth, db } from '@/utils/firebase-api';
 import { 
     collection, addDoc, onSnapshot, query, orderBy, 
-    doc, setDoc, deleteDoc, updateDoc, serverTimestamp, Timestamp,
-    getDocs
+    doc, deleteDoc, updateDoc, serverTimestamp, Timestamp,
+    getDocs, increment, getDoc
 } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +29,8 @@ interface BlogPost {
     likesCount: number;
     viewsCount: number;
     savedByUser?: boolean;
+    likedByUser?: boolean;
+    likedBy?: string[];
     cardSize: 'small' | 'medium' | 'large';
 }
 
@@ -79,8 +81,8 @@ const BlogPage = () => {
             const fetchedPosts = snapshot.docs.map(doc => ({ 
                 id: doc.id, 
                 ...doc.data(), 
-                likesCount: 0, 
-                viewsCount: 0,
+                likesCount: doc.data().likesCount ?? 0, 
+                viewsCount: doc.data().viewsCount ?? 0,
                 cardSize: doc.data().cardSize || 'small'
             })) as BlogPost[];
             setPosts(fetchedPosts);
@@ -122,10 +124,11 @@ const BlogPage = () => {
             filtered = filtered.filter(post => userSavedPosts.includes(post.id));
         }
 
-        // Ajouter l'état savedByUser
+        // Ajouter l'état savedByUser et likedByUser
         filtered = filtered.map(post => ({
             ...post,
-            savedByUser: userSavedPosts.includes(post.id)
+            savedByUser: userSavedPosts.includes(post.id),
+            likedByUser: user ? (post.likedBy ?? []).includes(user.uid) : false
         }));
 
         // Trier les posts
@@ -147,27 +150,7 @@ const BlogPage = () => {
         setFilteredPosts(filtered);
     }, [posts, sortBy, showSavedOnly, userSavedPosts, user]);
 
-    // Surveiller les likes et vues
-    useEffect(() => {
-        if (posts.length === 0) return;
-        
-        const unsubs = posts.map(post => {
-            const unsubLikes = onSnapshot(collection(db, 'blogs', post.id, 'likes'), (snapshot) => {
-                setPosts(prev => prev.map(p => p.id === post.id ? { ...p, likesCount: snapshot.size } : p));
-            });
-            
-            const unsubViews = onSnapshot(collection(db, 'blogs', post.id, 'views'), (snapshot) => {
-                setPosts(prev => prev.map(p => p.id === post.id ? { ...p, viewsCount: snapshot.size } : p));
-            });
-            
-            return () => {
-                unsubLikes();
-                unsubViews();
-            };
-        });
-        
-        return () => unsubs.forEach(unsub => unsub());
-    }, [posts.length]);
+    // likes & views sont lus directement depuis les champs du document via onSnapshot ci-dessus
 
     const handlePublish = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -192,7 +175,10 @@ const BlogPage = () => {
                 await addDoc(collection(db, 'blogs'), { 
                     ...data, 
                     author: user?.displayName || "Utilisateur", 
-                    createdAt: serverTimestamp() 
+                    createdAt: serverTimestamp(),
+                    likesCount: 0,
+                    viewsCount: 0,
+                    likedBy: []
                 });
             }
             resetForm();
@@ -218,38 +204,37 @@ const BlogPage = () => {
 
     const handleLike = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!user) {
-            alert("Connectez-vous pour interagir");
-            return;
+        if (!user) { alert("Connectez-vous pour interagir"); return; }
+        const blogRef = doc(db, 'blogs', id);
+        const snap = await getDoc(blogRef);
+        if (!snap.exists()) return;
+        const likedBy: string[] = snap.data().likedBy ?? [];
+        if (likedBy.includes(user.uid)) {
+            await updateDoc(blogRef, { likedBy: likedBy.filter(uid => uid !== user.uid), likesCount: increment(-1) });
+        } else {
+            await updateDoc(blogRef, { likedBy: [...likedBy, user.uid], likesCount: increment(1) });
         }
-        await setDoc(doc(db, 'blogs', id, 'likes', user.uid), { at: serverTimestamp() });
     };
 
     const handleSavePost = async (postId: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!user) {
-            alert("Connectez-vous pour sauvegarder des articles");
-            return;
-        }
-
+        if (!user) { alert("Connectez-vous pour sauvegarder des articles"); return; }
         try {
             const savedRef = doc(db, 'users', user.uid, 'savedPosts', postId);
-            
             if (userSavedPosts.includes(postId)) {
-                // Supprimer
                 await deleteDoc(savedRef);
                 setUserSavedPosts(prev => prev.filter(id => id !== postId));
             } else {
-                // Sauvegarder
-                await setDoc(savedRef, {
-                    postId,
-                    savedAt: serverTimestamp()
-                });
+                await updateDoc(savedRef, { postId, savedAt: serverTimestamp() }).catch(() =>
+                    // doc doesn't exist yet, create it via addDoc workaround
+                    import('firebase/firestore').then(({ setDoc }) =>
+                        setDoc(savedRef, { postId, savedAt: serverTimestamp() })
+                    )
+                );
                 setUserSavedPosts(prev => [...prev, postId]);
             }
         } catch (error) {
             console.error("Erreur lors de la sauvegarde:", error);
-            alert("Erreur lors de la sauvegarde");
         }
     };
 
@@ -272,10 +257,8 @@ const BlogPage = () => {
         setSelectedPost(post);
         setShowModal(true);
         toggleBodyScroll(true);
-        
-        if (user) {
-            setDoc(doc(db, 'blogs', post.id, 'views', user.uid), { at: serverTimestamp() });
-        }
+        // Incrémenter viewsCount directement dans le document
+        updateDoc(doc(db, 'blogs', post.id), { viewsCount: increment(1) }).catch(() => {});
     };
 
     const closeModal = () => {
@@ -453,7 +436,7 @@ const BlogPage = () => {
                                                         className={styles.likeBtn} 
                                                         onClick={(e) => handleLike(post.id, e)}
                                                     >
-                                                        <Heart size={14} className={post.likesCount > 0 ? styles.activeHeart : ""} />
+                                                        <Heart size={14} className={post.likedByUser ? styles.activeHeart : ""} />
                                                         <span>{post.likesCount}</span>
                                                     </button>
                                                 </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Eye, MessageSquare, Tag as TagIcon, Trash2, Check } from 'lucide-react';
-import { collection, onSnapshot, query, orderBy, addDoc, deleteDoc, doc, serverTimestamp, Timestamp, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, addDoc, deleteDoc, doc, serverTimestamp, Timestamp, setDoc, updateDoc, increment, getDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase-api';
 import { User } from 'firebase/auth';
 import styles from './BlogModal.module.css';
@@ -40,6 +40,15 @@ interface BlogDetailModalProps {
     onClose: () => void;
 }
 
+const titleToSlug = (t: string): string =>
+    t.toLowerCase()
+     .normalize('NFD')
+     .replace(/[\u0300-\u036f]/g, '')
+     .replace(/[^a-z0-9\s-]/g, '')
+     .trim()
+     .replace(/\s+/g, '-')
+     .replace(/-+/g, '-') || 'article';
+
 const BlogDetailModal = ({ post, user, isAdmin, onClose }: BlogDetailModalProps) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [commentText, setCommentText] = useState('');
@@ -47,34 +56,80 @@ const BlogDetailModal = ({ post, user, isAdmin, onClose }: BlogDetailModalProps)
     const [viewsCount, setViewsCount] = useState(post.viewsCount);
     const [isLiked, setIsLiked] = useState(false);
 
+    // ── Update URL with slug ────────────────────────────────
     useEffect(() => {
-        const unsubLikes = onSnapshot(collection(db, 'blogs', post.id, 'likes'), (snapshot) => {
-            setLikesCount(snapshot.size);
+        if (typeof window === 'undefined') return;
+        const slug = titleToSlug(post.title);
+        const url = new URL(window.location.href);
+        url.searchParams.set('post', slug);
+        window.history.pushState({}, '', url.toString());
+
+        return () => {
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('post');
+            window.history.pushState({}, '', cleanUrl.toString());
+        };
+    }, [post.title]);
+
+    // ── Sync likes & views from document fields ─────────────
+    useEffect(() => {
+        const unsubDoc = onSnapshot(doc(db, 'blogs', post.id), (snap) => {
+            if (!snap.exists()) return;
+            const data = snap.data();
+            setLikesCount(data.likesCount ?? 0);
+            setViewsCount(data.viewsCount ?? 0);
             if (user) {
-                setIsLiked(snapshot.docs.some(doc => doc.id === user.uid));
+                // liked if user uid is in likedBy array
+                setIsLiked((data.likedBy ?? []).includes(user.uid));
             }
         });
-        return () => unsubLikes();
+        return () => unsubDoc();
     }, [post.id, user]);
 
+    // ── Increment view count once on open ───────────────────
     useEffect(() => {
-        const unsubViews = onSnapshot(collection(db, 'blogs', post.id, 'views'), (snapshot) => {
-            setViewsCount(snapshot.size);
-        });
-        return () => unsubViews();
+        updateDoc(doc(db, 'blogs', post.id), {
+            viewsCount: increment(1)
+        }).catch(() => {});
     }, [post.id]);
 
     useEffect(() => {
         const q = query(collection(db, 'blogs', post.id, 'comments'), orderBy('createdAt', 'desc'));
         const unsubComments = onSnapshot(q, (snapshot) => {
-            setComments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Comment[]);
+            setComments(snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Comment[]);
         });
         return () => unsubComments();
     }, [post.id]);
 
+    // ── Handle keyboard close ───────────────────────────────
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', handleKey);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [onClose]);
+
     const handleLike = async () => {
         if (!user) return alert("Connectez-vous pour interagir");
-        await setDoc(doc(db, 'blogs', post.id, 'likes', user.uid), { at: serverTimestamp() });
+        const blogRef = doc(db, 'blogs', post.id);
+        const snap = await getDoc(blogRef);
+        if (!snap.exists()) return;
+        const likedBy: string[] = snap.data().likedBy ?? [];
+
+        if (likedBy.includes(user.uid)) {
+            // Unlike: remove uid, decrement
+            await updateDoc(blogRef, {
+                likedBy: likedBy.filter(id => id !== user.uid),
+                likesCount: increment(-1)
+            });
+        } else {
+            // Like: add uid, increment
+            await updateDoc(blogRef, {
+                likedBy: [...likedBy, user.uid],
+                likesCount: increment(1)
+            });
+        }
     };
 
     const handleComment = async () => {
@@ -98,41 +153,52 @@ const BlogDetailModal = ({ post, user, isAdmin, onClose }: BlogDetailModalProps)
     const formatDateTime = (timestamp: Timestamp) => {
         if (!timestamp) return "";
         const date = timestamp.toDate();
-        return `${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+        return `${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', {
+            hour: '2-digit', minute: '2-digit'
+        })}`;
     };
 
     return (
         <AnimatePresence>
-            <motion.div 
+            <motion.div
                 className={styles.modalOverlay}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
+                role="dialog"
+                aria-modal="true"
+                aria-label={post.title}
             >
-                <motion.div 
+                <motion.div
                     className={styles.modalContent}
                     initial={{ y: "100vh" }}
                     animate={{ y: 0 }}
                     exit={{ y: "100vh" }}
-                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    transition={{ type: "spring", damping: 28, stiffness: 220 }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <button className={styles.closeBtn} onClick={onClose}>
-                        <X size={24} />
+                    {/* Close button — always visible */}
+                    <button
+                        className={styles.closeBtn}
+                        onClick={onClose}
+                        aria-label="Fermer"
+                    >
+                        <X size={20} />
                     </button>
 
                     <div className={styles.modalMain}>
-                        {/* Colonne de gauche - Contenu */}
+
+                        {/* ── Left column — Content ──────────────── */}
                         <div className={styles.leftColumn}>
                             <div className={styles.modalHeader}>
                                 <div className={styles.headerImageContainer}>
-                                    <img 
-                                        src={post.featuredImage || "/placeholder-blog.jpg"} 
-                                        alt={post.title} 
-                                        className={styles.headerImage} 
+                                    <img
+                                        src={post.featuredImage || "/placeholder-blog.jpg"}
+                                        alt={post.title}
+                                        className={styles.headerImage}
                                     />
-                                    <div className={styles.imageOverlay}></div>
+                                    <div className={styles.imageOverlay} />
                                 </div>
                                 <div className={styles.headerContent}>
                                     <div className={styles.container}>
@@ -155,13 +221,15 @@ const BlogDetailModal = ({ post, user, isAdmin, onClose }: BlogDetailModalProps)
 
                             <div className={styles.modalBody}>
                                 <div className={styles.container}>
-                                    <div className={styles.tagsContainer}>
-                                        {post.tags?.map(tag => (
-                                            <span key={tag} className={styles.tag}>
-                                                <TagIcon size={10} /> {tag}
-                                            </span>
-                                        ))}
-                                    </div>
+                                    {post.tags?.length > 0 && (
+                                        <div className={styles.tagsContainer}>
+                                            {post.tags.map(tag => (
+                                                <span key={tag} className={styles.tag}>
+                                                    <TagIcon size={10} /> {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
 
                                     <div className={styles.content}>
                                         {post.content}
@@ -170,9 +238,18 @@ const BlogDetailModal = ({ post, user, isAdmin, onClose }: BlogDetailModalProps)
                                     {post.mediaUrl && (
                                         <div className={styles.mediaSection}>
                                             {post.mediaType === 'video' ? (
-                                                <video src={post.mediaUrl} controls className={styles.media} />
+                                                <video
+                                                    src={post.mediaUrl}
+                                                    controls
+                                                    className={styles.media}
+                                                    aria-label="Vidéo de l'article"
+                                                />
                                             ) : (
-                                                <img src={post.mediaUrl} alt="Media" className={styles.media} />
+                                                <img
+                                                    src={post.mediaUrl}
+                                                    alt="Média de l'article"
+                                                    className={styles.media}
+                                                />
                                             )}
                                         </div>
                                     )}
@@ -180,60 +257,87 @@ const BlogDetailModal = ({ post, user, isAdmin, onClose }: BlogDetailModalProps)
                             </div>
                         </div>
 
-                        {/* Colonne de droite - Interactions */}
+                        {/* ── Right column — Interactions ────────── */}
                         <div className={styles.rightColumn}>
                             <div className={styles.statsColumn}>
                                 <div className={styles.statItem}>
-                                    <Eye size={16} />
+                                    <Eye size={15} />
                                     <span>{viewsCount} vues</span>
                                 </div>
-                                
                                 <div className={styles.statItem}>
-                                    <Heart size={16} />
+                                    <Heart size={15} />
                                     <span>{likesCount} j'aime</span>
                                 </div>
-                                
                                 <div className={styles.statItem}>
-                                    <MessageSquare size={16} />
-                                    <span>{comments.length} commentaires</span>
+                                    <MessageSquare size={15} />
+                                    <span>{comments.length} comm.</span>
                                 </div>
-                                
-                                <button className={styles.likeBtn} onClick={handleLike}>
-                                    <Heart size={16} className={isLiked ? styles.activeHeart : ""} />
+                                <button
+                                    className={styles.likeBtn}
+                                    onClick={handleLike}
+                                    aria-pressed={isLiked}
+                                    aria-label={isLiked ? "Retirer le j'aime" : "J'aime"}
+                                >
+                                    <Heart
+                                        size={15}
+                                        className={isLiked ? styles.activeHeart : ""}
+                                    />
                                     <span>J'aime</span>
                                 </button>
                             </div>
 
                             <div className={styles.commentsSection}>
-                                <h3><MessageSquare size={18} /> Commentaires ({comments.length})</h3>
-                                
+                                <h3>
+                                    <MessageSquare size={16} />
+                                    Commentaires ({comments.length})
+                                </h3>
+
+                                {/* Comment input */}
                                 <div className={styles.commentInputArea}>
                                     <div className={styles.userAvatar}>
                                         {user?.photoURL ? (
-                                            <img src={user.photoURL} alt={user.displayName || "User"} />
+                                            <img
+                                                src={user.photoURL}
+                                                alt={user.displayName || "Utilisateur"}
+                                            />
                                         ) : (
                                             <div className={styles.avatarPlaceholder}>
                                                 {user?.displayName?.charAt(0) || "?"}
                                             </div>
                                         )}
                                     </div>
-                                    <input 
-                                        placeholder="Votre commentaire..." 
+                                    <input
+                                        placeholder="Votre commentaire..."
                                         value={commentText}
                                         onChange={(e) => setCommentText(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleComment()}
+                                        aria-label="Écrire un commentaire"
                                     />
-                                    <button onClick={handleComment} className={styles.submitCommentBtn}>
-                                        <Check size={16} />
+                                    <button
+                                        onClick={handleComment}
+                                        className={styles.submitCommentBtn}
+                                        aria-label="Envoyer le commentaire"
+                                        disabled={!commentText.trim()}
+                                    >
+                                        <Check size={15} />
                                     </button>
                                 </div>
 
-                                <div className={styles.commentsList}>
+                                {/* Comments list */}
+                                <div className={styles.commentsList} role="list">
                                     {comments.map(comment => (
-                                        <div key={comment.id} className={styles.commentItem}>
+                                        <div
+                                            key={comment.id}
+                                            className={styles.commentItem}
+                                            role="listitem"
+                                        >
                                             <div className={styles.commentAuthor}>
                                                 {comment.authorPhoto ? (
-                                                    <img src={comment.authorPhoto} alt={comment.authorName} className={styles.commentAvatar} />
+                                                    <img
+                                                        src={comment.authorPhoto}
+                                                        alt={comment.authorName}
+                                                        className={styles.commentAvatar}
+                                                    />
                                                 ) : (
                                                     <div className={styles.commentAvatarPlaceholder}>
                                                         {comment.authorName.charAt(0)}
@@ -246,12 +350,28 @@ const BlogDetailModal = ({ post, user, isAdmin, onClose }: BlogDetailModalProps)
                                             </div>
                                             <p className={styles.commentText}>{comment.text}</p>
                                             {(isAdmin || user?.uid === comment.authorId) && (
-                                                <button onClick={() => deleteComment(comment.id)} className={styles.delComment}>
+                                                <button
+                                                    onClick={() => deleteComment(comment.id)}
+                                                    className={styles.delComment}
+                                                    aria-label="Supprimer ce commentaire"
+                                                >
                                                     <Trash2 size={12} />
                                                 </button>
                                             )}
                                         </div>
                                     ))}
+
+                                    {comments.length === 0 && (
+                                        <p style={{
+                                            color: 'var(--line)',
+                                            fontSize: '0.85rem',
+                                            textAlign: 'center',
+                                            padding: '20px 0',
+                                            opacity: 0.6
+                                        }}>
+                                            Aucun commentaire pour l'instant
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

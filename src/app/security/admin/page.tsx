@@ -21,13 +21,13 @@ import {
   AlertTriangle,
   CheckCircle2,
   ArrowUpRight,
+  BarChart2,
 } from 'lucide-react';
 import { auth, db } from '@/utils/firebase-api';
 import { collection, getDocs } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth'; 
 import styles from './page.module.css';
 
-// ─── Stat Card ───────────────────────────────────────────────────────────────
+// ─── Stat Card ────────────────────────────────────────────────────────────────
 
 interface StatCardProps {
   label: string;
@@ -62,7 +62,7 @@ function StatCard({ label, value, icon, trend, status }: StatCardProps) {
   );
 }
 
-// ─── Nav Card ────────────────────────────────────────────────────────────────
+// ─── Nav Card ─────────────────────────────────────────────────────────────────
 
 interface NavCardProps {
   href: string;
@@ -96,14 +96,13 @@ function NavCard({ href, icon, title, desc, badge, badgeColor, accent }: NavCard
   );
 }
 
-// ─── Admin Dashboard ─────────────────────────────────────────────────────────
+// ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [userCount, setUserCount] = useState<number | null>(null);
   const [projectCount, setProjectCount] = useState<number | null>(null);
 
   useEffect(() => {
-    // Fetch quick stats
     const fetchStats = async () => {
       try {
         const usersSnap = await getDocs(collection(db, 'users'));
@@ -117,7 +116,7 @@ export default function AdminPage() {
 
   return (
     <div className={styles.adminContainer}>
-      {/* ── Header ── */}
+      {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <div className={styles.headerTag}>Admin</div>
@@ -134,7 +133,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      {/* ── Stats row ── */}
+      {/* Stats */}
       <div className={styles.statsRow}>
         <StatCard
           label="Utilisateurs"
@@ -166,7 +165,24 @@ export default function AdminPage() {
         />
       </div>
 
-      {/* ── Section : Gestion de projets ── */}
+      {/* Section : Finances */}
+      <h2 className={styles.sectionTitle}>
+        <BarChart2 size={20} />
+        Finances
+      </h2>
+      <div className={styles.grid}>
+        <NavCard
+          href="/security/admin/finance"
+          icon={<BarChart2 size={22} />}
+          title="Dashboard Finances"
+          desc="Suivez vos revenus, dépenses et épargne. Ajoutez des transactions et visualisez vos flux."
+          badge="Personnel"
+          badgeColor="var(--primary)"
+          accent="var(--primary)"
+        />
+      </div>
+
+      {/* Section : Gestion de projets */}
       <h2 className={styles.sectionTitle}>
         <Kanban size={20} />
         Gestion de projets
@@ -182,7 +198,7 @@ export default function AdminPage() {
         />
       </div>
 
-      {/* ── Section : Contrôles généraux ── */}
+      {/* Section : Contrôles généraux */}
       <h2 className={styles.sectionTitle}>
         <Settings size={20} />
         Contrôles Généraux
@@ -220,7 +236,7 @@ export default function AdminPage() {
         />
       </div>
 
-      {/* ── Section : Licences ── */}
+      {/* Section : Licences */}
       <h2 className={styles.sectionTitle}>
         <Key size={20} />
         Gestion des Licences

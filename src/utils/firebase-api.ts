@@ -21,7 +21,8 @@ import {
   addDoc,
   updateDoc,
   Timestamp,
-  runTransaction
+  runTransaction,
+  writeBatch
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -73,6 +74,22 @@ export interface Project {
   teamMembers: string[];
   views: number;
   visibility?: 'public' | 'early_access';
+}
+
+export interface BlogPost {
+  id?: string;
+  title: string;
+  content: string;
+  author: string;
+  authorId: string;
+  category: string;
+  tags: string[];
+  featuredImage: string;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  createdAt: any;
+  likesCount: number;
+  viewsCount: number;
 }
 
 // Interface pour un membre d'équipe PAR PROJET - AVEC SLUG ET COMPÉTENCES
@@ -375,6 +392,52 @@ export const getProject = async (projectId: string): Promise<Project | null> => 
   }
 };
 
+// Fonction pour récupérer tous les blogs
+export const getBlogs = async (): Promise<BlogPost[]> => {
+  try {
+    const blogsCollection = collection(db, 'blogs');
+    const snapshot = await getDocs(blogsCollection);
+    
+    const blogs: BlogPost[] = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      blogs.push({ 
+        id: doc.id,
+        ...data,
+        likesCount: data.likesCount || 0,
+        viewsCount: data.viewsCount || 0
+      } as BlogPost);
+    });
+    
+    return blogs;
+  } catch (error) {
+    console.error('Erreur lors du chargement des blogs:', error);
+    return [];
+  }
+};
+
+// Fonction pour récupérer un blog spécifique
+export const getBlog = async (blogId: string): Promise<BlogPost | null> => {
+  try {
+    const blogRef = doc(db, 'blogs', blogId);
+    const blogDoc = await getDoc(blogRef);
+    
+    if (blogDoc.exists()) {
+      const data = blogDoc.data();
+      return { 
+        id: blogDoc.id,
+        ...data,
+        likesCount: data.likesCount || 0,
+        viewsCount: data.viewsCount || 0
+      } as BlogPost;
+    }
+    return null;
+  } catch (error) {
+    console.error('Erreur lors du chargement du blog:', error);
+    return null;
+  }
+};
+
 // Fonction pour créer un projet
 export const createProject = async (project: Omit<Project, 'id'>): Promise<string> => {
   try {
@@ -418,6 +481,56 @@ export const updateProject = async (projectId: string, projectData: Partial<Proj
   }
 };
 
+// Fonction pour supprimer un projet ET sa nouveauté associée
+export const deleteProject = async (projectId: string): Promise<void> => {
+  try {
+    const batch = writeBatch(db);
+    
+    // Supprimer le projet
+    const projectRef = doc(db, 'projects', projectId);
+    batch.delete(projectRef);
+    
+    // Supprimer la nouveauté associée si elle existe
+    const nouveautesCol = collection(db, 'nouveautes');
+    const q = query(nouveautesCol, where('sourceId', '==', projectId), where('type', '==', 'project'));
+    const snapshot = await getDocs(q);
+    
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+  } catch (error) {
+    console.error('Erreur lors de la suppression du projet:', error);
+    throw error;
+  }
+};
+
+// Fonction pour supprimer un blog ET sa nouveauté associée
+export const deleteBlog = async (blogId: string): Promise<void> => {
+  try {
+    const batch = writeBatch(db);
+    
+    // Supprimer le blog
+    const blogRef = doc(db, 'blogs', blogId);
+    batch.delete(blogRef);
+    
+    // Supprimer la nouveauté associée si elle existe
+    const nouveautesCol = collection(db, 'nouveautes');
+    const q = query(nouveautesCol, where('sourceId', '==', blogId), where('type', '==', 'blog'));
+    const snapshot = await getDocs(q);
+    
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+  } catch (error) {
+    console.error('Erreur lors de la suppression du blog:', error);
+    throw error;
+  }
+};
+
 // Fonction pour incrémenter les vues
 export const incrementProjectViews = async (projectId: string): Promise<void> => {
   try {
@@ -439,17 +552,6 @@ export const incrementProjectViews = async (projectId: string): Promise<void> =>
     console.log(`Vues incrémentées pour le projet ${projectId}`);
   } catch (error) {
     console.error('Erreur lors de l\'incrémentation des vues:', error);
-  }
-};
-
-// Fonction pour supprimer un projet
-export const deleteProject = async (projectId: string): Promise<void> => {
-  try {
-    const projectRef = doc(db, 'projects', projectId);
-    await deleteDoc(projectRef);
-  } catch (error) {
-    console.error('Erreur lors de la suppression du projet:', error);
-    throw error;
   }
 };
 

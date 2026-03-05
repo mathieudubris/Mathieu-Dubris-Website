@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════
+   BlogEditor.module.css — Fully Responsive
+   ═══════════════════════════════════════════════════════════ */
+
 .overlay {
     position: fixed;
     top: 0;
@@ -6,8 +10,8 @@
     bottom: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport for mobile browsers */
     background: var(--dark);
-    backdrop-filter: blur(20px);
     z-index: 4000;
     display: flex;
     justify-content: center;
@@ -24,34 +28,38 @@
 
 .editorPanel {
     background: var(--dark);
-    border: 1px solid var(--line);
-    border-radius: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     margin: 0;
-    box-shadow: none;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    border-radius: 0;
+    border: none;
 }
 
+/* ── Header ──────────────────────────────────────────────── */
 .editorHeader {
-    padding: 15px 30px;
+    padding: 12px 24px;
     border-bottom: 1px solid var(--line);
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: var(--dark);
     flex-shrink: 0;
-    gap: 20px;
+    gap: 12px;
+    min-height: 56px;
 }
 
 .headerLeft {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
     flex: 1;
+    flex-wrap: wrap;
+    min-width: 0;
 }
 
 .headerTitle {
@@ -59,7 +67,7 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     color: var(--primary);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     white-space: nowrap;
 }
 
@@ -67,16 +75,17 @@
     background: var(--primary);
     color: var(--dark);
     border: none;
-    padding: 10px 25px;
+    padding: 9px 20px;
     border-radius: 8px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     cursor: pointer;
-    transition: 0.2s;
     white-space: nowrap;
+    font-family: inherit;
+    flex-shrink: 0;
 }
 
 .publishBtnTop:disabled {
@@ -85,8 +94,64 @@
 }
 
 .publishBtnTop:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--primary);
+    opacity: 0.85;
+}
+
+/* ── Bouton Nouveauté ─────────────────────────────────────── */
+.nouveauteBtnWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nouveauteBtn {
+    background: transparent;
+    border: 1px solid rgba(199, 255, 68, 0.35);
+    color: var(--primary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+
+.nouveauteBtn:hover {
+    background: rgba(199, 255, 68, 0.08);
+    border-color: var(--primary);
+}
+
+.nouveauteBtnDisabled {
+    opacity: 0.45;
+    border-color: rgba(163, 163, 163, 0.25);
+    color: var(--light);
+    cursor: default;
+}
+
+.nouveauteBtnDisabled:hover {
+    background: transparent;
+    border-color: rgba(163, 163, 163, 0.25);
+}
+
+.saveToast {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--dark);
+    border: 1px solid rgba(255, 200, 60, 0.4);
+    color: #f0c040;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
 }
 
 .closeBtn {
@@ -100,7 +165,6 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
     z-index: 10;
     flex-shrink: 0;
 }
@@ -108,21 +172,23 @@
 .closeBtn:hover {
     background: var(--dark-red);
     border-color: var(--dark-red);
-    transform: rotate(90deg);
 }
 
+/* ── Form ─────────────────────────────────────────────────── */
 .publishForm {
-    padding: 20px 30px;
+    padding: 20px 24px;
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0;
 }
 
+/* Desktop: 2-column grid */
 .formGrid {
     display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 25px;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
     flex: 1;
     overflow: hidden;
     min-height: 0;
@@ -131,8 +197,9 @@
 .mainFields {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     overflow: hidden;
+    min-height: 0;
 }
 
 .titleInput {
@@ -142,9 +209,11 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--light);
-    padding: 12px 0;
+    padding: 10px 0;
     outline: none;
     width: 100%;
+    font-family: inherit;
+    flex-shrink: 0;
 }
 
 .titleInput:focus {
@@ -153,7 +222,8 @@
 
 .metaRow {
     display: flex;
-    gap: 15px;
+    gap: 12px;
+    flex-shrink: 0;
 }
 
 .categoryInput {
@@ -164,7 +234,9 @@
     border-radius: 10px;
     padding: 10px 14px;
     outline: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    min-width: 0;
 }
 
 .categoryInput:focus {
@@ -179,6 +251,7 @@
     background: var(--dark);
     border: 1px solid var(--line);
     border-radius: 10px;
+    min-width: 0;
 }
 
 .tagInputWrapper input {
@@ -188,7 +261,9 @@
     padding: 10px;
     width: 100%;
     outline: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    min-width: 0;
 }
 
 .plusBtn {
@@ -197,25 +272,26 @@
     border-radius: 6px;
     width: 30px;
     height: 30px;
+    min-width: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.2s;
     flex-shrink: 0;
 }
 
 .plusBtn:hover {
-    transform: scale(1.1);
+    opacity: 0.85;
 }
 
 .tagsPreview {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    max-height: 70px;
+    max-height: 64px;
     overflow-y: auto;
     padding-right: 5px;
+    flex-shrink: 0;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
@@ -227,35 +303,31 @@
 .tagBadge {
     background: var(--dark);
     color: var(--primary);
-    padding: 6px 10px;
+    padding: 5px 10px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     border: 1px solid var(--primary);
     cursor: pointer;
     height: fit-content;
-}
-
-.tagBadge:hover {
-    background: var(--dark);
 }
 
 .contentInput {
     background: var(--dark);
     border: 1px solid var(--line);
     border-radius: 10px;
-    padding: 15px;
+    padding: 14px;
     color: var(--light);
     flex: 1;
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 0.95rem;
     line-height: 1.6;
     outline: none;
     resize: none;
     overflow-y: auto;
-    min-height: 200px;
+    min-height: 0;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
@@ -264,12 +336,17 @@
     display: none;
 }
 
+.contentInput:focus {
+    border-color: var(--primary);
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
 .mediaSidebar {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
     overflow-y: auto;
-    padding-right: 10px;
+    padding-right: 6px;
     height: 100%;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -283,44 +360,44 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .sidebarSection label {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     color: var(--line);
     font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .sizeSelector {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin-bottom: 12px;
 }
 
 .sizeOption {
     background: var(--dark);
     border: 1px solid var(--line);
     color: var(--line);
-    padding: 10px 8px;
+    padding: 10px 6px;
     border-radius: 8px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    transition: all 0.2s;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-family: inherit;
+    transition: border-color 0.2s, color 0.2s;
 }
 
 .sizeOption:hover {
-    background: var(--dark);
     border-color: var(--primary);
 }
 
 .sizeOption.activeSize {
-    background: var(--dark);
     border-color: var(--primary);
     color: var(--primary);
 }
@@ -336,12 +413,12 @@
     justify-content: center;
     cursor: pointer;
     overflow: hidden;
-    transition: 0.3s;
+    color: var(--line);
+    transition: border-color 0.2s;
 }
 
 .featuredUpload:hover {
     border-color: var(--primary);
-    background: var(--dark);
 }
 
 .featuredUpload img {
@@ -362,11 +439,11 @@
     gap: 8px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: 0.2s;
+    font-family: inherit;
+    transition: border-color 0.2s;
 }
 
 .mediaBtn:hover {
-    background: var(--dark);
     border-color: var(--primary);
 }
 
@@ -375,25 +452,26 @@
     width: 100%;
     border-radius: 8px;
     overflow: hidden;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
-.miniPreview img, .miniPreview video {
+.miniPreview img,
+.miniPreview video {
     width: 100%;
     display: block;
-    max-height: 150px;
+    max-height: 130px;
     object-fit: cover;
 }
 
 .removeMedia {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 6px;
+    right: 6px;
     background: var(--dark-red);
     border: none;
     color: var(--light);
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -401,234 +479,225 @@
     justify-content: center;
 }
 
-/* RESPONSIVE MOBILE AMÉLIORÉ */
-@media (max-width: 1200px) {
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Large tablets / small laptops (≤ 1100px) ─────────────── */
+@media (max-width: 1100px) {
     .formGrid {
-        gap: 20px;
-    }
-    
-    .mediaSidebar {
-        max-width: 280px;
+        grid-template-columns: 1fr 240px;
+        gap: 18px;
     }
 }
 
-@media (max-width: 1024px) {
+/* ── Tablets (≤ 900px): stack layout ─────────────────────── */
+@media (max-width: 900px) {
     .formGrid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 16px;
         overflow-y: auto;
-        padding-right: 10px;
+        padding-right: 0;
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-    
+
     .formGrid::-webkit-scrollbar {
         display: none;
     }
-    
+
+    /* Sidebar becomes a horizontal scrollable strip on top */
     .mediaSidebar {
         order: -1;
+        flex-direction: row;
         height: auto;
-        max-height: 350px;
-        width: 100%;
-        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-right: 0;
+        padding-bottom: 4px;
+        gap: 14px;
+        align-items: flex-start;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
-    
+
+    .mediaSidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sidebarSection {
+        min-width: 160px;
+        flex-shrink: 0;
+    }
+
+    /* Featured image smaller in horizontal mode */
+    .featuredUpload {
+        aspect-ratio: 4/3;
+        min-height: 100px;
+    }
+
     .mainFields {
-        min-height: 400px;
+        min-height: unset;
     }
-    
-    .editorHeader {
-        padding: 15px 20px;
-    }
-    
-    .publishForm {
-        padding: 15px 20px;
+
+    .contentInput {
+        min-height: 180px;
+        flex: none;
+        height: 200px;
     }
 }
 
+/* ── Mobile landscape / small tablets (≤ 768px) ─────────── */
 @media (max-width: 768px) {
     .editorHeader {
-        padding: 12px 15px;
-        gap: 15px;
+        padding: 10px 16px;
+        min-height: 52px;
     }
-    
+
     .headerTitle {
-        font-size: 0.8rem;
+        font-size: 0.78rem;
     }
-    
+
     .publishBtnTop {
-        padding: 8px 15px;
-        font-size: 0.8rem;
+        padding: 8px 14px;
+        font-size: 0.78rem;
     }
-    
+
+    .nouveauteBtn {
+        padding: 7px 11px;
+        font-size: 0.75rem;
+    }
+
     .publishForm {
-        padding: 12px 15px;
+        padding: 14px 16px;
     }
-    
+
     .titleInput {
-        font-size: 1.3rem;
-        padding: 10px 0;
+        font-size: 1.25rem;
     }
-    
+
     .metaRow {
         flex-direction: column;
         gap: 10px;
     }
-    
-    .tagInputWrapper {
-        width: 100%;
-    }
-    
-    .contentInput {
-        font-size: 0.95rem;
-        padding: 12px;
-        min-height: 180px;
-    }
-    
-    .sizeSelector {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .featuredUpload {
-        aspect-ratio: 16/9;
-        min-height: 120px;
-    }
 }
 
+/* ── Phones (≤ 576px) ────────────────────────────────────── */
 @media (max-width: 576px) {
     .editorHeader {
         padding: 10px 12px;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .headerLeft {
+        gap: 8px;
         flex-wrap: wrap;
     }
-    
-    .headerLeft {
-        order: 1;
-        width: 100%;
-        justify-content: space-between;
-        margin-top: 10px;
+
+    /* Hide "Nouveauté" text label, keep icon */
+    .nouveauteBtn span {
+        display: none;
     }
-    
-    .closeBtn {
-        order: 2;
+
+    .nouveauteBtn {
+        padding: 8px 10px;
     }
-    
+
     .headerTitle {
-        font-size: 0.75rem;
+        display: none; /* Save space on very small screens */
     }
-    
-    .closeBtn {
-        width: 32px;
-        height: 32px;
-    }
-    
+
     .publishForm {
         padding: 10px 12px;
     }
-    
+
     .titleInput {
         font-size: 1.1rem;
         padding: 8px 0;
     }
-    
+
     .categoryInput,
     .tagInputWrapper input {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-    
-    .plusBtn {
-        width: 26px;
-        height: 26px;
-    }
-    
-    .tagBadge {
-        padding: 5px 8px;
-        font-size: 0.75rem;
-    }
-    
-    .sizeSelector {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-    }
-    
-    .sizeOption {
-        padding: 8px 6px;
-        font-size: 0.7rem;
-    }
-    
-    .contentInput {
-        min-height: 150px;
-        font-size: 0.9rem;
-        padding: 10px;
-    }
-    
-    .mediaSidebar {
-        gap: 15px;
-    }
-    
-    .sidebarSection label {
-        font-size: 0.7rem;
-    }
-    
-    .mediaBtn {
-        padding: 10px;
         font-size: 0.85rem;
     }
-}
 
-@media (max-width: 480px) {
+    .contentInput {
+        font-size: 0.9rem;
+        padding: 12px;
+        height: 180px;
+    }
+
     .sizeSelector {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
     }
-    
+
     .sizeOption {
-        flex-direction: row;
-        justify-content: flex-start;
-        padding: 10px 12px;
-        text-align: left;
+        font-size: 0.68rem;
+        padding: 8px 4px;
     }
-    
-    .featuredUpload {
-        min-height: 100px;
-    }
-    
-    .miniPreview img, 
-    .miniPreview video {
-        max-height: 120px;
-    }
-    
-    .tagInputWrapper {
+
+    /* Sidebar sections stack vertically again */
+    .mediaSidebar {
         flex-direction: column;
-        gap: 8px;
-        padding: 8px;
+        overflow-x: hidden;
+        overflow-y: visible;
     }
-    
-    .tagInputWrapper input {
+
+    .sidebarSection {
+        min-width: unset;
         width: 100%;
     }
-    
-    .plusBtn {
-        align-self: flex-end;
+
+    .featuredUpload {
+        aspect-ratio: 16/9;
     }
 }
 
-/* Orientation paysage sur mobile */
-@media (max-height: 600px) and (orientation: landscape) {
+/* ── Very small phones (≤ 380px) ─────────────────────────── */
+@media (max-width: 380px) {
+    .publishBtnTop {
+        padding: 7px 11px;
+        font-size: 0.75rem;
+    }
+
+    .sizeSelector {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .sizeOption span {
+        display: none;
+    }
+}
+
+/* ── Landscape phones ────────────────────────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
     .editorPanel {
-        height: 100vh;
         overflow-y: auto;
     }
-    
+
     .formGrid {
-        grid-template-columns: 1fr 250px;
+        grid-template-columns: 1fr 220px;
+        overflow: visible;
     }
-    
+
+    .mediaSidebar {
+        flex-direction: column;
+        order: 0;
+        height: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: calc(100vh - 56px);
+        max-height: calc(100dvh - 56px);
+    }
+
     .contentInput {
         min-height: 120px;
+        height: 120px;
     }
-    
-    .mediaSidebar {
-        max-height: 70vh;
+
+    .featuredUpload {
+        aspect-ratio: 16/9;
+        min-height: 80px;
     }
 }
