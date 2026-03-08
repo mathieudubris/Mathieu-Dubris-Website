@@ -1,0 +1,385 @@
+/* Galerie.module.css */
+
+/* ── Empty state ── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 220px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.emptyIcon {
+  color: var(--line);
+  opacity: 0.4;
+}
+
+.emptyTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--line);
+  margin: 0;
+  font-family: var(--font-main);
+}
+
+.emptyHint {
+  font-size: 0.75rem;
+  color: var(--line);
+  opacity: 0.6;
+  margin: 0;
+  font-family: var(--font-main);
+}
+
+/* ── Filtres ── */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--line);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.filterBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.filterActive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--dark) !important;
+}
+
+/* ── Grille ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 140px;
+  gap: 8px;
+}
+
+/* Premier item = large, 2 colonnes x 2 lignes */
+.cellFeatured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.cell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.cell:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.cell:hover .thumb {
+  transform: scale(1.05);
+}
+
+/* Overlay */
+.cellOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 14, 14, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.cell:hover .cellOverlay {
+  opacity: 1;
+}
+
+.overlayIcon {
+  color: var(--light);
+}
+
+.caption {
+  font-size: 0.72rem;
+  color: var(--light);
+  font-family: var(--font-main);
+  max-width: 80%;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Badges */
+.typeBadge {
+  position: absolute;
+  bottom: 7px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(14, 14, 14, 0.82);
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+
+.playBadge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(14, 14, 14, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--light);
+  pointer-events: none;
+}
+
+.featuredBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--dark);
+  background: var(--primary);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* ── Lightbox ── */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(14, 14, 14, 0.97);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightboxHeader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(14, 14, 14, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 10;
+}
+
+.lightboxMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--line);
+}
+
+.lightboxCounter {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  color: var(--line);
+  letter-spacing: 0.04em;
+}
+
+.lightboxClose {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.lightboxClose:hover {
+  background: var(--dark-red);
+  border-color: var(--dark-red);
+}
+
+.lightboxInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 88vw;
+  max-height: calc(100vh - 140px);
+  margin-top: 60px;
+  margin-bottom: 80px;
+}
+
+.lightboxMedia {
+  max-width: 88vw;
+  max-height: calc(100vh - 200px);
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
+}
+
+.lightboxCaption {
+  font-size: 0.78rem;
+  color: var(--line);
+  font-family: var(--font-main);
+  text-align: center;
+  margin: 0;
+  max-width: 500px;
+  line-height: 1.5;
+}
+
+/* Arrows */
+.lightboxArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(14, 14, 14, 0.8);
+  color: var(--light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.18s;
+}
+
+.lightboxArrow:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.prev { left: 18px; }
+.next { right: 18px; }
+
+/* Thumbnail strip */
+.thumbStrip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 6px;
+  padding: 12px 20px;
+  overflow-x: auto;
+  background: rgba(14, 14, 14, 0.7);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  justify-content: center;
+  scrollbar-width: none;
+}
+
+.thumbStrip::-webkit-scrollbar { display: none; }
+
+.stripThumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 36px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  opacity: 0.55;
+}
+
+.stripThumb:hover {
+  opacity: 0.9;
+  border-color: var(--line);
+}
+
+.stripActive {
+  border-color: var(--primary) !important;
+  opacity: 1 !important;
+}
+
+.stripMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 110px;
+  }
+}
+
+@media (max-width: 500px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 100px;
+  }
+  .cellFeatured {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+  .prev { left: 8px; }
+  .next { right: 8px; }
+}

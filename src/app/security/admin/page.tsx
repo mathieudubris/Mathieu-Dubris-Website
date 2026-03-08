@@ -194,7 +194,7 @@ export default function AdminPage() {
           title="Kanban Board"
           desc="Gérez vos tâches en colonnes drag-and-drop, avec priorités, checklist et commentaires."
           badge="Nouveau"
-          accent="var(--primary)"
+          accent="var(--primary)" 
         />
       </div>
 
@@ -211,7 +211,7 @@ export default function AdminPage() {
           desc="Logs de connexion et protocoles 2FA."
         />
         <NavCard
-          href="/admin/database"
+          href="/security/admin/nutrition"
           icon={<Database size={22} />}
           title="Base de données"
           desc="Maintenance et sauvegardes système."

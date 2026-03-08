@@ -5,18 +5,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
   auth, 
-  setupAuthListener, 
-  getProjects, 
-  deleteProject,
+  setupAuthListener,
   isAdmin,
+  getAllUsers,
+} from '@/utils/firebase-api';
+import {
+  getProjects,
+  deleteProject,
   getProjectTeamMembers,
   hasAccessToProject,
   isUserInProject,
   getUserProjectTeamProfile,
   Project as FirebaseProject,
-  getAllUsers,
   getProjectBySlug
-} from '@/utils/firebase-api';
+} from '@/utils/projet-api';
 import { 
   Plus, 
   Search,
@@ -24,10 +26,10 @@ import {
 } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
-import ProjetEditor from '@/components/projet-en-cours/ProjetEditor';
-import ProjetDetail from '@/components/projet-en-cours/ProjetDetail';
-import UserList from '@/components/UserList/UserList';
-import ProjectCard from '@/components/projet-en-cours/ProjectCard';
+import ProjetEditor from '@/components/portfolio/projet-en-cours/Editor/ProjetEditor';
+import ProjetDetail from '@/components/portfolio/projet-en-cours/Detail/ProjetDetail';
+import UserList from '@/components/portfolio/projet-en-cours/UserList/UserList';
+import ProjectCard from '@/components/portfolio/projet-en-cours/Card/ProjectCard';
 import styles from './projet-en-cours.module.css';
 
 type Project = FirebaseProject;

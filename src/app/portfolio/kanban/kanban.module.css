@@ -1,0 +1,1029 @@
+/* kanban.module.css */
+
+/* ── Variables locales ── */
+.root {
+  --col-width: 300px;
+  --col-gap: 1rem;
+  --card-radius: 10px;
+  --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Conteneur principal ── */
+.kanbanWrapper {
+  composes: root;
+  min-height: 100vh;
+  background: var(--dark);
+  color: var(--light);
+  font-family: var(--font-main);
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Utiliser toute la hauteur */
+  overflow: hidden; /* Empêcher le scroll global */
+}
+
+/* ── Topbar ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #1f1f1f;
+  background: #0a0a0a;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0; /* Empêcher le rétrécissement */
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.boardTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background var(--transition);
+}
+
+.boardTitle:hover {
+  background: #1a1a1a;
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  font-family: var(--font-main);
+}
+
+.btnPrimary {
+  composes: btn;
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.btnPrimary:hover {
+  background: #d4ff66;
+  transform: translateY(-1px);
+}
+
+.btnGhost {
+  composes: btn;
+  background: transparent;
+  color: var(--light);
+  border: 1px solid #2a2a2a;
+}
+
+.btnGhost:hover {
+  background: #1a1a1a;
+  border-color: var(--line);
+}
+
+.btnDanger {
+  composes: btn;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.btnDanger:hover {
+  background: #ef444420;
+}
+
+.btnIcon {
+  composes: btn;
+  background: transparent;
+  color: var(--line);
+  padding: 0.4rem;
+  border-radius: 6px;
+}
+
+.btnIcon:hover {
+  background: #1a1a1a;
+  color: var(--light);
+}
+
+/* ── Filtres / search bar ── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: #080808;
+  border-bottom: 1px solid #1a1a1a;
+  flex-wrap: wrap;
+  flex-shrink: 0; /* Empêcher le rétrécissement */
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem 0.45rem 2rem;
+  color: var(--light);
+  font-size: 0.82rem;
+  font-family: var(--font-main);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.searchInput:focus {
+  border-color: var(--primary);
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.55rem;
+  color: var(--line);
+  pointer-events: none;
+}
+
+.filterChip {
+  composes: btn;
+  background: #111;
+  color: var(--line);
+  border: 1px solid #2a2a2a;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.filterChipActive {
+  composes: filterChip;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Board scroll ── */
+.boardScroll {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1.25rem 1.5rem 1.5rem;
+  gap: var(--col-gap);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0; /* Important pour flex-child */
+}
+
+.boardScroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.boardScroll::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.boardScroll::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+
+/* ── Colonne ── */
+.column {
+  flex: 0 0 var(--col-width);
+  display: flex;
+  flex-direction: column;
+  background: #111111;
+  border-radius: 12px;
+  border: 1px solid #1e1e1e;
+  height: fit-content;
+  max-height: 100%; /* Prendre toute la hauteur disponible */
+  scroll-snap-align: start;
+  transition: border-color var(--transition);
+}
+
+.column.dragOver {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: 12px 12px 0 0;
+  gap: 0.5rem;
+  position: relative;
+  flex-shrink: 0; /* Empêcher le rétrécissement */
+  background: #111111; /* Même fond que la colonne */
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.columnHeaderAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 12px 12px 0 0;
+}
+
+.columnTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.columnTitleInput {
+  background: transparent;
+  border: none;
+  color: var(--light);
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  outline: none;
+  width: 100%;
+  cursor: text;
+}
+
+.columnCount {
+  font-size: 0.72rem;
+  background: #1e1e1e;
+  color: var(--line);
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.columnCount.atLimit {
+  background: #c0141420;
+  color: #ef4444;
+}
+
+.columnActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.column:hover .columnActions {
+  opacity: 1;
+}
+
+/* ── Cards list ── */
+.cardsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0; /* Important pour le scroll */
+}
+
+.cardsList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.cardsList::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.cardsList::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+/* ── Card ── */
+.card {
+  background: #1a1a1a;
+  border: 1px solid #252525;
+  border-radius: var(--card-radius);
+  cursor: grab;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0; /* Empêcher le rétrécissement des cartes */
+}
+
+.card:hover {
+  border-color: #333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.card.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.cardCover {
+  height: 6px;
+  width: 100%;
+}
+
+.cardBody {
+  padding: 0.85rem;
+}
+
+.cardLabels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.cardLabel {
+  height: 6px;
+  border-radius: 3px;
+  min-width: 36px;
+}
+
+.cardTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--light);
+  line-height: 1.4;
+  margin-bottom: 0.6rem;
+  word-break: break-word;
+}
+
+.cardDesc {
+  font-size: 0.75rem;
+  color: var(--line);
+  line-height: 1.45;
+  margin-bottom: 0.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.cardMetaLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.cardMetaRight {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cardBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--line);
+  background: #111;
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid #2a2a2a;
+}
+
+.cardBadge.overdue {
+  color: #ef4444;
+  border-color: #ef444440;
+  background: #ef444410;
+}
+
+.cardBadge.dueSoon {
+  color: #f59e0b;
+  border-color: #f59e0b40;
+  background: #f59e0b10;
+}
+
+.priorityDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priorityLow { background: #22c55e; }
+.priorityMedium { background: #3b82f6; }
+.priorityHigh { background: #f59e0b; }
+.priorityCritical { background: #ef4444; }
+
+.avatarStack {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #1a1a1a;
+  margin-left: -6px;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--light);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar:first-child {
+  margin-left: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Progress checklist */
+.checklistProgress {
+  margin-top: 0.5rem;
+}
+
+.checklistBar {
+  height: 3px;
+  background: #2a2a2a;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.checklistBarFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.checklistText {
+  font-size: 0.68rem;
+  color: var(--line);
+}
+
+/* ── Add card ── */
+.addCardBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  margin: 0 0.5rem 0.5rem;
+  background: transparent;
+  border: 1px dashed #252525;
+  border-radius: 8px;
+  color: var(--line);
+  font-size: 0.8rem;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all var(--transition);
+  width: calc(100% - 1rem);
+  flex-shrink: 0; /* Empêcher le rétrécissement */
+}
+
+.addCardBtn:hover {
+  background: #1a1a1a;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.addCardBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addCardForm {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.addCardInput {
+  background: #111;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  color: var(--light);
+  font-size: 0.85rem;
+  font-family: var(--font-main);
+  outline: none;
+  resize: none;
+  min-height: 60px;
+}
+
+.addCardActions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ── Add column ── */
+/* Supprimé car déjà présent dans le topbar */
+
+/* ── Modal overlay ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #1e1e1e;
+  gap: 1rem;
+}
+
+.modalTitleInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--light);
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  outline: none;
+  line-height: 1.4;
+  resize: none;
+}
+
+.modalBody {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0;
+}
+
+.modalMain {
+  padding: 1.25rem 1.5rem;
+  border-right: 1px solid #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modalSidebar {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modalSectionTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.textarea {
+  background: #0e0e0e;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: var(--light);
+  font-size: 0.85rem;
+  font-family: var(--font-main);
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color var(--transition);
+}
+
+.textarea:focus {
+  border-color: var(--primary);
+}
+
+/* Sidebar selects */
+.sidebarSelect {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: var(--light);
+  font-size: 0.8rem;
+  font-family: var(--font-main);
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color var(--transition);
+}
+
+.sidebarSelect:focus {
+  border-color: var(--primary);
+}
+
+.dateInput {
+  composes: sidebarSelect;
+  color-scheme: dark;
+}
+
+/* Priority badge in modal */
+.prioritySelect {
+  composes: sidebarSelect;
+}
+
+/* Labels */
+.labelsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.labelChip {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all var(--transition);
+}
+
+.labelChip.selected {
+  border-color: var(--light);
+}
+
+/* Checklist */
+.checklistItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.checklistCheckbox {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  transition: all var(--transition);
+}
+
+.checklistCheckbox:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.checklistCheckbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: 2px solid #0e0e0e;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.checklistItemText {
+  font-size: 0.82rem;
+  color: var(--light);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.checklistItemText.done {
+  text-decoration: line-through;
+  color: var(--line);
+}
+
+.addItemInput {
+  background: #0e0e0e;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  color: var(--light);
+  font-size: 0.8rem;
+  font-family: var(--font-main);
+  outline: none;
+  width: 100%;
+  transition: border-color var(--transition);
+}
+
+.addItemInput:focus {
+  border-color: var(--primary);
+}
+
+/* Comments */
+.commentItem {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.commentContent {
+  flex: 1;
+}
+
+.commentAuthor {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.2rem;
+}
+
+.commentText {
+  font-size: 0.82rem;
+  color: var(--light);
+  line-height: 1.4;
+  background: #0e0e0e;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #1e1e1e;
+}
+
+.commentTime {
+  font-size: 0.65rem;
+  color: var(--line);
+  margin-top: 0.2rem;
+}
+
+/* ── Empty state ── */
+.emptyColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  color: #333;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── Board selector ── */
+.boardSelector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 3rem 1.5rem;
+  gap: 2rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.boardCard {
+  background: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.boardCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(199, 255, 68, 0.08);
+}
+
+.boardCardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--light);
+  margin-bottom: 0.4rem;
+}
+
+.boardCardDesc {
+  font-size: 0.78rem;
+  color: var(--line);
+}
+
+/* ── Loading ── */
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--line);
+  font-size: 0.9rem;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #2a2a2a;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: #1e1e1e;
+  margin: 0.25rem 0;
+}
+
+/* ── Toast notification ── */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: #1a1a1a;
+  border: 1px solid var(--primary);
+  color: var(--light);
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  z-index: 9999;
+  animation: toastIn 0.25s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+@keyframes toastIn {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────────── */
+
+/* Tablet */
+@media (max-width: 900px) {
+  .modalBody {
+    grid-template-columns: 1fr;
+  }
+
+  .modalMain {
+    border-right: none;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .topbar {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .root {
+    --col-width: 280px;
+  }
+
+  .boardScroll {
+    padding: 0.75rem;
+  }
+
+  .filterBar {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .searchInput {
+    min-width: 120px;
+  }
+
+  .topbar {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .boardTitle {
+    font-size: 1rem;
+  }
+
+  .modal {
+    max-height: 95vh;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modalSidebar {
+    padding: 0.75rem 1rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .modalSection {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .boardGrid {
+    grid-template-columns: 1fr;
+  }
+}

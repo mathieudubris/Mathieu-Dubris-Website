@@ -1,0 +1,499 @@
+/* GalerieEditor.module.css */
+
+.galerieEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-bottom: 48px;
+}
+
+/* ── Stats row ── */
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statChip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  color: var(--chip-color, var(--line));
+}
+
+.statNum {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-main);
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: var(--line);
+  font-family: var(--font-main);
+}
+
+/* ── Section ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--line);
+  font-family: var(--font-main);
+}
+
+.sectionIcon {
+  color: var(--line);
+  flex-shrink: 0;
+}
+
+.sectionIconAccent {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.sectionHint {
+  font-size: 0.7rem;
+  color: var(--line);
+  opacity: 0.6;
+  font-family: var(--font-main);
+  font-style: italic;
+}
+
+.pill {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--dark);
+  background: var(--primary);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: var(--font-main);
+}
+
+.addBtn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: var(--light);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.addBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Cover zone ── */
+.coverZone {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.22s, background 0.22s;
+}
+
+.coverZone:hover {
+  border-color: var(--primary);
+  background: rgba(199, 255, 68, 0.03);
+}
+
+.hasCover {
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.coverImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.coverZone:hover .coverImg {
+  transform: scale(1.03);
+}
+
+.coverOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 14, 14, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.coverZone:hover .coverOverlay {
+  opacity: 1;
+}
+
+.coverEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.coverEmptyIcon {
+  color: var(--line);
+  opacity: 0.4;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.coverZone:hover .coverEmptyIcon {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.coverEmptyTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--light);
+  font-family: var(--font-main);
+}
+
+.coverEmptyHint {
+  font-size: 0.72rem;
+  color: var(--line);
+  font-family: var(--font-main);
+}
+
+/* ── Media empty ── */
+.mediaEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: var(--line);
+  font-size: 0.82rem;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.mediaEmpty:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Media grid ── */
+.mediaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+/* ── Media card ── */
+.mediaCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
+}
+
+.mediaCard:hover,
+.mediaCardOpen {
+  border-color: var(--primary);
+}
+
+.mediaThumbWrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.mediaThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.mediaCard:hover .mediaThumb {
+  transform: scale(1.05);
+}
+
+/* Actions */
+.mediaActions {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.mediaCard:hover .mediaActions,
+.mediaCardOpen .mediaActions {
+  opacity: 1;
+}
+
+.mediaAction {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: none;
+  background: rgba(14, 14, 14, 0.88);
+  color: var(--light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mediaAction:hover {
+  background: var(--primary);
+  color: var(--dark);
+}
+
+.mediaActionDelete:hover {
+  background: var(--dark-red) !important;
+  color: var(--light) !important;
+}
+
+/* Badges */
+.mediaIndex {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  color: var(--light);
+  background: rgba(14, 14, 14, 0.82);
+  padding: 2px 5px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.mediaTypeBadge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(14, 14, 14, 0.82);
+  padding: 2px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* ── Edit panel ── */
+.mediaEditPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.editRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--line);
+  font-family: var(--font-main);
+}
+
+/* Type select */
+.typeSelect {
+  position: relative;
+}
+
+.typeSelectBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--light);
+  font-size: 0.75rem;
+  font-family: var(--font-main);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.typeSelectBtn:hover {
+  border-color: var(--primary);
+}
+
+.typeSelectBtn svg:last-child {
+  margin-left: auto;
+  color: var(--line);
+}
+
+.typeMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--dark);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.typeMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--item-color, var(--line));
+  font-size: 0.75rem;
+  font-family: var(--font-main);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s;
+}
+
+.typeMenuItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.typeMenuActive {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Caption input */
+.captionInput {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--light);
+  font-size: 0.75rem;
+  font-family: var(--font-main);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.captionInput:focus {
+  border-color: var(--primary);
+}
+
+.captionInput::placeholder {
+  color: var(--line);
+  opacity: 0.6;
+}
+
+/* Inline add */
+.inlineAdd {
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--line);
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.inlineAdd:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(199, 255, 68, 0.03);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .mediaGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  .coverZone {
+    max-width: 100%;
+  }
+}

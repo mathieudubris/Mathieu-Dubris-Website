@@ -1,0 +1,160 @@
+/* CalendarView.module.css */
+.root {
+  background: #111318;
+  border: 1px solid #1e2128;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4a5060;
+}
+
+.month {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: #6a7080;
+  text-transform: capitalize;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.weekday {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #3a4050;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.emptyCell {
+  aspect-ratio: 1;
+}
+
+.day {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  position: relative;
+  background: #1a1d25;
+  color: #3a4050;
+}
+
+.day:hover {
+  filter: brightness(1.2);
+}
+
+.day.today {
+  outline: 1.5px solid #4a5580;
+  color: #c8cdd8;
+}
+
+.day.empty { background: #1a1d25; color: #2e3240; }
+.day.green { background: rgba(0, 255, 135, 0.12); color: #00ff87; }
+.day.orange { background: rgba(255, 179, 71, 0.12); color: #ffb347; }
+.day.red { background: rgba(255, 77, 109, 0.10); color: #ff4d6d; }
+
+.detail {
+  margin-top: 14px;
+  padding: 12px;
+  background: #0d0f14;
+  border-radius: 10px;
+  border: 1px solid #1e2128;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.detailDate {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #6a7080;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.detailStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.detailStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.detailVal {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: #c8cdd8;
+  font-weight: 600;
+}
+
+.detailKey {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #3a4050;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #3a4050;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+.dot.green { background: #00ff87; }
+.dot.orange { background: #ffb347; }
+.dot.red { background: #ff4d6d; }

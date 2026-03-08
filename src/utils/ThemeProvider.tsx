@@ -21,8 +21,8 @@ export const useTheme = () => {
 
 // Couleurs de la barre navigateur selon le thème
 const THEME_COLORS = {
-  dark: '#0a0a0a',
-  light: '#ffffff',
+  dark: '#0e0e0e',
+  light: '#e0e0e0',
 } as const;
 
 // Applique le thème immédiatement sur le DOM (synchrone, zéro latence)

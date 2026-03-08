@@ -1,0 +1,337 @@
+/* EquipeEditor.module.css */
+
+.equipeEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 40px;
+}
+
+/* ── Stats ── */
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.75rem;
+  color: var(--line);
+  font-family: var(--font-main);
+}
+
+.statChip svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.statChip strong {
+  color: var(--primary);
+}
+
+/* ── Selected avatars row ── */
+.selectedSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.selectedLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--line);
+  font-family: var(--font-main);
+}
+
+.selectedAvatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectedAvatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  transition: border-color 0.18s;
+  flex-shrink: 0;
+}
+
+.selectedAvatar:hover {
+  border-color: var(--dark-red);
+}
+
+.avatarRemoveOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(192, 20, 20, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--light);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.selectedAvatar:hover .avatarRemoveOverlay {
+  opacity: 1;
+}
+
+/* ── Search bar ── */
+.searchBar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.searchInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--line);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--light);
+  font-size: 0.88rem;
+  font-family: var(--font-main);
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--primary);
+}
+
+.searchInput::placeholder {
+  color: var(--line);
+  opacity: 0.6;
+}
+
+.searchClear {
+  position: absolute;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.searchClear:hover {
+  background: var(--dark-red);
+  color: var(--light);
+}
+
+.bulkActions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bulkBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--line);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.bulkBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.bulkBtnDanger:hover {
+  border-color: var(--dark-red);
+  color: var(--dark-red);
+}
+
+/* ── User list ── */
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emptySearch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  color: var(--line);
+  font-size: 0.82rem;
+  font-family: var(--font-main);
+}
+
+/* ── User row ── */
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  outline: none;
+}
+
+.userRow:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.userRowSelected {
+  background: rgba(199, 255, 68, 0.06);
+  border-color: rgba(199, 255, 68, 0.25);
+}
+
+.userRowSelected:hover {
+  background: rgba(199, 255, 68, 0.09);
+  border-color: var(--primary);
+}
+
+/* Avatar */
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.userRowSelected .userAvatar {
+  border-color: var(--primary);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarInitial {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(199, 255, 68, 0.15);
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+}
+
+/* Info */
+.userInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--light);
+  font-family: var(--font-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--line);
+  font-family: var(--font-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Checkbox */
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  color: var(--dark);
+}
+
+.checkboxOn {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .searchBar {
+    gap: 6px;
+  }
+  .bulkActions {
+    flex-wrap: nowrap;
+  }
+  .bulkBtn span {
+    display: none;
+  }
+}

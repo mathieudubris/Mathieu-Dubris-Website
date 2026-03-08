@@ -45,20 +45,31 @@ export interface KanbanAttachment {
   uploadedAt: any;
 }
 
+/** Représente un membre assignable à une carte Kanban */
+export interface KanbanMember {
+  uid: string;
+  displayName: string;
+  email: string;
+  photoURL?: string;
+  firstName?: string;
+  lastName?: string;
+  roles?: string[];
+}
+
 export interface KanbanCard {
   id?: string;
   title: string;
   description?: string;
   columnId: string;
   boardId: string;
-  position: number;                  // ordre dans la colonne
+  position: number;
   priority: KanbanPriority;
   labels: KanbanLabel[];
   assignees: string[];               // UIDs
   checklist: KanbanChecklist[];
   comments: KanbanComment[];
   attachments: KanbanAttachment[];
-  coverColor?: string;               // couleur de couverture optionnelle
+  coverColor?: string;
   dueDate?: any;                     // Timestamp ou null
   createdBy: string;
   createdAt: any;
@@ -71,8 +82,8 @@ export interface KanbanColumn {
   title: string;
   boardId: string;
   position: number;
-  color?: string;                    // couleur d'en-tête
-  cardLimit?: number | null;                // WIP limit (peut être null)
+  color?: string;
+  cardLimit?: number | null;
   createdAt: any;
   updatedAt: any;
 }
@@ -84,6 +95,8 @@ export interface KanbanBoard {
   createdBy: string;
   members: string[];                 // UIDs
   background?: string;
+  /** Membres enrichis avec infos profil (pour l'affichage dans les cartes) */
+  memberProfiles?: KanbanMember[];
   createdAt: any;
   updatedAt: any;
 }
@@ -100,10 +113,11 @@ export const createBoard = async (
     description,
     createdBy,
     members: [createdBy],
+    memberProfiles: [],
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
   };
-  
+
   const ref = await addDoc(collection(db, "kanban_boards"), boardData);
   return ref.id;
 };
@@ -115,6 +129,12 @@ export const getBoards = async (userId: string): Promise<KanbanBoard[]> => {
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as KanbanBoard));
+};
+
+export const getBoard = async (boardId: string): Promise<KanbanBoard | null> => {
+  const snap = await getDoc(doc(db, "kanban_boards", boardId));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as KanbanBoard;
 };
 
 export const updateBoard = async (
@@ -129,19 +149,40 @@ export const updateBoard = async (
 
 export const deleteBoard = async (boardId: string): Promise<void> => {
   const batch = writeBatch(db);
-  // Supprimer colonnes
   const colSnap = await getDocs(
     query(collection(db, "kanban_columns"), where("boardId", "==", boardId))
   );
   colSnap.forEach((d) => batch.delete(d.ref));
-  // Supprimer cartes
   const cardSnap = await getDocs(
     query(collection(db, "kanban_cards"), where("boardId", "==", boardId))
   );
   cardSnap.forEach((d) => batch.delete(d.ref));
-  // Supprimer board
   batch.delete(doc(db, "kanban_boards", boardId));
   await batch.commit();
+};
+
+/**
+ * Synchronise les membres d'un projet avec un tableau Kanban.
+ * Appelé depuis le projet lorsqu'on lie un Kanban à un projet.
+ */
+export const syncProjectMembersToBoard = async (
+  boardId: string,
+  projectMembers: KanbanMember[]
+): Promise<void> => {
+  const memberUids = projectMembers.map((m) => m.uid);
+  await updateDoc(doc(db, "kanban_boards", boardId), {
+    members: memberUids,
+    memberProfiles: projectMembers,
+    updatedAt: Timestamp.now(),
+  });
+};
+
+/**
+ * Récupère les profils membres d'un tableau (enrichis).
+ */
+export const getBoardMemberProfiles = async (boardId: string): Promise<KanbanMember[]> => {
+  const board = await getBoard(boardId);
+  return board?.memberProfiles || [];
 };
 
 // ─── COLUMNS ────────────────────────────────────────────────────────────────
@@ -157,12 +198,12 @@ export const createColumn = async (
     boardId,
     title,
     position,
-    color: color ?? undefined,  // Utiliser undefined au lieu de null
-    cardLimit: cardLimit ?? undefined,  // Utiliser undefined au lieu de null
+    color: color ?? undefined,
+    cardLimit: cardLimit ?? undefined,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
   };
-  
+
   const ref = await addDoc(collection(db, "kanban_columns"), columnData);
   return ref.id;
 };
@@ -181,12 +222,9 @@ export const updateColumn = async (
   columnId: string,
   data: Partial<KanbanColumn>
 ): Promise<void> => {
-  // S'assurer que cardLimit n'est pas undefined
   const cleanData = { ...data };
-  if (cleanData.cardLimit === undefined) {
-    delete cleanData.cardLimit;
-  }
-  
+  if (cleanData.cardLimit === undefined) delete cleanData.cardLimit;
+
   await updateDoc(doc(db, "kanban_columns", columnId), {
     ...cleanData,
     updatedAt: Timestamp.now(),
@@ -242,7 +280,7 @@ export const createCard = async (
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
   };
-  
+
   const ref = await addDoc(collection(db, "kanban_cards"), cardData);
   return ref.id;
 };
@@ -311,6 +349,22 @@ export const deleteCard = async (cardId: string): Promise<void> => {
   await deleteDoc(doc(db, "kanban_cards", cardId));
 };
 
+// ─── ASSIGNEES ───────────────────────────────────────────────────────────────
+
+/**
+ * Assigne ou désassigne un membre à une carte.
+ */
+export const toggleCardAssignee = async (
+  cardId: string,
+  currentAssignees: string[],
+  userId: string
+): Promise<void> => {
+  const updated = currentAssignees.includes(userId)
+    ? currentAssignees.filter((uid) => uid !== userId)
+    : [...currentAssignees, userId];
+  await updateCard(cardId, { assignees: updated });
+};
+
 // ─── CHECKLIST ───────────────────────────────────────────────────────────────
 
 export const addChecklistItem = async (
@@ -372,10 +426,18 @@ export const deleteComment = async (
 
 // ─── REAL-TIME LISTENER ──────────────────────────────────────────────────────
 
+/**
+ * S'abonne en temps réel aux colonnes et cartes d'un tableau Kanban.
+ *
+ * Le paramètre optionnel `onError` intercepte les erreurs de snapshot
+ * (notamment permission-denied) pour éviter que Firebase les logue
+ * directement dans la console et pour permettre à l'UI de réagir proprement.
+ */
 export const subscribeToBoard = (
   boardId: string,
   onColumnsUpdate: (columns: KanbanColumn[]) => void,
-  onCardsUpdate: (cards: KanbanCard[]) => void
+  onCardsUpdate: (cards: KanbanCard[]) => void,
+  onError?: (error: Error) => void
 ): Unsubscribe => {
   const colQ = query(
     collection(db, "kanban_columns"),
@@ -389,16 +451,28 @@ export const subscribeToBoard = (
     orderBy("position", "asc")
   );
 
-  const unsubCols = onSnapshot(colQ, (snap) => {
-    onColumnsUpdate(
-      snap.docs.map((d) => ({ id: d.id, ...d.data() } as KanbanColumn))
-    );
-  });
-  const unsubCards = onSnapshot(cardQ, (snap) => {
-    onCardsUpdate(
-      snap.docs.map((d) => ({ id: d.id, ...d.data() } as KanbanCard))
-    );
-  });
+  const handleError = (error: Error) => {
+    if (onError) {
+      onError(error);
+    }
+    // Ne pas re-lancer l'erreur : on l'intercepte pour éviter le log Firebase
+  };
+
+  const unsubCols = onSnapshot(
+    colQ,
+    (snap) => {
+      onColumnsUpdate(snap.docs.map((d) => ({ id: d.id, ...d.data() } as KanbanColumn)));
+    },
+    handleError
+  );
+
+  const unsubCards = onSnapshot(
+    cardQ,
+    (snap) => {
+      onCardsUpdate(snap.docs.map((d) => ({ id: d.id, ...d.data() } as KanbanCard)));
+    },
+    handleError
+  );
 
   return () => {
     unsubCols();
@@ -406,19 +480,17 @@ export const subscribeToBoard = (
   };
 };
 
-// ─── SEED DEFAULTS (premier lancement) ──────────────────────────────────────
+// ─── SEED DEFAULTS ──────────────────────────────────────────────────────────
 
-export const seedDefaultColumns = async (
-  boardId: string
-): Promise<void> => {
+export const seedDefaultColumns = async (boardId: string): Promise<void> => {
   const defaults = [
     { title: "À faire", color: "#a3a3a3" },
     { title: "En cours", color: "#c7ff44" },
     { title: "En révision", color: "#f59e0b" },
-    { title: "Blocage", color: "#ef4444" },  // Ajout de la colonne Blocage
+    { title: "Blocage", color: "#ef4444" },
     { title: "Terminé", color: "#22c55e" },
   ];
-  
+
   const batch = writeBatch(db);
   defaults.forEach(({ title, color }, i) => {
     const ref = doc(collection(db, "kanban_columns"));
@@ -427,7 +499,7 @@ export const seedDefaultColumns = async (
       title,
       position: i,
       color,
-      cardLimit: null,  // Utiliser null au lieu de undefined
+      cardLimit: null,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };

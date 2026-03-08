@@ -1,0 +1,274 @@
+/* dashboard.module.css */
+
+/* ─── Google Fonts import (add to index.html head) ───
+   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+*/
+
+.dashboardRoot {
+  min-height: 100vh;
+  background: #0a0c10;
+  color: #c8cdd8;
+  padding: 28px 32px;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* ─── Loading ─── */
+.loadingScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 16px;
+  background: #0a0c10;
+  color: #4a5060;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #1e2128;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Header ─── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dateLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4a5060;
+}
+
+.greeting {
+  font-family: 'Inter', sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: #e8eaf0;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.greeting span {
+  color: #7c3aed;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── Streak badge ─── */
+.streakBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 179, 71, 0.08);
+  border: 1px solid rgba(255, 179, 71, 0.15);
+  border-radius: 100px;
+  padding: 8px 16px;
+}
+
+.streakFlame {
+  font-size: 16px;
+}
+
+.streakCount {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffb347;
+  line-height: 1;
+}
+
+.streakLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #8a7040;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ─── Main grid ─── */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 200px 1fr 280px;
+  grid-template-rows: auto;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ─── Score card ─── */
+.scoreCard {
+  background: #111318;
+  border: 1px solid #1e2128;
+  border-radius: 16px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.scoreRing {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+
+.ringsvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ringBg {
+  fill: none;
+  stroke: #1e2128;
+  stroke-width: 8;
+}
+
+.ringFill {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
+
+.scoreCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.scoreValue {
+  font-family: 'DM Mono', monospace;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--score-color, #c8cdd8);
+  line-height: 1;
+}
+
+.scoreLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #4a5060;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.scoreStats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.scoreStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.scoreStatVal {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #c8cdd8;
+}
+
+.scoreStatLabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #4a5060;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.scoreDivider {
+  width: 1px;
+  height: 28px;
+  background: #1e2128;
+}
+
+/* ─── Checklist section ─── */
+.checklistSection {
+  height: 100%;
+}
+
+/* ─── Right column ─── */
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1100px) {
+  .mainGrid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .scoreCard {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .rightColumn {
+    grid-column: 2;
+  }
+
+  .checklistSection {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboardRoot {
+    padding: 16px;
+  }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .scoreCard,
+  .checklistSection,
+  .rightColumn {
+    grid-column: 1;
+  }
+}

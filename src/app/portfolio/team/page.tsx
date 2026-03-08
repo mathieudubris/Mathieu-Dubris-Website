@@ -7,18 +7,21 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   auth,
   setupAuthListener,
+} from '@/utils/firebase-api';
+import { 
+
   saveProjectTeamMember,
   getUserProjectTeamProfile,
   getProjectBySlug
-} from '@/utils/firebase-api';
+}  from '@/utils/projet-api';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
-import Profile from './slider/Profile';
-import PersonalInfoLocation from './slider/PersonalInfoLocation';
-import Contacts from './slider/Contacts';
-import Role from './slider/Role';
-import Equipment from './slider/Equipment';
-import Skills from './slider/Skills'; // NOUVEAU: Import Skills
+import Profile from './navigation/Profile';
+import PersonalInfoLocation from './navigation/PersonalInfoLocation';
+import Contacts from './navigation/Contacts';
+import Role from './navigation/Role';
+import Equipment from './navigation/Equipment';
+import Skills from './navigation/Skills'; // NOUVEAU: Import Skills
 import styles from './team.module.css';
 
 interface ProjectTeamMember {

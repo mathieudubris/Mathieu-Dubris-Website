@@ -1,0 +1,66 @@
+/* StatsPanel.module.css */
+.root {
+  background: #111318;
+  border: 1px solid #1e2128;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4a5060;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat {
+  background: #0d0f14;
+  border: 1px solid #1e2128;
+  border-radius: 10px;
+  padding: 14px 12px;
+  border-left: 2px solid var(--color);
+  transition: border-color 0.2s ease;
+}
+
+.stat:hover {
+  border-color: var(--color);
+  background: #12151c;
+}
+
+.statVal {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.statLabel {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #c8cdd8;
+  margin-bottom: 2px;
+}
+
+.statSub {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #3a4050;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

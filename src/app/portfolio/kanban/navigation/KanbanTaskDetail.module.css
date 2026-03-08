@@ -1,0 +1,390 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #1e1e1e;
+  gap: 1rem;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--light);
+  margin: 0;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.btnIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--line);
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-main);
+}
+
+.btnIcon:hover {
+  background: #1a1a1a;
+  color: var(--light);
+}
+
+.moveBar {
+  padding: 0.75rem 1.5rem;
+  background: #0a0a0a;
+  border-bottom: 1px solid #1e1e1e;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.moveLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--line);
+}
+
+.moveButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.moveBtn {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: var(--line);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.moveBtn:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: var(--light);
+  border-color: var(--light);
+}
+
+.moveBtn.active {
+  background: var(--primary);
+  color: var(--dark);
+  border-color: var(--primary);
+}
+
+.moveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modalBody {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0;
+}
+
+.modalMain {
+  padding: 1.25rem 1.5rem;
+  border-right: 1px solid #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modalSidebar {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.description {
+  font-size: 0.85rem;
+  color: var(--light);
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.labelsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.labelChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+}
+
+.checklistProgress {
+  margin-bottom: 0.5rem;
+}
+
+.checklistBar {
+  height: 3px;
+  background: #2a2a2a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.checklistBarFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.checklistCheckbox {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  appearance: none;
+  background: transparent;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+}
+
+.checklistCheckbox:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.checklistCheckbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: 2px solid #0e0e0e;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.checklistItemText {
+  font-size: 0.82rem;
+  color: var(--light);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.checklistItemText.done {
+  text-decoration: line-through;
+  color: var(--line);
+}
+
+.commentItem {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.commentAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--light);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.commentAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.commentContent {
+  flex: 1;
+}
+
+.commentAuthor {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.2rem;
+}
+
+.commentText {
+  font-size: 0.82rem;
+  color: var(--light);
+  line-height: 1.4;
+  background: #0e0e0e;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #1e1e1e;
+}
+
+.commentTime {
+  font-size: 0.65rem;
+  color: var(--line);
+  margin-top: 0.2rem;
+}
+
+.linkItem {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 8px;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.linkItem:hover {
+  background: #1a1a1a;
+  border-color: var(--primary);
+}
+
+.sidebarItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebarLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sidebarValue {
+  font-size: 0.85rem;
+  color: var(--light);
+}
+
+.columnBadge {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.priorityBadge {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.assigneesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.assignee {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--light);
+}

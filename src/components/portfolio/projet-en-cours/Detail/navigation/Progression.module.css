@@ -1,0 +1,215 @@
+
+
+.container {
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  font-family: var(--font-main);
+}
+
+.globalProgress {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.globalHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.globalIcon {
+  color: var(--primary);
+}
+
+.globalLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--light);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.globalPercent {
+  margin-left: auto;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.globalBar {
+  height: 8px;
+  background-color: var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.globalBarFill {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.globalStats {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--line);
+}
+
+.columnsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.columnBlock {
+  min-width: 0;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.columnDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.columnTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--light);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.columnCount {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--line);
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+
+.cardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardItem {
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.cardItem:hover {
+  border-color: var(--primary);
+}
+
+.cardDone {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.cardBlocked {
+  border-color: var(--dark-red);
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  color: var(--line);
+}
+
+.checkBadge {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--line);
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.emptyColumn {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--line);
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+}
+
+.empty {
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--line);
+  font-family: var(--font-main);
+}
+
+.emptyIcon {
+  color: var(--line);
+  margin-bottom: 12px;
+}
+
+.empty p {
+  font-size: 14px;
+  margin: 0 0 4px 0;
+}
+
+.empty span {
+  font-size: 12px;
+}
+
+.loading {
+  background-color: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  color: var(--line);
+  font-family: var(--font-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--line);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

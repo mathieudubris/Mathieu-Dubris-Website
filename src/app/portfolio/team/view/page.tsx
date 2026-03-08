@@ -4,15 +4,17 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   setupAuthListener, 
+} from '@/utils/firebase-api';
+import { 
   getProjectTeamMembers, 
   getProjectBySlug,
   isUserMemberOfProject
-} from '@/utils/firebase-api';
+} from '@/utils/projet-api';
 import { User, FolderKanban, Shield } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
-import CardView from './CardView';
-import DetailView from './DetailView';
+import CardView from './navigation/CardView';
+import DetailView from './navigation/DetailView';
 import styles from './view.module.css';
 
 export interface ProjectTeamMember {
