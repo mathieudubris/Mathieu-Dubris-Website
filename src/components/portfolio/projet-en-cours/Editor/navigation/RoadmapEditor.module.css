@@ -467,3 +467,29 @@
 
   .tbZoom { min-width: 28px; font-size: 10px; }
 }
+/* ══════════════════════════════════════════════
+   BOUTONS FLOTTANTS (extérieurs au node)
+══════════════════════════════════════════════ */
+
+/*
+ * Les boutons Edit/Delete sont positionnés en absolute
+ * au-dessus du node (top: -28px), dans le wrapper positionnel.
+ * Ils sont masqués par défaut et apparaissent au hover du wrapper.
+ */
+.nodeActionsFloat {
+  position: absolute;
+  top: -28px;
+  right: 0;
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  z-index: 20;
+  pointer-events: none;
+  transition: opacity .15s;
+}
+
+/* Afficher au hover du wrapper parent (div positionnelle) */
+div:has(> .nodeActionsFloat):hover .nodeActionsFloat {
+  opacity: 1;
+  pointer-events: all;
+}

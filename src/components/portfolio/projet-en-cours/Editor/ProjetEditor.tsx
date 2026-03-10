@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { X, Send, Image as ImageIcon, Map, Star, Users, Package, Clock, FileText, Eye, AlertCircle } from 'lucide-react';
 import { isAdmin, getAllUsers } from '@/utils/firebase-api';
 import { createProject, updateProject, generateSlug, deleteProject, Project as FirebaseProject } from '@/utils/projet-api';
-import { saveRoadmapCanvas, stripCanvasData } from '@/utils/roadmap-api';
+import { saveRoadmapCanvas, loadRoadmapCanvas, mergeCanvasIntoPhases, stripCanvasData } from '@/utils/roadmap-api';
 import { Timestamp } from 'firebase/firestore';
 
 import OverviewEditor from './navigation/OverviewEditor';
@@ -79,63 +79,85 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
   const [showNouveauteModal, setShowNouveauteModal] = useState(false);
 
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadAll = async () => {
+      // 1. Charger les utilisateurs
       try {
         const users = await getAllUsers();
         setAllUsers(users);
       } catch (err) {
         console.error('Erreur lors du chargement des utilisateurs:', err);
       }
-    };
-    loadUsers();
 
-    if (project) {
-      setTitle(project.title);
-      setSlug(project.slug || generateSlug(project.title));
-      setDescription(project.description);
-      setImage(project.image || '');
-      setCarouselImages(
-        (project.carouselImages || []).map((item: string | MediaItem) =>
-          typeof item === 'string' ? { url: item, type: 'image' as const } : item
-        )
-      );
-      setProgress(project.progress || 0);
-      setSoftware(project.software || []);
-      setTeamMembers(project.teamMembers || []);
-      setVisibility(project.visibility || 'public');
-      setViews(project.views || 0);
-      setProjectType((project as any).projectType || '');
-      setObjective((project as any).objective || '');
-      setTargetAudience((project as any).targetAudience || '');
-      setStatus((project as any).status || 'in_progress');
-      setCreatedAtEditable(project.createdAt || null);
-      setUpdatedAtEditable(project.updatedAt || null);
-      setRoadmapPhases((project as any).roadmapPhases || []);
-      setRoadmapArrows((project as any).roadmapArrows || []);
-      setKanbanBoardId((project as any).kanbanBoardId || null);
-      setDocLinks((project as any).docLinks || []);
-    } else {
-      setTitle('');
-      setSlug('');
-      setDescription('');
-      setImage('');
-      setCarouselImages([]);
-      setProgress(0);
-      setSoftware([]);
-      setTeamMembers(currentUser?.uid ? [currentUser.uid] : []);
-      setVisibility('public');
-      setViews(0);
-      setProjectType('');
-      setObjective('');
-      setTargetAudience('');
-      setStatus('in_progress');
-      setCreatedAtEditable(null);
-      setUpdatedAtEditable(null);
-      setRoadmapPhases([]);
-      setRoadmapArrows([]);
-      setKanbanBoardId(null);
-      setDocLinks([]);
-    }
+      if (project) {
+        // 2. Champs principaux
+        setTitle(project.title);
+        setSlug(project.slug || generateSlug(project.title));
+        setDescription(project.description);
+        setImage(project.image || '');
+        setCarouselImages(
+          (project.carouselImages || []).map((item: string | MediaItem) =>
+            typeof item === 'string' ? { url: item, type: 'image' as const } : item
+          )
+        );
+        setProgress(project.progress || 0);
+        setSoftware(project.software || []);
+        setTeamMembers(project.teamMembers || []);
+        setVisibility(project.visibility || 'public');
+        setViews(project.views || 0);
+        setProjectType((project as any).projectType || '');
+        setObjective((project as any).objective || '');
+        setTargetAudience((project as any).targetAudience || '');
+        setStatus((project as any).status || 'in_progress');
+        setCreatedAtEditable(project.createdAt || null);
+        setUpdatedAtEditable(project.updatedAt || null);
+        setKanbanBoardId((project as any).kanbanBoardId || null);
+        setDocLinks((project as any).docLinks || []);
+
+        // 3. Charger les données canvas (positions + flèches) depuis la sous-collection
+        //    et les fusionner avec les phases métier stockées dans le document principal.
+        const rawPhases = (project as any).roadmapPhases || [];
+        if (project.id) {
+          try {
+            const canvas = await loadRoadmapCanvas(project.id);
+            // mergeCanvasIntoPhases restaure canvasX/Y/color sur chaque phase
+            const richPhases = mergeCanvasIntoPhases(rawPhases, canvas);
+            setRoadmapPhases(richPhases);
+            setRoadmapArrows(canvas?.arrows || []);
+          } catch {
+            // En cas d'erreur, on affiche quand même les phases sans positions
+            setRoadmapPhases(rawPhases);
+            setRoadmapArrows([]);
+          }
+        } else {
+          setRoadmapPhases(rawPhases);
+          setRoadmapArrows([]);
+        }
+      } else {
+        // Nouveau projet
+        setTitle('');
+        setSlug('');
+        setDescription('');
+        setImage('');
+        setCarouselImages([]);
+        setProgress(0);
+        setSoftware([]);
+        setTeamMembers(currentUser?.uid ? [currentUser.uid] : []);
+        setVisibility('public');
+        setViews(0);
+        setProjectType('');
+        setObjective('');
+        setTargetAudience('');
+        setStatus('in_progress');
+        setCreatedAtEditable(null);
+        setUpdatedAtEditable(null);
+        setRoadmapPhases([]);
+        setRoadmapArrows([]);
+        setKanbanBoardId(null);
+        setDocLinks([]);
+      }
+    };
+
+    loadAll();
   }, [project, currentUser]);
 
   if (!isAdmin(currentUser?.email)) {

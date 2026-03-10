@@ -4,10 +4,7 @@
 
 .modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(14, 14, 14, 0.95);
   backdrop-filter: blur(30px);
   display: flex;
@@ -30,8 +27,7 @@
 
 .closeModal {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 1rem; right: 1rem;
   background: none;
   border: none;
   color: var(--light);
@@ -39,15 +35,13 @@
   cursor: pointer;
   line-height: 1;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 32px; height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   transition: all 0.3s ease;
 }
-
 .closeModal:hover {
   background-color: rgba(224, 224, 224, 0.1);
   color: var(--primary);
@@ -63,8 +57,7 @@
 }
 
 .modalAvatar {
-  width: 100px;
-  height: 100px;
+  width: 100px; height: 100px;
   border-radius: 50%;
   overflow: hidden;
   border: 3px solid var(--primary);
@@ -73,16 +66,9 @@
   justify-content: center;
   background-color: rgba(14, 14, 14, 0.8);
 }
+.modalAvatar img { width: 100%; height: 100%; object-fit: cover; }
 
-.modalAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.modalInfo {
-  flex: 1;
-}
+.modalInfo { flex: 1; }
 
 .modalName {
   font-size: 2rem;
@@ -128,11 +114,8 @@
   margin-bottom: 1rem;
 }
 
-.modalRoles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
+/* Rôles */
+.modalRoles { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
 .modalRoleTag {
   padding: 0.5rem 0.75rem;
@@ -141,66 +124,20 @@
   font-weight: 500;
   border: 1px solid transparent;
 }
+.modalRoleTag.Direction   { background-color: var(--white);  color: var(--black); border-color: var(--white); }
+.modalRoleTag.Design      { background-color: var(--green);  color: var(--black); border-color: var(--green); }
+.modalRoleTag.Programming { background-color: var(--red);    color: var(--black); border-color: var(--red); }
+.modalRoleTag.Art3D       { background-color: var(--orange); color: var(--black); border-color: var(--orange); }
+.modalRoleTag.UIUX        { background-color: var(--blue);   color: var(--black); border-color: var(--blue); }
+.modalRoleTag.Audio       { background-color: var(--yellow); color: var(--black); border-color: var(--yellow); }
+.modalRoleTag.Support     { background-color: var(--purple); color: var(--black); border-color: var(--purple); }
 
-.modalRoleTag.Direction {
-  background-color: var(--white);
-  color: var(--black);
-  border-color: var(--white);
-}
+/* Localisation */
+.modalLocation { color: var(--light); font-size: 1rem; margin: 0; }
+.modalDistrict { color: var(--primary); font-weight: 500; margin-top: 0.25rem; }
 
-.modalRoleTag.Design {
-  background-color: var(--green);
-  color: var(--black);
-  border-color: var(--green);
-}
-
-.modalRoleTag.Programming {
-  background-color: var(--red);
-  color: var(--black);
-  border-color: var(--red);
-}
-
-.modalRoleTag.Art3D {
-  background-color: var(--orange);
-  color: var(--black);
-  border-color: var(--orange);
-}
-
-.modalRoleTag.UIUX {
-  background-color: var(--blue);
-  color: var(--black);
-  border-color: var(--blue);
-}
-
-.modalRoleTag.Audio {
-  background-color: var(--yellow);
-  color: var(--black);
-  border-color: var(--yellow);
-}
-
-.modalRoleTag.Support {
-  background-color: var(--purple);
-  color: var(--black);
-  border-color: var(--purple);
-}
-
-.modalLocation {
-  color: var(--light);
-  font-size: 1rem;
-  margin: 0;
-}
-
-.modalDistrict {
-  color: var(--primary);
-  font-weight: 500;
-  margin-top: 0.25rem;
-}
-
-.modalContacts {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+/* Contacts */
+.modalContacts { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .modalContact {
   display: flex;
@@ -213,59 +150,79 @@
   transition: all 0.3s ease;
   cursor: pointer;
 }
-
 .modalContact:hover {
   background-color: rgba(199, 255, 68, 0.1);
   border-color: var(--primary);
   transform: translateY(-2px);
 }
 
-.contactIcon {
-  font-size: 1.25rem;
+.contactIcon { font-size: 1.25rem; color: var(--primary); }
+.contactType { font-weight: 500; color: var(--light); min-width: 80px; }
+.contactValue { color: var(--light); opacity: 0.9; word-break: break-all; }
+
+/* ── Connexion Internet — badge global ── */
+.internetBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: var(--primary);
+  margin-bottom: 1rem;
 }
 
-.contactType {
-  font-weight: 500;
-  color: var(--light);
-  min-width: 80px;
-}
-
-.contactValue {
-  color: var(--light);
-  opacity: 0.9;
-  word-break: break-all;
-}
-
-.modalEquipment {
-  display: flex;
-  flex-direction: column;
+/* ── Matériel — grille de cartes ── */
+.equipmentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.75rem;
 }
 
-.equipmentItem {
-  color: var(--light);
-  font-size: 0.875rem;
-  padding: 0.75rem;
+.equipmentCard {
   background-color: rgba(14, 14, 14, 0.5);
-  border-radius: 8px;
   border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.equipmentItem strong {
+.equipmentCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.85rem;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--primary);
-  margin-right: 0.5rem;
 }
 
-.noEquipment {
-  color: var(--line);
-  font-style: italic;
-  padding: 0.5rem;
+.equipmentCardBody {
+  display: flex;
+  flex-direction: column;
 }
 
-.skills {
-  margin-top: 0.5rem;
+.equipmentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.82rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 40%, transparent);
 }
+.equipmentRow:last-child { border-bottom: none; }
+
+.equipmentLabel { color: var(--light); opacity: 0.55; font-weight: 500; flex-shrink: 0; margin-right: 0.5rem; }
+.equipmentValue { color: var(--light); text-align: right; word-break: break-word; }
+
+.noEquipment { color: var(--line); font-style: italic; padding: 0.5rem; }
+
+/* Compétences */
+.skills { margin-top: 0.5rem; }
 
 .skillsContent {
   background: rgba(14, 14, 14, 0.5);
@@ -304,17 +261,8 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .modalHeader {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .modalContent {
-    padding: 1.5rem;
-  }
-
-  .modalName {
-    font-size: 1.5rem;
-  }
+  .modalHeader { flex-direction: column; text-align: center; gap: 1rem; }
+  .modalContent { padding: 1.5rem; }
+  .modalName { font-size: 1.5rem; }
+  .equipmentGrid { grid-template-columns: 1fr; }
 }

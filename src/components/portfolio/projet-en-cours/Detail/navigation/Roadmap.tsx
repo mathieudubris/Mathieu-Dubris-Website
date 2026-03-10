@@ -2,20 +2,18 @@
 
 /**
  * Roadmap — Vue publique (lecture seule)
- * Corrections :
- * - FIX #3 : flèches avec direction correcte (pointe vers le node cible)
- * - FIX #3 : têtes de flèches à l'extérieur des nodes (ancres sur les bords)
- * - FIX #1 : côtés calculés dynamiquement selon positions relatives
- * - Pas de drag, pas d'édition
- * - Boutons zoom + centrer
+ * FIXES :
+ * - Boucle infinie : useLayoutEffect avec dépendances stables (ref + flag)
+ * - Flèches : ancres libres (fromT/toT), identiques à l'éditeur v7
+ * - Toolbar identique à l'éditeur pour cohérence visuelle
  */
 
-import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Circle, Clock, CheckCircle2 } from 'lucide-react';
 import type { RoadmapArrow, RichPhase } from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor';
 import type { RoadmapPhase } from '@/utils/projet-api';
-import styles from './Roadmap.module.css';
+import styles from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor.module.css'; // ← même CSS que l'éditeur pour cohérence
 
 /* ─────────────────────────────────────────────
    Types
@@ -43,116 +41,125 @@ const STATUS_LIST = [
    Helpers
 ───────────────────────────────────────────── */
 
-/** Calcule dynamiquement le meilleur côté selon positions relatives */
-const bestSides = (
-  from: RichPhase,
-  to: RichPhase
-): { fromSide: ArrowSide; toSide: ArrowSide } => {
-  const fx = (from.canvasX ?? 0) + (from.nodeW ?? NODE_W) / 2;
-  const fy = (from.canvasY ?? 0) + (from.nodeH ?? 120) / 2;
-  const tx = (to.canvasX   ?? 0) + (to.nodeW   ?? NODE_W) / 2;
-  const ty = (to.canvasY   ?? 0) + (to.nodeH   ?? 120) / 2;
-  const dx = tx - fx;
-  const dy = ty - fy;
-  if (Math.abs(dx) >= Math.abs(dy)) {
-    return dx >= 0
-      ? { fromSide: 'right', toSide: 'left' }
-      : { fromSide: 'left',  toSide: 'right' };
-  } else {
-    return dy >= 0
-      ? { fromSide: 'bottom', toSide: 'top' }
-      : { fromSide: 'top',    toSide: 'bottom' };
-  }
-};
-
-/** Point d'ancrage sur le bord extérieur du node */
-const anchorOf = (phase: RichPhase, side: ArrowSide): { x: number; y: number } => {
-  const x = phase.canvasX ?? 0;
-  const y = phase.canvasY ?? 0;
-  const w = phase.nodeW   ?? NODE_W;
-  const h = phase.nodeH   ?? 120;
+/**
+ * Calcule les coordonnées absolues d'un point d'ancrage
+ * à partir de { side, t } stockés dans la flèche.
+ * Identique à anchorFromSideT dans RoadmapEditor v7.
+ */
+const anchorFromSideT = (
+  phase: RichPhase,
+  side:  ArrowSide,
+  t:     number
+): { x: number; y: number } => {
+  const x  = phase.canvasX ?? 0;
+  const y  = phase.canvasY ?? 0;
+  const w  = phase.nodeW   ?? NODE_W;
+  const h  = phase.nodeH   ?? 120;
+  const tc = Math.max(0, Math.min(1, t ?? 0.5));
   switch (side) {
-    case 'top':    return { x: x + w / 2, y };
-    case 'bottom': return { x: x + w / 2, y: y + h };
-    case 'left':   return { x,            y: y + h / 2 };
-    case 'right':  return { x: x + w,     y: y + h / 2 };
+    case 'top':    return { x: x + tc * w, y };
+    case 'bottom': return { x: x + tc * w, y: y + h };
+    case 'left':   return { x,             y: y + tc * h };
+    case 'right':  return { x: x + w,      y: y + tc * h };
   }
-};
-
-/** Courbe de Bézier */
-const buildPath = (x1: number, y1: number, x2: number, y2: number, fromSide: ArrowSide): string => {
-  const d = Math.max(55, Math.abs(x2 - x1) * 0.45, Math.abs(y2 - y1) * 0.45);
-  let cx1 = x1, cy1 = y1, cx2 = x2, cy2 = y2;
-  switch (fromSide) {
-    case 'right':  cx1 = x1 + d; cx2 = x2 - d; break;
-    case 'left':   cx1 = x1 - d; cx2 = x2 + d; break;
-    case 'bottom': cy1 = y1 + d; cy2 = y2 - d; break;
-    case 'top':    cy1 = y1 - d; cy2 = y2 + d; break;
-  }
-  return `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
 };
 
 /**
- * FIX — Tête de flèche correcte :
- * La flèche pointe VERS le node cible depuis l'extérieur.
- * toSide = côté du node cible où la flèche arrive.
- * La pointe doit donc pointer dans la direction d'entrée dans ce côté.
+ * Courbe de Bézier cubique avec tangentes basées sur les deux côtés.
+ * Identique à buildPath dans RoadmapEditor v7.
  */
-const arrowHeadPoints = (x: number, y: number, toSide: ArrowSide): string => {
-  const L = 11, W = 6;
-  switch (toSide) {
-    // Arrive par le côté gauche → pointe vers la droite (→) pour entrer
-    case 'left':   return `${x},${y} ${x-L},${y-W} ${x-L},${y+W}`;
-    // Arrive par le côté droit → pointe vers la gauche (←)
-    case 'right':  return `${x},${y} ${x+L},${y-W} ${x+L},${y+W}`;
-    // Arrive par le haut → pointe vers le bas (↓)
-    case 'top':    return `${x},${y} ${x-W},${y-L} ${x+W},${y-L}`;
-    // Arrive par le bas → pointe vers le haut (↑)
-    case 'bottom': return `${x},${y} ${x-W},${y+L} ${x+W},${y+L}`;
-  }
+const buildPath = (
+  x1: number, y1: number,
+  x2: number, y2: number,
+  fromSide: ArrowSide,
+  toSide:   ArrowSide
+): string => {
+  const d = Math.max(60, Math.abs(x2 - x1) * 0.5, Math.abs(y2 - y1) * 0.5);
+  const tangent = (side: ArrowSide): [number, number] => {
+    switch (side) {
+      case 'right':  return [+d, 0];
+      case 'left':   return [-d, 0];
+      case 'bottom': return [0, +d];
+      case 'top':    return [0, -d];
+    }
+  };
+  const [dx1, dy1] = tangent(fromSide);
+  const [dx2, dy2] = tangent(toSide);
+  return `M ${x1} ${y1} C ${x1+dx1} ${y1+dy1}, ${x2-dx2} ${y2-dy2}, ${x2} ${y2}`;
 };
 
 /* ─────────────────────────────────────────────
    Component
 ───────────────────────────────────────────── */
 const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
-  const rich   = phases as RichPhase[];
-  const sorted = [...rich].sort((a, b) => a.order - b.order);
+  const canvasRef  = useRef<HTMLDivElement>(null);
+  const nodeRefs   = useRef<Record<string, HTMLDivElement | null>>({});
+  const measuredRef = useRef<Record<string, { w: number; h: number }>>({});
 
-  const canvasRef = useRef<HTMLDivElement>(null);
+  // ── State local des phases (avec nodeH/W mesurés) ──
+  const [localPhases, setLocalPhases] = useState<RichPhase[]>(() => phases as RichPhase[]);
+  const prevPhasesJsonRef = useRef('');
+
+  // Sync quand phases change depuis l'extérieur (rechargement projet avec données canvas)
+  // On compare par JSON pour ne déclencher que si les données ont vraiment changé.
+  useEffect(() => {
+    const json = JSON.stringify(phases);
+    if (json === prevPhasesJsonRef.current) return;
+    prevPhasesJsonRef.current = json;
+    setLocalPhases(phases as RichPhase[]);
+    // Reset mesures pour forcer une re-mesure avec les nouvelles phases
+    measuredRef.current = {};
+  }, [phases]);
+
+  const sorted = [...localPhases].sort((a, b) => a.order - b.order);
+
   const [pan,  setPan]  = useState({ x: 60, y: 40 });
   const [zoom, setZoom] = useState(1);
   const isPanning = useRef(false);
   const panStart  = useRef({ x: 0, y: 0 });
 
-  /* ── Mesure des hauteurs pour alignement correct des ancres ── */
-  const nodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [measuredPhases, setMeasuredPhases] = useState<RichPhase[]>(rich);
+  // Ref stable vers setLocalPhases pour le useLayoutEffect
+  const setLocalPhasesRef = useRef(setLocalPhases);
+  useEffect(() => { setLocalPhasesRef.current = setLocalPhases; });
 
+  /* ── Mesure des hauteurs — FIX boucle infinie ──
+     Tourne après chaque render mais ne setState que si les dimensions DOM
+     ont réellement changé. measuredRef est resetté quand phases change
+     depuis l'extérieur (voir useEffect ci-dessus), ce qui force une
+     nouvelle mesure après rechargement des données canvas. */
   useLayoutEffect(() => {
     let changed = false;
-    const updated = rich.map(p => {
+    const next = localPhases.map(p => {
       const el = nodeRefs.current[p.id];
       if (!el) return p;
       const h = el.offsetHeight;
       const w = el.offsetWidth;
-      if (h && (h !== p.nodeH || w !== p.nodeW)) {
-        changed = true;
-        return { ...p, nodeH: h, nodeW: w };
-      }
-      return p;
+      if (!h || !w) return p;
+      const prev = measuredRef.current[p.id];
+      if (prev?.h === h && prev?.w === w) return p;
+      measuredRef.current[p.id] = { h, w };
+      changed = true;
+      return { ...p, nodeH: h, nodeW: w };
     });
-    if (changed) setMeasuredPhases(updated);
+    if (changed) setLocalPhasesRef.current(next);
+  // Pas de deps : tourne après chaque render, mais ne setState que si DOM a changé.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   });
 
-  /* Sync quand phases change depuis l'extérieur */
+  /* ── Auto-centre quand les phases sont chargées (avec leurs positions canvas) ── */
+  const hasCenteredRef = useRef(false);
   useEffect(() => {
-    setMeasuredPhases(phases as RichPhase[]);
+    // Se re-centre à chaque fois que les phases changent depuis l'extérieur
+    hasCenteredRef.current = false;
   }, [phases]);
 
-  /* ── Auto-centre au chargement ── */
   useEffect(() => {
+    if (hasCenteredRef.current) return;
     if (sorted.length === 0) return;
+    // Vérifier qu'au moins une phase a une position canvas (pas juste 0,0)
+    const hasPositions = sorted.some(p => (p.canvasX ?? 0) > 0 || (p.canvasY ?? 0) > 0);
+    if (!hasPositions && sorted.length > 1) return; // Attendre les vraies positions
+
     const minX = Math.min(...sorted.map(p => p.canvasX ?? 0));
     const minY = Math.min(...sorted.map(p => p.canvasY ?? 0));
     const maxX = Math.max(...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W)));
@@ -161,8 +168,8 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     if (!rect) return;
     const cw = rect.width  || 800;
     const ch = rect.height || 400;
-    const contentW = maxX - minX;
-    const contentH = maxY - minY;
+    const contentW = Math.max(1, maxX - minX);
+    const contentH = Math.max(1, maxY - minY);
     const scaleX = cw / (contentW + 120);
     const scaleY = ch / (contentH + 120);
     const newZoom = Math.min(1, scaleX, scaleY);
@@ -170,8 +177,9 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     const py = (ch - contentH * newZoom) / 2 - minY * newZoom;
     setPan({ x: px, y: py });
     setZoom(newZoom);
+    hasCenteredRef.current = true;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [localPhases]);
 
   /* ── Pan (drag fond) ── */
   const onCanvasMouseDown = (e: React.MouseEvent) => {
@@ -217,7 +225,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
   const onTouchEnd = () => { touchPan.current = null; };
 
   /* ── Centre ── */
-  const centerView = () => {
+  const centerView = useCallback(() => {
     if (sorted.length === 0) return;
     const minX = Math.min(...sorted.map(p => p.canvasX ?? 0));
     const minY = Math.min(...sorted.map(p => p.canvasY ?? 0));
@@ -236,10 +244,10 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     const py = (ch - contentH * newZoom) / 2 - minY * newZoom;
     setPan({ x: px, y: py });
     setZoom(newZoom);
-  };
+  }, [sorted]);
 
   /* ── SVG arrows ── */
-  const phaseMap = Object.fromEntries(measuredPhases.map(p => [p.id, p]));
+  const phaseMap = Object.fromEntries(localPhases.map(p => [p.id, p]));
   const canvasW  = Math.max(1600, ...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W) + 200));
   const canvasH  = Math.max(700,  ...sorted.map(p => (p.canvasY ?? 0) + (p.nodeH ?? 120) + 200));
 
@@ -249,19 +257,33 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
       const to   = phaseMap[arrow.toPhaseId]   as RichPhase | undefined;
       if (!from || !to) return null;
 
-      // Côtés dynamiques selon positions actuelles
-      const { fromSide, toSide } = bestSides(from, to);
-      const { x: x1, y: y1 } = anchorOf(from, fromSide);
-      const { x: x2, y: y2 } = anchorOf(to,   toSide);
+      // Utilise les ancres stockées (side + t) pour un placement fidèle à l'éditeur
+      const fromT = (arrow as any).fromT ?? 0.5;
+      const toT   = (arrow as any).toT   ?? 0.5;
+      const { x: x1, y: y1 } = anchorFromSideT(from, arrow.fromSide, fromT);
+      const { x: x2, y: y2 } = anchorFromSideT(to,   arrow.toSide,   toT);
       const col  = from.color ?? DEFAULT_COLOR;
-      const path = buildPath(x1, y1, x2, y2, fromSide);
-      const head = arrowHeadPoints(x2, y2, toSide);
+      const path = buildPath(x1, y1, x2, y2, arrow.fromSide, arrow.toSide);
+      const mid  = `vm_${arrow.id}`;
 
       return (
         <g key={arrow.id}>
-          <path d={path} fill="none" stroke={col} strokeWidth="1.8" strokeOpacity="0.65" strokeDasharray="6 4"/>
-          <circle cx={x1} cy={y1} r="4" fill={col} fillOpacity="0.85"/>
-          <polygon points={head} fill={col} fillOpacity="0.9"/>
+          <defs>
+            <marker id={mid} markerWidth="10" markerHeight="7"
+              refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill={col} fillOpacity="0.9"/>
+            </marker>
+          </defs>
+          <path
+            d={path}
+            fill="none"
+            stroke={col}
+            strokeWidth="1.8"
+            strokeOpacity="0.7"
+            strokeDasharray="6 4"
+            markerEnd={`url(#${mid})`}
+          />
+          <circle cx={x1} cy={y1} r="4.5" fill={col} fillOpacity="0.9"/>
         </g>
       );
     });
@@ -318,6 +340,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
           {sorted.length === 0 && (
             <div className={styles.emptyHint}>
               <p>Aucune phase pour le moment</p>
+              <span>Créez des phases dans l&apos;éditeur de roadmap</span>
             </div>
           )}
 
@@ -343,6 +366,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
                   '--nc': col,
                 } as React.CSSProperties}
               >
+                {/* Barre couleur */}
                 <div className={styles.nodeBar} style={{ background: col }}/>
                 <div className={styles.nodeBody}>
                   <h4 className={styles.nodeTitle}>{phase.title}</h4>

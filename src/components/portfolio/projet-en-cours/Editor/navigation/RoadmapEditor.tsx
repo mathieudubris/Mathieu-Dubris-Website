@@ -1,15 +1,22 @@
 "use client";
 
 /**
- * RoadmapEditor v5
- * - Connexion auto sur bordures (zone épaisse invisible), sans ports fixes
- * - Flèches : point de départ + vraie tête de flèche à l'arrivée
- * - Taille conteneurs auto (height auto), nodeH mesuré et sauvegardé → cohérence avec Roadmap
- * - Navigation mobile (touch)
- * - Sous-étapes entièrement supprimées
+ * RoadmapEditor v7
+ *
+ * NOUVEAUTÉS :
+ * - Bordure hover visible (anneau coloré) + curseur crosshair/+ au survol
+ * - Ancres LIBRES : le point de connexion est exactement là où la souris
+ *   touche le périmètre du node (pas seulement les 4 centres fixes)
+ * - Recalcul automatique des ancres quand un node est déplacé
+ * - Vraie tête de flèche SVG (marker orient="auto") pointant dans la
+ *   bonne direction à l'arrivée
+ * - Boucle infinie corrigée (onPhasesChangeRef stable)
+ * - Boutons Edit/Delete extérieurs au node (taille identique vue publique)
  */
 
-import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
+import React, {
+  useState, useRef, useCallback, useEffect, useLayoutEffect,
+} from 'react';
 import {
   Plus, X, Edit2, Check, ZoomIn, ZoomOut, Maximize2,
   Circle, Clock, CheckCircle2, Palette, Trash2,
@@ -18,31 +25,36 @@ import type { RoadmapPhase } from '@/utils/projet-api';
 import styles from './RoadmapEditor.module.css';
 
 /* ─────────────────────────────────────────────
-   Types exportés (consommés par Roadmap.tsx)
+   Types exportés
 ───────────────────────────────────────────── */
 export type ArrowSide = 'top' | 'right' | 'bottom' | 'left';
 
 export interface RoadmapArrow {
   id: string;
   fromPhaseId: string;
-  toPhaseId: string;
+  toPhaseId:   string;
+  // Coordonnées normalisées [0-1] sur le périmètre du node
+  // fromT / toT = position exacte sur le bord (0 = début du bord, 1 = fin)
   fromSide: ArrowSide;
-  toSide: ArrowSide;
+  fromT:    number;   // position sur le bord (0..1)
+  toSide:   ArrowSide;
+  toT:      number;
 }
 
 export interface RichPhase extends RoadmapPhase {
   canvasX?: number;
   canvasY?: number;
-  nodeW?: number;   // largeur mesurée (sauvegardée)
-  nodeH?: number;   // hauteur mesurée (sauvegardée)
-  color?: string;
+  nodeW?:   number;
+  nodeH?:   number;
+  color?:   string;
 }
 
 /* ─────────────────────────────────────────────
    Constantes
 ───────────────────────────────────────────── */
 const NODE_W        = 220;
-const BORDER_HIT    = 16;         // px — épaisseur zone de connexion invisible
+const HOVER_GAP     = 10;   // px entre le node et l'anneau hover
+const HIT_RING      = 18;   // épaisseur de la zone de clic pour démarrer une flèche
 const DEFAULT_COLOR = '#7C3AED';
 
 const PALETTE = [
@@ -56,81 +68,122 @@ const STATUS_LIST = [
   { value: 'completed'   as const, label: 'Terminé',  Icon: CheckCircle2, col: '#10B981' },
 ];
 
-/* ─────────────────────────────────────────────
-   Helpers
-───────────────────────────────────────────── */
 const uid = () => `n_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 
+/* ─────────────────────────────────────────────
+   Helpers géométrie — ancres libres
+───────────────────────────────────────────── */
+
 /**
- * Retourne le côté le plus proche si la souris est dans la zone de bordure.
+ * Projette le point (mx, my) sur le périmètre du rectangle du node.
+ * Retourne { side, t, x, y } où :
+ *   side = côté le plus proche
+ *   t    = position normalisée [0..1] sur ce côté (0=début, 1=fin)
+ *   x, y = coordonnées absolues sur le bord
  */
-const hitBorder = (
+function projectOnBorder(
   mx: number, my: number,
   nx: number, ny: number,
   nw: number, nh: number
-): ArrowSide | null => {
-  // Vérifier si on est dans le rectangle étendu
-  if (mx < nx - BORDER_HIT || mx > nx + nw + BORDER_HIT) return null;
-  if (my < ny - BORDER_HIT || my > ny + nh + BORDER_HIT) return null;
+): { side: ArrowSide; t: number; x: number; y: number } {
+  // Clamp le point dans le rectangle étendu puis projeter sur le bord le plus proche
+  const cx = Math.max(nx, Math.min(nx + nw, mx));
+  const cy = Math.max(ny, Math.min(ny + nh, my));
 
+  const dTop    = Math.abs(cy - ny);
+  const dBottom = Math.abs(cy - (ny + nh));
+  const dLeft   = Math.abs(cx - nx);
+  const dRight  = Math.abs(cx - (nx + nw));
+  const minD    = Math.min(dTop, dBottom, dLeft, dRight);
+
+  if (minD === dTop)    return { side: 'top',    t: (cx - nx) / nw, x: cx,      y: ny };
+  if (minD === dBottom) return { side: 'bottom', t: (cx - nx) / nw, x: cx,      y: ny + nh };
+  if (minD === dLeft)   return { side: 'left',   t: (cy - ny) / nh, x: nx,      y: cy };
+  /* right */           return { side: 'right',  t: (cy - ny) / nh, x: nx + nw, y: cy };
+}
+
+/**
+ * Calcule les coordonnées absolues d'un point d'ancrage à partir de
+ * { side, t } stockés dans la flèche + les dimensions actuelles du node.
+ * Utilisé pour recalculer les ancres après déplacement d'un node.
+ */
+function anchorFromSideT(
+  phase: RichPhase,
+  side: ArrowSide,
+  t: number
+): { x: number; y: number } {
+  const x  = phase.canvasX ?? 0;
+  const y  = phase.canvasY ?? 0;
+  const w  = phase.nodeW   ?? NODE_W;
+  const h  = phase.nodeH   ?? 120;
+  const tc = Math.max(0, Math.min(1, t));
+  switch (side) {
+    case 'top':    return { x: x + tc * w,      y };
+    case 'bottom': return { x: x + tc * w,      y: y + h };
+    case 'left':   return { x,                  y: y + tc * h };
+    case 'right':  return { x: x + w,           y: y + tc * h };
+  }
+}
+
+/**
+ * Vérifie si la souris est dans la zone de connexion (anneau autour du node).
+ * Retourne les coordonnées projetées si oui, null sinon.
+ */
+function hitConnectionRing(
+  mx: number, my: number,
+  nx: number, ny: number,
+  nw: number, nh: number
+): ReturnType<typeof projectOnBorder> | null {
+  // Zone externe : dans les HIT_RING px autour du rectangle
+  const inOuter = mx >= nx - HIT_RING && mx <= nx + nw + HIT_RING &&
+                  my >= ny - HIT_RING && my <= ny + nh + HIT_RING;
+  if (!inOuter) return null;
+
+  // Zone interne : si la souris est à l'intérieur du node on n'est PAS sur la bordure
+  const inInner = mx > nx + 4 && mx < nx + nw - 4 &&
+                  my > ny + 4 && my < ny + nh - 4;
+  // Distance minimum au bord
   const dTop    = Math.abs(my - ny);
   const dBottom = Math.abs(my - (ny + nh));
   const dLeft   = Math.abs(mx - nx);
   const dRight  = Math.abs(mx - (nx + nw));
-  const minDist = Math.min(dTop, dBottom, dLeft, dRight);
+  const minD    = Math.min(dTop, dBottom, dLeft, dRight);
 
-  if (minDist > BORDER_HIT) return null;
-  if (minDist === dTop)    return 'top';
-  if (minDist === dBottom) return 'bottom';
-  if (minDist === dLeft)   return 'left';
-  return 'right';
-};
+  if (inInner && minD > HIT_RING) return null;
 
-/** Point d'ancrage au centre d'un côté du node */
-const anchorOf = (phase: RichPhase, side: ArrowSide): { x: number; y: number } => {
-  const x = phase.canvasX ?? 0;
-  const y = phase.canvasY ?? 0;
-  const w = phase.nodeW   ?? NODE_W;
-  const h = phase.nodeH   ?? 120;
-  switch (side) {
-    case 'top':    return { x: x + w / 2, y };
-    case 'bottom': return { x: x + w / 2, y: y + h };
-    case 'left':   return { x,            y: y + h / 2 };
-    case 'right':  return { x: x + w,     y: y + h / 2 };
-  }
-};
+  return projectOnBorder(mx, my, nx, ny, nw, nh);
+}
 
-/** Courbe de Bézier cubique */
-const buildPath = (x1: number, y1: number, x2: number, y2: number, fromSide: ArrowSide): string => {
-  const d = Math.max(55, Math.abs(x2 - x1) * 0.45, Math.abs(y2 - y1) * 0.45);
-  let cx1 = x1, cy1 = y1, cx2 = x2, cy2 = y2;
-  switch (fromSide) {
-    case 'right':  cx1 = x1 + d; cx2 = x2 - d; break;
-    case 'left':   cx1 = x1 - d; cx2 = x2 + d; break;
-    case 'bottom': cy1 = y1 + d; cy2 = y2 - d; break;
-    case 'top':    cy1 = y1 - d; cy2 = y2 + d; break;
-  }
-  return `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
-};
-
-/** Polygone de tête de flèche directionnelle */
-const arrowHeadPoints = (x: number, y: number, toSide: ArrowSide): string => {
-  const L = 13, W = 7;
-  switch (toSide) {
-    case 'left':   return `${x},${y} ${x+L},${y-W} ${x+L},${y+W}`;
-    case 'right':  return `${x},${y} ${x-L},${y-W} ${x-L},${y+W}`;
-    case 'top':    return `${x},${y} ${x-W},${y+L} ${x+W},${y+L}`;
-    case 'bottom': return `${x},${y} ${x-W},${y-L} ${x+W},${y-L}`;
-  }
-};
+/**
+ * Construit un chemin de Bézier cubique entre deux points avec tangeantes
+ * basées sur les côtés de départ/arrivée.
+ */
+function buildPath(
+  x1: number, y1: number, x2: number, y2: number,
+  fromSide: ArrowSide, toSide: ArrowSide
+): string {
+  const d = Math.max(60, Math.abs(x2 - x1) * 0.5, Math.abs(y2 - y1) * 0.5);
+  const tangent = (side: ArrowSide): [number, number] => {
+    switch (side) {
+      case 'right':  return [+d, 0];
+      case 'left':   return [-d, 0];
+      case 'bottom': return [0, +d];
+      case 'top':    return [0, -d];
+    }
+  };
+  const [dx1, dy1] = tangent(fromSide);
+  const [dx2, dy2] = tangent(toSide);
+  // Le ctrl-point d'arrivée est inversé (on arrive depuis l'extérieur)
+  return `M ${x1} ${y1} C ${x1+dx1} ${y1+dy1}, ${x2-dx2} ${y2-dy2}, ${x2} ${y2}`;
+}
 
 /* ─────────────────────────────────────────────
    Component
 ───────────────────────────────────────────── */
 interface RoadmapEditorProps {
-  phases: RoadmapPhase[];
-  onPhasesChange: (phases: RoadmapPhase[]) => void;
-  arrows?: RoadmapArrow[];
+  phases:          RoadmapPhase[];
+  onPhasesChange:  (phases: RoadmapPhase[]) => void;
+  arrows?:         RoadmapArrow[];
   onArrowsChange?: (arrows: RoadmapArrow[]) => void;
 }
 
@@ -143,7 +196,7 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
   const sorted = [...rich].sort((a, b) => a.order - b.order);
 
   /* ── Pan / zoom ── */
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const canvasRef  = useRef<HTMLDivElement>(null);
   const [pan,  setPan]  = useState({ x: 60, y: 40 });
   const [zoom, setZoom] = useState(1);
   const isPanning  = useRef(false);
@@ -153,21 +206,30 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
   const draggingNode = useRef<string | null>(null);
   const dragOffset   = useRef({ x: 0, y: 0 });
 
-  /* ── Border hover (highlight) ── */
-  const [borderHover, setBorderHover] = useState<{ phaseId: string; side: ArrowSide } | null>(null);
+  /* ── Hover connexion ── */
+  // null = pas de hover ; sinon l'id du node survolé + coords projetées
+  const [connHover, setConnHover] = useState<{
+    phaseId: string;
+    proj: ReturnType<typeof projectOnBorder>;
+  } | null>(null);
 
   /* ── Arrow drawing ── */
   const [drawingArrow, setDrawingArrow] = useState<{
-    fromId: string; fromSide: ArrowSide; mx: number; my: number;
+    fromId:   string;
+    fromSide: ArrowSide;
+    fromT:    number;
+    fromX:    number;   // ancre départ en coordonnées canvas
+    fromY:    number;
   } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   /* ── Arrows state ── */
   const [arrows, setArrows] = useState<RoadmapArrow[]>(() => externalArrows);
+  const prevExtRef = useRef('');
   useEffect(() => {
-    setArrows(externalArrows);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(externalArrows)]);
+    const s = JSON.stringify(externalArrows);
+    if (s !== prevExtRef.current) { prevExtRef.current = s; setArrows(externalArrows); }
+  }, [externalArrows]);
 
   const emitArrows = useCallback((next: RoadmapArrow[]) => {
     setArrows(next);
@@ -179,14 +241,17 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
   const [editForm,    setEditForm]    = useState<Partial<RichPhase>>({});
   const [showPalette, setShowPalette] = useState(false);
 
-  /* ── Node DOM refs (mesure hauteur) ── */
-  const nodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  /* ── Node refs + mesure ── */
+  const nodeRefs          = useRef<Record<string, HTMLDivElement | null>>({});
+  const measuredRef       = useRef<Record<string, { w: number; h: number }>>({});
+  const onPhasesChangeRef = useRef(onPhasesChange);
+  useEffect(() => { onPhasesChangeRef.current = onPhasesChange; });
 
-  /* ─── Init positions ─── */
+  /* Init positions canvas */
   useEffect(() => {
     const needsInit = rich.some(p => p.canvasX === undefined);
     if (!needsInit) return;
-    onPhasesChange(
+    onPhasesChangeRef.current(
       rich.map((p, idx) => ({
         ...p,
         canvasX: p.canvasX ?? 60 + idx * (NODE_W + 100),
@@ -197,7 +262,7 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ─── Mesure hauteur réelle → sauvegarde ─── */
+  /* Mesure hauteur DOM — anti boucle infinie */
   useLayoutEffect(() => {
     let changed = false;
     const updated = (phases as RichPhase[]).map(p => {
@@ -205,13 +270,15 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
       if (!el) return p;
       const h = el.offsetHeight;
       const w = el.offsetWidth;
-      if (h && (h !== p.nodeH || w !== p.nodeW)) {
-        changed = true;
-        return { ...p, nodeH: h, nodeW: w };
-      }
-      return p;
+      if (!h || !w) return p;
+      const prev = measuredRef.current[p.id];
+      if (prev?.h === h && prev?.w === w) return p;
+      measuredRef.current[p.id] = { h, w };
+      changed = true;
+      return { ...p, nodeH: h, nodeW: w };
     });
-    if (changed) onPhasesChange(updated);
+    if (changed) onPhasesChangeRef.current(updated);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   });
 
   /* ─── toCanvas helper ─── */
@@ -221,7 +288,7 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
     return { x: (cx - rect.left - pan.x) / zoom, y: (cy - rect.top - pan.y) / zoom };
   }, [pan, zoom]);
 
-  /* ─── Window listeners (mouse) ─── */
+  /* ─── Window listeners ─── */
   const onWinMove = useCallback((e: MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
 
@@ -234,34 +301,47 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
             : p
         )
       );
-    } else if (isPanning.current) {
+      return;
+    }
+    if (isPanning.current) {
       setPan({ x: e.clientX - panStart.current.x, y: e.clientY - panStart.current.y });
+      return;
     }
 
-    // Update border hover
-    if (!draggingNode.current && !isPanning.current) {
-      const c = toCanvas(e.clientX, e.clientY);
-      let found: { phaseId: string; side: ArrowSide } | null = null;
-      for (const p of sorted) {
-        const side = hitBorder(c.x, c.y, p.canvasX ?? 0, p.canvasY ?? 0, p.nodeW ?? NODE_W, p.nodeH ?? 120);
-        if (side) { found = { phaseId: p.id, side }; break; }
-      }
-      setBorderHover(prev => {
-        if (!prev && !found) return prev;
-        if (prev?.phaseId === found?.phaseId && prev?.side === found?.side) return prev;
-        return found;
-      });
+    // Hover connexion : chercher si la souris est sur l'anneau d'un node
+    const c = toCanvas(e.clientX, e.clientY);
+    let found: typeof connHover = null;
+    for (const p of sorted) {
+      if (p.id === editingId) continue;
+      if (drawingArrow && p.id === drawingArrow.fromId) continue;
+      const proj = hitConnectionRing(
+        c.x, c.y,
+        p.canvasX ?? 0, p.canvasY ?? 0,
+        p.nodeW ?? NODE_W, p.nodeH ?? 120
+      );
+      if (proj) { found = { phaseId: p.id, proj }; break; }
     }
-  }, [toCanvas, phases, sorted, onPhasesChange]);
+    setConnHover(prev => {
+      if (!prev && !found) return prev;
+      if (prev?.phaseId === found?.phaseId &&
+          prev?.proj.side === found?.proj.side &&
+          Math.abs((prev?.proj.t ?? 0) - (found?.proj.t ?? 0)) < 0.01) return prev;
+      return found;
+    });
+  }, [toCanvas, phases, sorted, onPhasesChange, editingId, drawingArrow, connHover]);
 
   const onWinUp = useCallback((e: MouseEvent) => {
     if (drawingArrow) {
       const c = toCanvas(e.clientX, e.clientY);
-      let target: { phaseId: string; side: ArrowSide } | null = null;
+      let target: { phaseId: string; proj: ReturnType<typeof projectOnBorder> } | null = null;
       for (const p of sorted) {
         if (p.id === drawingArrow.fromId) continue;
-        const side = hitBorder(c.x, c.y, p.canvasX ?? 0, p.canvasY ?? 0, p.nodeW ?? NODE_W, p.nodeH ?? 120);
-        if (side) { target = { phaseId: p.id, side }; break; }
+        const proj = hitConnectionRing(
+          c.x, c.y,
+          p.canvasX ?? 0, p.canvasY ?? 0,
+          p.nodeW ?? NODE_W, p.nodeH ?? 120
+        );
+        if (proj) { target = { phaseId: p.id, proj }; break; }
       }
       if (target) {
         const already = arrows.some(a =>
@@ -270,11 +350,13 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
         );
         if (!already) {
           emitArrows([...arrows, {
-            id: uid(),
+            id:          uid(),
             fromPhaseId: drawingArrow.fromId,
             toPhaseId:   target.phaseId,
             fromSide:    drawingArrow.fromSide,
-            toSide:      target.side,
+            fromT:       drawingArrow.fromT,
+            toSide:      target.proj.side,
+            toT:         target.proj.t,
           }]);
         }
       }
@@ -294,19 +376,35 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
   /* ─── Node mousedown ─── */
   const onNodeMouseDown = (e: React.MouseEvent, phase: RichPhase) => {
     if ((e.target as HTMLElement).closest('[data-nodrag]')) return;
-    const c    = toCanvas(e.clientX, e.clientY);
-    const side = hitBorder(c.x, c.y, phase.canvasX ?? 0, phase.canvasY ?? 0, phase.nodeW ?? NODE_W, phase.nodeH ?? 120);
+    const c = toCanvas(e.clientX, e.clientY);
 
-    if (side) {
-      // Démarrer connexion
+    // Clic sur l'anneau de connexion ?
+    const proj = hitConnectionRing(
+      c.x, c.y,
+      phase.canvasX ?? 0, phase.canvasY ?? 0,
+      phase.nodeW ?? NODE_W, phase.nodeH ?? 120
+    );
+    // On démarre une flèche si on est sur la bordure (pas au centre du node)
+    const inCenter = c.x > (phase.canvasX ?? 0) + 10 &&
+                     c.x < (phase.canvasX ?? 0) + (phase.nodeW ?? NODE_W) - 10 &&
+                     c.y > (phase.canvasY ?? 0) + 10 &&
+                     c.y < (phase.canvasY ?? 0) + (phase.nodeH ?? 120) - 10;
+
+    if (proj && !inCenter) {
       e.stopPropagation();
-      setDrawingArrow({ fromId: phase.id, fromSide: side, mx: e.clientX, my: e.clientY });
+      setDrawingArrow({
+        fromId:   phase.id,
+        fromSide: proj.side,
+        fromT:    proj.t,
+        fromX:    proj.x,
+        fromY:    proj.y,
+      });
       setMousePos({ x: e.clientX, y: e.clientY });
       attachWin();
       return;
     }
 
-    // Déplacer le node
+    // Drag du node
     e.stopPropagation();
     draggingNode.current = phase.id;
     dragOffset.current   = { x: c.x - (phase.canvasX ?? 0), y: c.y - (phase.canvasY ?? 0) };
@@ -326,9 +424,9 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
     attachWin();
   };
 
-  const onCanvasMouseLeave = () => setBorderHover(null);
+  const onCanvasMouseLeave = () => { setConnHover(null); };
 
-  /* ─── Touch support ─── */
+  /* ─── Touch ─── */
   const touchPanRef  = useRef<{ x: number; y: number } | null>(null);
   const touchNodeRef = useRef<string | null>(null);
   const touchOffRef  = useRef({ x: 0, y: 0 });
@@ -338,7 +436,6 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
     const t  = e.touches[0];
     const el = e.target as HTMLElement;
     const nodeEl = el.closest('[data-phaseid]') as HTMLElement | null;
-
     if (nodeEl && !el.closest('[data-nodrag]')) {
       const phaseId = nodeEl.dataset.phaseid!;
       const phase   = sorted.find(p => p.id === phaseId);
@@ -350,7 +447,6 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
       touchPanRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
     }
   };
-
   const onTouchMove = (e: React.TouchEvent) => {
     e.preventDefault();
     if (e.touches.length !== 1) return;
@@ -368,11 +464,7 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
       setPan({ x: t.clientX - touchPanRef.current.x, y: t.clientY - touchPanRef.current.y });
     }
   };
-
-  const onTouchEnd = () => {
-    touchNodeRef.current = null;
-    touchPanRef.current  = null;
-  };
+  const onTouchEnd = () => { touchNodeRef.current = null; touchPanRef.current = null; };
 
   /* ─── Zoom ─── */
   const onWheel = (e: React.WheelEvent) => {
@@ -380,7 +472,7 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
     setZoom(z => Math.min(2.5, Math.max(0.15, z - e.deltaY * 0.001)));
   };
 
-  /* ─── Phase CRUD ─── */
+  /* ─── CRUD phases ─── */
   const addPhase = () => {
     const maxX = sorted.length > 0
       ? Math.max(...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W) + 80))
@@ -425,11 +517,12 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
     if (editingId === id) { setEditingId(null); setEditForm({}); }
   };
 
-  /* ─── SVG arrows ─── */
+  /* ─── SVG helpers ─── */
   const phaseMap = Object.fromEntries(sorted.map(p => [p.id, p]));
   const canvasW  = Math.max(1600, ...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W) + 200));
   const canvasH  = Math.max(700,  ...sorted.map(p => (p.canvasY ?? 0) + (p.nodeH ?? 120) + 200));
 
+  /* ─── Render arrows SVG ─── */
   const renderArrows = () => {
     const els: React.ReactNode[] = [];
 
@@ -438,62 +531,171 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
       const to   = phaseMap[arrow.toPhaseId]   as RichPhase | undefined;
       if (!from || !to) return;
 
-      const { x: x1, y: y1 } = anchorOf(from, arrow.fromSide);
-      const { x: x2, y: y2 } = anchorOf(to,   arrow.toSide);
+      // Recalculer les ancres à partir des t stockés + positions actuelles
+      const { x: x1, y: y1 } = anchorFromSideT(from, arrow.fromSide, arrow.fromT ?? 0.5);
+      const { x: x2, y: y2 } = anchorFromSideT(to,   arrow.toSide,   arrow.toT   ?? 0.5);
       const col  = from.color ?? DEFAULT_COLOR;
-      const path = buildPath(x1, y1, x2, y2, arrow.fromSide);
-      const head = arrowHeadPoints(x2, y2, arrow.toSide);
+      const path = buildPath(x1, y1, x2, y2, arrow.fromSide, arrow.toSide);
       const mx   = (x1 + x2) / 2;
-      const my   = (y1 + y2) / 2 - 8;
+      const my   = (y1 + y2) / 2 - 12;
+      const mid  = `marker_${arrow.id}`;
 
       els.push(
         <g key={arrow.id}>
-          <path d={path} fill="none" stroke={col} strokeWidth="1.8" strokeOpacity="0.65" strokeDasharray="6 4"/>
-          {/* Point de départ */}
-          <circle cx={x1} cy={y1} r="4" fill={col} fillOpacity="0.85"/>
-          {/* Tête de flèche à l'arrivée */}
-          <polygon points={head} fill={col} fillOpacity="0.9"/>
-          {/* Supprimer */}
-          <circle cx={mx} cy={my} r="8"
-            fill="#EF444420" stroke="#EF4444" strokeOpacity="0.5" strokeWidth="1"
+          <defs>
+            {/* Marqueur tête de flèche propre orienté automatiquement */}
+            <marker
+              id={mid}
+              markerWidth="10" markerHeight="7"
+              refX="9" refY="3.5"
+              orient="auto"
+            >
+              <polygon
+                points="0 0, 10 3.5, 0 7"
+                fill={col}
+                fillOpacity="0.9"
+              />
+            </marker>
+          </defs>
+
+          {/* Ligne pointillée */}
+          <path
+            d={path}
+            fill="none"
+            stroke={col}
+            strokeWidth="2"
+            strokeOpacity="0.7"
+            strokeDasharray="7 4"
+            markerEnd={`url(#${mid})`}
+          />
+
+          {/* Point de départ (cercle plein) */}
+          <circle cx={x1} cy={y1} r="5" fill={col} fillOpacity="0.9"/>
+
+          {/* Bouton supprimer flèche (×) au milieu */}
+          <circle
+            cx={mx} cy={my} r="9"
+            fill="#0D1020" stroke={col} strokeOpacity="0.4" strokeWidth="1"
             style={{ cursor: 'pointer', pointerEvents: 'all' }}
-            onClick={() => emitArrows(arrows.filter(a => a.id !== arrow.id))}/>
-          <text x={mx} y={my + 4} textAnchor="middle" fontSize="11"
-            fill="#EF4444" fillOpacity="0.8"
-            style={{ cursor: 'pointer', userSelect: 'none', pointerEvents: 'all' }}
-            onClick={() => emitArrows(arrows.filter(a => a.id !== arrow.id))}>×</text>
+            onClick={() => emitArrows(arrows.filter(a => a.id !== arrow.id))}
+          />
+          <text
+            x={mx} y={my + 4.5}
+            textAnchor="middle"
+            fontSize="13"
+            fill={col}
+            fillOpacity="0.8"
+            style={{ cursor: 'pointer', userSelect: 'none', pointerEvents: 'all', fontWeight: 'bold' }}
+            onClick={() => emitArrows(arrows.filter(a => a.id !== arrow.id))}
+          >×</text>
         </g>
       );
     });
 
     /* Flèche live en cours de dessin */
     if (drawingArrow) {
-      const from = phaseMap[drawingArrow.fromId] as RichPhase | undefined;
-      if (from) {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        const { x: x1, y: y1 } = anchorOf(from, drawingArrow.fromSide);
-        const x2 = rect ? (mousePos.x - rect.left - pan.x) / zoom : x1;
-        const y2 = rect ? (mousePos.y - rect.top  - pan.y) / zoom : y1;
-        const col  = from.color ?? DEFAULT_COLOR;
-        const path = buildPath(x1, y1, x2, y2, drawingArrow.fromSide);
-        els.push(
-          <g key="live">
-            <path d={path} fill="none" stroke={col} strokeWidth="1.8" strokeOpacity="0.5" strokeDasharray="5 3"/>
-            <circle cx={x1} cy={y1} r="4" fill={col} fillOpacity="0.7"/>
-            <circle cx={x2} cy={y2} r="5" fill={col} fillOpacity="0.35"/>
-          </g>
-        );
-      }
+      const rect = canvasRef.current?.getBoundingClientRect();
+      const x1   = drawingArrow.fromX;
+      const y1   = drawingArrow.fromY;
+      const x2   = rect ? (mousePos.x - rect.left - pan.x) / zoom : x1;
+      const y2   = rect ? (mousePos.y - rect.top  - pan.y) / zoom : y1;
+      const col  = (phaseMap[drawingArrow.fromId] as RichPhase | undefined)?.color ?? DEFAULT_COLOR;
+
+      // Estimer le côté d'arrivée depuis la direction de la souris
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const toSide: ArrowSide = Math.abs(dx) >= Math.abs(dy)
+        ? (dx >= 0 ? 'left' : 'right')
+        : (dy >= 0 ? 'top'  : 'bottom');
+
+      const path = buildPath(x1, y1, x2, y2, drawingArrow.fromSide, toSide);
+      els.push(
+        <g key="live">
+          <defs>
+            <marker id="live_head" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill={col} fillOpacity="0.6"/>
+            </marker>
+          </defs>
+          <path
+            d={path}
+            fill="none"
+            stroke={col}
+            strokeWidth="2"
+            strokeOpacity="0.55"
+            strokeDasharray="6 3"
+            markerEnd="url(#live_head)"
+          />
+          <circle cx={x1} cy={y1} r="5" fill={col} fillOpacity="0.8"/>
+          {/* Point d'arrivée animé */}
+          <circle cx={x2} cy={y2} r="6" fill={col} fillOpacity="0.25"/>
+          <circle cx={x2} cy={y2} r="3" fill={col} fillOpacity="0.5"/>
+        </g>
+      );
     }
 
     return els;
   };
 
+  /* ─── Render anneau hover connexion ─── */
+  const renderHoverRings = () => {
+    if (!connHover && !drawingArrow) return null;
+
+    return sorted.map(phase => {
+      const rp       = phase as RichPhase;
+      const isFrom   = drawingArrow?.fromId === phase.id;
+      const isTarget = connHover?.phaseId === phase.id;
+
+      if (!isFrom && !isTarget) return null;
+
+      const col  = rp.color ?? DEFAULT_COLOR;
+      const x    = rp.canvasX ?? 0;
+      const y    = rp.canvasY ?? 0;
+      const w    = rp.nodeW ?? NODE_W;
+      const h    = rp.nodeH ?? 120;
+      const gap  = HOVER_GAP;
+      const r    = 10; // border-radius du ring
+
+      // Rectangle arrondi autour du node
+      const rx = x - gap;
+      const ry = y - gap;
+      const rw = w + gap * 2;
+      const rh = h + gap * 2;
+
+      return (
+        <g key={`ring_${phase.id}`} style={{ pointerEvents: 'none' }}>
+          <rect
+            x={rx} y={ry} width={rw} height={rh}
+            rx={r} ry={r}
+            fill="none"
+            stroke={col}
+            strokeWidth="1.5"
+            strokeOpacity={isFrom ? 0.5 : 0.8}
+            strokeDasharray={isFrom ? '4 3' : 'none'}
+          />
+          {/* Point de connexion exact */}
+          {isTarget && connHover && (
+            <circle
+              cx={connHover.proj.x}
+              cy={connHover.proj.y}
+              r="5"
+              fill={col}
+              fillOpacity="0.9"
+            />
+          )}
+        </g>
+      );
+    });
+  };
+
+  /* Curseur global */
+  const isOnRing = !!connHover;
+  const globalCursor = drawingArrow ? 'crosshair' : isOnRing ? 'crosshair' : 'default';
+
   /* ─── Render ─── */
   return (
     <div className={styles.wrapper}>
 
-      {/* ── Toolbar ── */}
+      {/* Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.tbL}>
           <span className={styles.tbTitle}>Canvas Roadmap</span>
@@ -516,11 +718,11 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
         </div>
       </div>
 
-      {/* ── Canvas ── */}
+      {/* Canvas */}
       <div
         ref={canvasRef}
         className={styles.canvas}
-        style={{ cursor: drawingArrow || borderHover ? 'crosshair' : 'default' }}
+        style={{ cursor: globalCursor }}
         onMouseDown={onCanvasMouseDown}
         onMouseLeave={onCanvasMouseLeave}
         onWheel={onWheel}
@@ -543,21 +745,25 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
             height: canvasH,
           }}
         >
-          {/* SVG layer */}
-          <svg width={canvasW} height={canvasH}
-            style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }}>
+          {/* SVG : flèches + anneaux hover */}
+          <svg
+            width={canvasW} height={canvasH}
+            style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
+            // Les pointerEvents sont gérés par nœud dans renderArrows
+          >
+            {/* Anneaux de connexion (derrière les nodes) */}
+            {renderHoverRings()}
+            {/* Flèches (devant les anneaux) */}
             {renderArrows()}
           </svg>
 
-          {/* Empty hint */}
           {sorted.length === 0 && (
             <div className={styles.emptyHint}>
               <p>Commencez par ajouter une phase</p>
-              <span>Glissez les cartes · Approchez le bord pour connecter</span>
+              <span>Glissez les cartes · Survolez le bord pour connecter</span>
             </div>
           )}
 
-          {/* ── Phase nodes ── */}
           {sorted.map(phase => {
             const rp     = phase as RichPhase;
             const col    = rp.color ?? DEFAULT_COLOR;
@@ -566,137 +772,147 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
             const StIcon = st.Icon;
             const done   = phase.tasks.filter(t => t.done).length;
             const total  = phase.tasks.length;
-            const isHov  = borderHover?.phaseId === phase.id;
+            const isHov  = connHover?.phaseId === phase.id;
 
             return (
               <div
                 key={phase.id}
-                data-phaseid={phase.id}
-                ref={el => { nodeRefs.current[phase.id] = el; }}
-                className={`${styles.node} ${isEd ? styles.nodeOpen : ''} ${isHov ? styles.nodeBorderHover : ''}`}
                 style={{
+                  position: 'absolute',
                   left: rp.canvasX ?? 0,
                   top:  rp.canvasY ?? 0,
-                  width: NODE_W,
-                  '--nc': col,
-                } as React.CSSProperties}
-                onMouseDown={e => onNodeMouseDown(e, rp)}
+                  // Quand on est sur l'anneau, curseur crosshair sur tout le wrapper
+                  cursor: isHov && !isEd ? 'crosshair' : undefined,
+                }}
               >
-                {/* Barre couleur */}
-                <div className={styles.nodeBar} style={{ background: col }}/>
+                {/* Boutons Edit/Delete flottants EXTÉRIEURS au node */}
+                {!isEd && (
+                  <div className={styles.nodeActionsFloat} data-nodrag="1">
+                    <button type="button" className={styles.aBtn}
+                      onClick={e => { e.stopPropagation(); startEdit(rp); }} title="Modifier">
+                      <Edit2 size={11}/>
+                    </button>
+                    <button type="button" className={`${styles.aBtn} ${styles.aBtnDel}`}
+                      onClick={e => { e.stopPropagation(); deletePhase(phase.id); }} title="Supprimer">
+                      <X size={11}/>
+                    </button>
+                  </div>
+                )}
 
-                {/* Zone de bordure invisible pour la connexion */}
-                {!isEd && <div className={`${styles.borderZone} ${isHov ? styles.borderZoneActive : ''}`}/>}
+                {/* Node */}
+                <div
+                  data-phaseid={phase.id}
+                  ref={el => { nodeRefs.current[phase.id] = el; }}
+                  className={`${styles.node} ${isEd ? styles.nodeOpen : ''}`}
+                  style={{ width: NODE_W, '--nc': col } as React.CSSProperties}
+                  onMouseDown={e => onNodeMouseDown(e, rp)}
+                >
+                  <div className={styles.nodeBar} style={{ background: col }}/>
 
-                {isEd ? (
-                  /* ── Formulaire ── */
-                  <div className={styles.editWrap} data-nodrag="1">
-                    <input
-                      autoFocus className={styles.eTitle}
-                      style={{ '--ec': col } as React.CSSProperties}
-                      value={editForm.title ?? ''} placeholder="Nom de la phase…"
-                      onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}/>
+                  {isEd ? (
+                    /* Formulaire d'édition */
+                    <div className={styles.editWrap} data-nodrag="1">
+                      <input
+                        autoFocus className={styles.eTitle}
+                        style={{ '--ec': col } as React.CSSProperties}
+                        value={editForm.title ?? ''} placeholder="Nom de la phase…"
+                        onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}/>
 
-                    <select className={styles.eSelect}
-                      value={editForm.status ?? 'planned'}
-                      onChange={e => setEditForm(f => ({ ...f, status: e.target.value as RichPhase['status'] }))}>
-                      {STATUS_LIST.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
+                      <select className={styles.eSelect}
+                        value={editForm.status ?? 'planned'}
+                        onChange={e => setEditForm(f => ({ ...f, status: e.target.value as RichPhase['status'] }))}>
+                        {STATUS_LIST.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                      </select>
 
-                    <div className={styles.colorRow} data-nodrag="1">
-                      <button type="button" className={styles.paletteToggle}
-                        style={{ background: editForm.color ?? col }}
-                        onClick={() => setShowPalette(v => !v)}>
-                        <Palette size={11}/>
-                      </button>
-                      {showPalette && (
-                        <div className={styles.paletteGrid}>
-                          {PALETTE.map(c => (
-                            <button key={c} type="button"
-                              className={`${styles.palSwatch} ${(editForm.color ?? col) === c ? styles.palSwatchActive : ''}`}
-                              style={{ background: c }}
-                              onClick={() => { setEditForm(f => ({ ...f, color: c })); setShowPalette(false); }}/>
-                          ))}
+                      <div className={styles.colorRow} data-nodrag="1">
+                        <button type="button" className={styles.paletteToggle}
+                          style={{ background: editForm.color ?? col }}
+                          onClick={() => setShowPalette(v => !v)}>
+                          <Palette size={11}/>
+                        </button>
+                        {showPalette && (
+                          <div className={styles.paletteGrid}>
+                            {PALETTE.map(c => (
+                              <button key={c} type="button"
+                                className={`${styles.palSwatch} ${(editForm.color ?? col) === c ? styles.palSwatchActive : ''}`}
+                                style={{ background: c }}
+                                onClick={() => { setEditForm(f => ({ ...f, color: c })); setShowPalette(false); }}/>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <textarea className={styles.eDesc} rows={2}
+                        value={editForm.description ?? ''} placeholder="Description…"
+                        onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}/>
+
+                      <div className={styles.eDates}>
+                        <label>Début
+                          <input type="date" className={styles.eDateInput}
+                            value={editForm.startDate ?? ''}
+                            onChange={e => setEditForm(f => ({ ...f, startDate: e.target.value }))}/>
+                        </label>
+                        <span>→</span>
+                        <label>Fin
+                          <input type="date" className={styles.eDateInput}
+                            value={editForm.endDate ?? ''}
+                            onChange={e => setEditForm(f => ({ ...f, endDate: e.target.value }))}/>
+                        </label>
+                      </div>
+
+                      <div className={styles.eActions}>
+                        <button type="button" className={styles.eSave}
+                          style={{ background: col }} onClick={saveEdit}>
+                          <Check size={11}/>Enregistrer
+                        </button>
+                        <button type="button" className={styles.eCancel} onClick={cancelEdit}>Annuler</button>
+                        <button type="button" className={styles.eDelete}
+                          onClick={() => deletePhase(phase.id)}><Trash2 size={11}/></button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Affichage */
+                    <div className={styles.nodeBody}>
+                      <h4 className={styles.nodeTitle}>{phase.title}</h4>
+                      <span className={styles.nodeBadge}
+                        style={{ color: st.col, background: `${st.col}18`, border: `1px solid ${st.col}44` }}>
+                        <StIcon size={9}/>{st.label}
+                      </span>
+                      {phase.description && <p className={styles.nodeDesc}>{phase.description}</p>}
+                      {(phase.startDate || phase.endDate) && (
+                        <div className={styles.nodeDates}>
+                          {phase.startDate && (
+                            <span>{new Date(phase.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                          )}
+                          {phase.startDate && phase.endDate && <span>→</span>}
+                          {phase.endDate && (
+                            <span>{new Date(phase.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                          )}
+                        </div>
+                      )}
+                      {total > 0 && (
+                        <div className={styles.nodeProgress}>
+                          <div className={styles.pBar}>
+                            <div className={styles.pFill} style={{ width: `${(done / total) * 100}%`, background: col }}/>
+                          </div>
+                          <span style={{ color: col, fontSize: 10, fontWeight: 600 }}>{done}/{total}</span>
                         </div>
                       )}
                     </div>
-
-                    <textarea className={styles.eDesc} rows={2}
-                      value={editForm.description ?? ''} placeholder="Description…"
-                      onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}/>
-
-                    <div className={styles.eDates}>
-                      <label>Début
-                        <input type="date" className={styles.eDateInput}
-                          value={editForm.startDate ?? ''}
-                          onChange={e => setEditForm(f => ({ ...f, startDate: e.target.value }))}/>
-                      </label>
-                      <span>→</span>
-                      <label>Fin
-                        <input type="date" className={styles.eDateInput}
-                          value={editForm.endDate ?? ''}
-                          onChange={e => setEditForm(f => ({ ...f, endDate: e.target.value }))}/>
-                      </label>
-                    </div>
-
-                    <div className={styles.eActions}>
-                      <button type="button" className={styles.eSave}
-                        style={{ background: col }} onClick={saveEdit}>
-                        <Check size={11}/>Enregistrer
-                      </button>
-                      <button type="button" className={styles.eCancel} onClick={cancelEdit}>Annuler</button>
-                      <button type="button" className={styles.eDelete}
-                        onClick={() => deletePhase(phase.id)}><Trash2 size={11}/></button>
-                    </div>
-                  </div>
-                ) : (
-                  /* ── Affichage ── */
-                  <div className={styles.nodeBody}>
-                    <h4 className={styles.nodeTitle}>{phase.title}</h4>
-                    <span className={styles.nodeBadge}
-                      style={{ color: st.col, background: `${st.col}18`, border: `1px solid ${st.col}44` }}>
-                      <StIcon size={9}/>{st.label}
-                    </span>
-                    {phase.description && <p className={styles.nodeDesc}>{phase.description}</p>}
-                    {(phase.startDate || phase.endDate) && (
-                      <div className={styles.nodeDates}>
-                        {phase.startDate && (
-                          <span>{new Date(phase.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                        )}
-                        {phase.startDate && phase.endDate && <span>→</span>}
-                        {phase.endDate && (
-                          <span>{new Date(phase.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                        )}
-                      </div>
-                    )}
-                    {total > 0 && (
-                      <div className={styles.nodeProgress}>
-                        <div className={styles.pBar}>
-                          <div className={styles.pFill} style={{ width: `${(done / total) * 100}%`, background: col }}/>
-                        </div>
-                        <span style={{ color: col, fontSize: 10, fontWeight: 600 }}>{done}/{total}</span>
-                      </div>
-                    )}
-                    <div className={styles.nodeActions} data-nodrag="1">
-                      <button type="button" className={styles.aBtn}
-                        onClick={() => startEdit(rp)} title="Modifier"><Edit2 size={11}/></button>
-                      <button type="button" className={`${styles.aBtn} ${styles.aBtnDel}`}
-                        onClick={() => deletePhase(phase.id)} title="Supprimer"><X size={11}/></button>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* ── Footer ── */}
+      {/* Footer */}
       <div className={styles.footer}>
         <span>🖱 Glisser le fond pour naviguer</span><span>·</span>
         <span>⚲ Scroll pour zoomer</span><span>·</span>
         <span>Glisser une carte pour la déplacer</span><span>·</span>
-        <span>Approcher le <strong style={{ color: '#7C3AED' }}>bord</strong> d&apos;une carte pour connecter</span>
+        <span>Survoler le <strong style={{ color: '#7C3AED' }}>bord</strong> d&apos;une carte puis glisser pour connecter</span>
       </div>
     </div>
   );

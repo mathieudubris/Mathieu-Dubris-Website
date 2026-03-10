@@ -1,10 +1,10 @@
 "use client";
 
 import React from 'react';
-import { 
+import {
   User, Mail, Phone, MapPin, Monitor, Laptop, Code2,
   Instagram, MessageCircle, Youtube, Facebook, Twitter, Linkedin,
-  Music, MessageSquare
+  Music, MessageSquare, Wifi, Signal, Globe
 } from 'lucide-react';
 import { ProjectTeamMember, getRoleColorClass } from '../page';
 import styles from './detailView.module.css';
@@ -26,24 +26,39 @@ const getContactLucideIcon = (type: string) => {
     youtube: Youtube,
     facebook: Facebook,
     twitter: Twitter,
-    linkedin: Linkedin
+    linkedin: Linkedin,
   };
   return icons[type] || MessageCircle;
 };
 
+const internetInfo = {
+  wifi:   { label: 'Wi-Fi uniquement',  Icon: Wifi   },
+  mobile: { label: 'Mobile uniquement', Icon: Signal },
+  both:   { label: 'Wi-Fi + Mobile',    Icon: Globe  },
+};
+
+const getOsLabel = (os: 'windows' | 'mac' | 'linux') =>
+  os === 'windows' ? 'Windows' : os === 'mac' ? 'macOS' : 'Linux';
+
 export default function DetailView({ member, isUserMember, currentUser, shouldShowInfo, onClose }: DetailViewProps) {
+  const { internet, phones, computers } = member.equipment;
+  const visiblePhones    = phones.filter(p => shouldShowInfo(p.isPublic) && p.model);
+  const visibleComputers = computers.filter(c => shouldShowInfo(c.isPublic));
+  const hasEquipment     = visiblePhones.length > 0 || visibleComputers.length > 0;
+
+  const { label: internetLabel, Icon: InternetIcon } = internetInfo[internet] ?? internetInfo.wifi;
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeModal} onClick={onClose}>&times;</button>
 
+        {/* ── En-tête ── */}
         <div className={styles.modalHeader}>
           <div className={styles.modalAvatar}>
-            {member.image ? (
-              <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
-            ) : (
-              <User size={64} />
-            )}
+            {member.image
+              ? <img src={member.image} alt={`${member.firstName} ${member.lastName}`} />
+              : <User size={64} />}
           </div>
           <div className={styles.modalInfo}>
             <h2 className={styles.modalName}>
@@ -63,7 +78,8 @@ export default function DetailView({ member, isUserMember, currentUser, shouldSh
         </div>
 
         <div className={styles.modalSections}>
-          {/* Rôles */}
+
+          {/* ── Rôles ── */}
           {member.roles && member.roles.length > 0 && (
             <div className={styles.modalSection}>
               <h3 className={styles.modalSectionTitle}>
@@ -83,7 +99,7 @@ export default function DetailView({ member, isUserMember, currentUser, shouldSh
             </div>
           )}
 
-          {/* Localisation */}
+          {/* ── Localisation ── */}
           <div className={styles.modalSection}>
             <h3 className={styles.modalSectionTitle}>
               <MapPin size={18} />
@@ -103,7 +119,7 @@ export default function DetailView({ member, isUserMember, currentUser, shouldSh
             )}
           </div>
 
-          {/* Contacts */}
+          {/* ── Contacts ── */}
           {member.contacts && member.contacts.filter(c => shouldShowInfo(c.isPublic)).length > 0 && (
             <div className={styles.modalSection}>
               <h3 className={styles.modalSectionTitle}>
@@ -129,57 +145,81 @@ export default function DetailView({ member, isUserMember, currentUser, shouldSh
             </div>
           )}
 
-          {/* Matériel */}
+          {/* ── Matériel ── */}
           <div className={styles.modalSection}>
             <h3 className={styles.modalSectionTitle}>
               <Laptop size={18} />
               <span>Matériel utilisé</span>
             </h3>
-            <div className={styles.modalEquipment}>
-              {shouldShowInfo(member.equipment.phone.isPublic) && member.equipment.phone.model && (
-                <div className={styles.equipmentItem}>
-                  <strong>Téléphone:</strong> {member.equipment.phone.model}
-                  {member.equipment.phone.internet && (
-                    <span>
-                      {' '}({member.equipment.phone.internet === 'wifi' ? 'Wi-Fi' :
-                              member.equipment.phone.internet === 'mobile' ? 'Mobile' : 'Wi-Fi + Mobile'})
-                    </span>
-                  )}
-                </div>
-              )}
-              {shouldShowInfo(member.equipment.computer.isPublic) && (
-                <>
-                  {member.equipment.computer.os && (
-                    <div className={styles.equipmentItem}>
-                      <strong>OS:</strong> {member.equipment.computer.os === 'windows' ? 'Windows' :
-                                             member.equipment.computer.os === 'mac' ? 'macOS' : 'Linux'}
-                    </div>
-                  )}
-                  {member.equipment.computer.ram && (
-                    <div className={styles.equipmentItem}>
-                      <strong>RAM:</strong> {member.equipment.computer.ram}
-                    </div>
-                  )}
-                  {member.equipment.computer.storage && (
-                    <div className={styles.equipmentItem}>
-                      <strong>Stockage:</strong> {member.equipment.computer.storage}
-                    </div>
-                  )}
-                  {member.equipment.computer.gpu && (
-                    <div className={styles.equipmentItem}>
-                      <strong>GPU:</strong> {member.equipment.computer.gpu}
-                    </div>
-                  )}
-                </>
-              )}
-              {!shouldShowInfo(member.equipment.phone.isPublic) &&
-               !shouldShowInfo(member.equipment.computer.isPublic) && (
-                <p className={styles.noEquipment}>Aucune information matérielle visible</p>
-              )}
+
+            {/* Connexion Internet — toujours visible (info globale, pas de toggle) */}
+            <div className={styles.internetBadge}>
+              <InternetIcon size={15} />
+              <span>{internetLabel}</span>
             </div>
+
+            {hasEquipment ? (
+              <div className={styles.equipmentGrid}>
+
+                {/* Téléphones */}
+                {visiblePhones.map((phone, i) => (
+                  <div key={i} className={styles.equipmentCard}>
+                    <div className={styles.equipmentCardHeader}>
+                      <Phone size={14} />
+                      <span>Téléphone{visiblePhones.length > 1 ? ` ${i + 1}` : ''}</span>
+                    </div>
+                    <div className={styles.equipmentCardBody}>
+                      <div className={styles.equipmentRow}>
+                        <span className={styles.equipmentLabel}>Modèle</span>
+                        <span className={styles.equipmentValue}>{phone.model}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Ordinateurs */}
+                {visibleComputers.map((computer, i) => (
+                  <div key={i} className={styles.equipmentCard}>
+                    <div className={styles.equipmentCardHeader}>
+                      <Laptop size={14} />
+                      <span>Ordinateur{visibleComputers.length > 1 ? ` ${i + 1}` : ''}</span>
+                    </div>
+                    <div className={styles.equipmentCardBody}>
+                      {computer.os && (
+                        <div className={styles.equipmentRow}>
+                          <span className={styles.equipmentLabel}>OS</span>
+                          <span className={styles.equipmentValue}>{getOsLabel(computer.os)}</span>
+                        </div>
+                      )}
+                      {computer.ram && (
+                        <div className={styles.equipmentRow}>
+                          <span className={styles.equipmentLabel}>RAM</span>
+                          <span className={styles.equipmentValue}>{computer.ram}</span>
+                        </div>
+                      )}
+                      {computer.storage && (
+                        <div className={styles.equipmentRow}>
+                          <span className={styles.equipmentLabel}>Stockage</span>
+                          <span className={styles.equipmentValue}>{computer.storage}</span>
+                        </div>
+                      )}
+                      {computer.gpu && (
+                        <div className={styles.equipmentRow}>
+                          <span className={styles.equipmentLabel}>GPU</span>
+                          <span className={styles.equipmentValue}>{computer.gpu}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+              </div>
+            ) : (
+              <p className={styles.noEquipment}>Aucune information matérielle visible</p>
+            )}
           </div>
 
-          {/* Compétences */}
+          {/* ── Compétences ── */}
           {member.skills && member.skills.trim() !== '' && shouldShowInfo(member.skillsPublic !== false) && (
             <div className={`${styles.modalSection} ${styles.skills}`}>
               <h3 className={styles.modalSectionTitle}>
@@ -194,6 +234,7 @@ export default function DetailView({ member, isUserMember, currentUser, shouldSh
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>

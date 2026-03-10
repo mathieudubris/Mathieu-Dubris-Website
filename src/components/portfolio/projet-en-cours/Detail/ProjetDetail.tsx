@@ -9,6 +9,8 @@ import {
   Project as FirebaseProject,
   incrementProjectViews
 } from '@/utils/projet-api';
+import { loadRoadmapCanvas, mergeCanvasIntoPhases } from '@/utils/roadmap-api';
+import type { RoadmapArrow, RichPhase } from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor';
 import { useTheme } from '@/utils/ThemeProvider'; // Import si nécessaire
 
 import Overview from './navigation/Overview';
@@ -80,7 +82,10 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [isInTeam, setIsInTeam] = useState(false);
   const [views, setViews] = useState(project.views || 0);
-  const [hasIncremented, setHasIncremented] = useState(false); // Pour éviter les incrémentations multiples
+  const [hasIncremented, setHasIncremented] = useState(false);
+  // Phases avec positions canvas + flèches (chargés depuis la sous-collection)
+  const [richPhases, setRichPhases]   = useState<RichPhase[]>([]);
+  const [roadmapArrows, setRoadmapArrows] = useState<RoadmapArrow[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const carouselImages: string[] = project.carouselImages || [];
@@ -89,13 +94,41 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     if (currentUser && project) {
       setIsInTeam(isUserInProject(project, currentUser.uid));
       
-      // Incrémenter les vues une seule fois par session
       if (!hasIncremented) {
         incrementViews();
         setHasIncremented(true);
       }
     }
   }, [currentUser, project, hasIncremented]);
+
+  // Charger les données canvas (positions phases + flèches) depuis la sous-collection
+  useEffect(() => {
+    if (!project?.id) {
+      // Pas d'id → init positions simples sans canvas
+      const rawPhases = (project as any).roadmapPhases || [];
+      setRichPhases(mergeCanvasIntoPhases(rawPhases, null));
+      setRoadmapArrows([]);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      const rawPhases = (project as any).roadmapPhases || [];
+      try {
+        const canvas = await loadRoadmapCanvas(project.id!);
+        if (!cancelled) {
+          setRichPhases(mergeCanvasIntoPhases(rawPhases, canvas));
+          setRoadmapArrows(canvas?.arrows || []);
+        }
+      } catch {
+        if (!cancelled) {
+          setRichPhases(mergeCanvasIntoPhases(rawPhases, null));
+          setRoadmapArrows([]);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [project]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -225,7 +258,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
           </div>
 
           <div className={`${styles.tabContent} ${activeTab === 'roadmap' ? styles.visible : ''}`}>
-            <Roadmap phases={(project as any).roadmapPhases || []} projectId={project.id} />
+            <Roadmap phases={richPhases} arrows={roadmapArrows} />
           </div>
 
           <div className={`${styles.tabContent} ${activeTab === 'progression' ? styles.visible : ''}`}>

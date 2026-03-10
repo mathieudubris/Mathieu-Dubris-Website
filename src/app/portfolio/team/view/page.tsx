@@ -2,20 +2,29 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  setupAuthListener, 
-} from '@/utils/firebase-api';
-import { 
-  getProjectTeamMembers, 
-  getProjectBySlug,
-  isUserMemberOfProject
-} from '@/utils/projet-api';
+import { setupAuthListener } from '@/utils/firebase-api';
+import { getProjectTeamMembers, getProjectBySlug, isUserMemberOfProject } from '@/utils/projet-api';
 import { User, FolderKanban, Shield } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
 import CardView from './navigation/CardView';
 import DetailView from './navigation/DetailView';
 import styles from './view.module.css';
+
+// ─── Types ──────────────────────────────────────────────────────
+
+export interface PhoneEntry {
+  model: string;
+  isPublic: boolean;
+}
+
+export interface ComputerEntry {
+  os: 'windows' | 'mac' | 'linux';
+  ram: string;
+  storage: string;
+  gpu?: string;
+  isPublic: boolean;
+}
 
 export interface ProjectTeamMember {
   id: string;
@@ -39,18 +48,9 @@ export interface ProjectTeamMember {
   }[];
   roles: string[];
   equipment: {
-    phone: {
-      model: string;
-      internet: 'wifi' | 'mobile' | 'both';
-      isPublic: boolean;
-    };
-    computer: {
-      os: 'windows' | 'mac' | 'linux';
-      ram: string;
-      storage: string;
-      gpu?: string;
-      isPublic: boolean;
-    };
+    internet: 'wifi' | 'mobile' | 'both';
+    phones: PhoneEntry[];
+    computers: ComputerEntry[];
   };
   location: {
     country: string;
@@ -96,7 +96,7 @@ export const rolesData: { name: string; colorClass: string }[] = [
   { name: 'Documentation Manager', colorClass: 'Support' },
   { name: 'Content Creator', colorClass: 'Support' },
   { name: 'Marketing Manager', colorClass: 'Support' },
-  { name: 'QA Tester', colorClass: 'Support' }
+  { name: 'QA Tester', colorClass: 'Support' },
 ];
 
 export const getRoleColorClass = (roleName: string): string => {
@@ -104,7 +104,47 @@ export const getRoleColorClass = (roleName: string): string => {
   return role ? role.colorClass : '';
 };
 
+// ─── Normalisation (migration ancien format → nouveau) ──────────
+
 const normalizeMemberData = (member: any): ProjectTeamMember => {
+  const eq = member.equipment ?? {};
+
+  // Résolution de l'internet global :
+  // 1. eq.internet (nouveau)  2. eq.phone?.internet (ancien)  3. défaut 'wifi'
+  const internet: 'wifi' | 'mobile' | 'both' =
+    eq.internet ?? eq.phone?.internet ?? 'wifi';
+
+  // Téléphones
+  let phones: PhoneEntry[] = [];
+  if (eq.phones && Array.isArray(eq.phones) && eq.phones.length > 0) {
+    phones = eq.phones.map((p: any) => ({
+      model: p.model || '',
+      isPublic: p.isPublic !== undefined ? p.isPublic : true,
+    }));
+  } else if (eq.phone?.model) {
+    phones = [{ model: eq.phone.model, isPublic: eq.phone.isPublic !== undefined ? eq.phone.isPublic : true }];
+  }
+
+  // Ordinateurs
+  let computers: ComputerEntry[] = [];
+  if (eq.computers && Array.isArray(eq.computers) && eq.computers.length > 0) {
+    computers = eq.computers.map((c: any) => ({
+      os: c.os || 'windows',
+      ram: c.ram || '',
+      storage: c.storage || '',
+      gpu: c.gpu || '',
+      isPublic: c.isPublic !== undefined ? c.isPublic : true,
+    }));
+  } else if (eq.computer) {
+    computers = [{
+      os: eq.computer.os || 'windows',
+      ram: eq.computer.ram || '',
+      storage: eq.computer.storage || '',
+      gpu: eq.computer.gpu || '',
+      isPublic: eq.computer.isPublic !== undefined ? eq.computer.isPublic : true,
+    }];
+  }
+
   return {
     ...member,
     id: member.id || '',
@@ -121,37 +161,15 @@ const normalizeMemberData = (member: any): ProjectTeamMember => {
     skillsPublic: member.skillsPublic !== undefined ? member.skillsPublic : true,
     contacts: member.contacts || [],
     roles: member.roles || [],
-    equipment: {
-      phone: {
-        model: member.equipment?.phone?.model || '',
-        internet: member.equipment?.phone?.internet || 'wifi',
-        isPublic:
-          member.equipment?.phone?.isPublic !== undefined
-            ? member.equipment.phone.isPublic
-            : true,
-      },
-      computer: {
-        os: member.equipment?.computer?.os || 'windows',
-        ram: member.equipment?.computer?.ram || '',
-        storage: member.equipment?.computer?.storage || '',
-        gpu: member.equipment?.computer?.gpu || '',
-        isPublic:
-          member.equipment?.computer?.isPublic !== undefined
-            ? member.equipment.computer.isPublic
-            : true,
-      },
-    },
-    location: member.location || {
-      country: '',
-      city: '',
-      district: '',
-      districtPublic: true,
-    },
+    equipment: { internet, phones, computers },
+    location: member.location || { country: '', city: '', district: '', districtPublic: true },
     createdAt: member.createdAt?.toDate
       ? member.createdAt.toDate()
       : new Date(member.createdAt || Date.now()),
   };
 };
+
+// ─── Composant ──────────────────────────────────────────────────
 
 function TeamViewContent() {
   const router = useRouter();
@@ -191,9 +209,7 @@ function TeamViewContent() {
   };
 
   useEffect(() => {
-    if (!projectSlug && !loading) {
-      router.push('/portfolio/projet-en-cours');
-    }
+    if (!projectSlug && !loading) router.push('/portfolio/projet-en-cours');
   }, [projectSlug, loading, router]);
 
   const loadTeamMembers = async (pid: string) => {
@@ -206,19 +222,13 @@ function TeamViewContent() {
   };
 
   const handleEditProfile = () => {
-    if (currentUser && projectSlug) {
-      router.push(`/portfolio/team?project=${projectSlug}`);
-    } else {
-      setShowLogin(true);
-    }
+    if (currentUser && projectSlug) router.push(`/portfolio/team?project=${projectSlug}`);
+    else setShowLogin(true);
   };
 
   const handleBackToProjects = () => router.push('/portfolio/projet-en-cours');
 
-  const shouldShowInfo = (isPublic: boolean): boolean => {
-    if (isUserMember) return true;
-    return isPublic;
-  };
+  const shouldShowInfo = (isPublic: boolean): boolean => isUserMember || isPublic;
 
   if (loading) {
     return (
@@ -299,9 +309,7 @@ function TeamViewContent() {
                 <div className={styles.emptyState}>
                   <User size={48} className={styles.emptyStateIcon} />
                   <h3 className={styles.emptyStateTitle}>Aucun membre dans ce projet</h3>
-                  <p className={styles.emptyStateText}>
-                    Soyez le premier à créer votre profil d'équipe
-                  </p>
+                  <p className={styles.emptyStateText}>Soyez le premier à créer votre profil d'équipe</p>
                   <button onClick={handleEditProfile} className={styles.emptyStateButton}>
                     Créer mon profil
                   </button>
