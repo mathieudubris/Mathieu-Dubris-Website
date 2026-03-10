@@ -407,8 +407,8 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
     const tr = touchRef.current;
 
     if (tr.mode === 'itemResize' && tr.resizeItemId && onResize) {
-      // drag up = finger moves to lower Y clientY = drag up → size grows (startY - currentY > 0)
-      const dy = tr.resizeStartY - e.touches[0].clientY;
+      // Handle is bottom-right: dragging outward (down/right) = currentY > startY = positive dy → size grows
+      const dy = e.touches[0].clientY - tr.resizeStartY;
       const newSize = Math.round(Math.min(MAX_CHIP_SIZE, Math.max(MIN_CHIP_SIZE, tr.resizeStartSize + dy * 0.8)));
       onResize(tr.resizeItemId, newSize);
       return;
@@ -554,7 +554,7 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
       onMouseLeave={onMouseUp}
       onTouchStart={handleTouchStart}
     >
-      {/* ── TOP-LEFT: Centrer + Gérer ── */}
+      {/* ── TOP-LEFT: Centrer ── */}
       <div className={styles.topLeftControls}>
         <button
           type="button"
@@ -565,8 +565,11 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
           <Target size={13} />
           <span>Centrer</span>
         </button>
+      </div>
 
-        {editable && onManage && (
+      {/* ── TOP-RIGHT: Gérer les logiciels ── */}
+      {editable && onManage && (
+        <div className={styles.topRightControls}>
           <button
             type="button"
             className={styles.manageBtnCanvas}
@@ -575,8 +578,8 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
           >
             <Plus size={13} /> Gérer les logiciels
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── BOTTOM-RIGHT: zoom ── */}
       <div className={styles.controls}>

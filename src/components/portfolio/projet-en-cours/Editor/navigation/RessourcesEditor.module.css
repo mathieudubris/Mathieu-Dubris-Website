@@ -35,11 +35,23 @@
 }
 .manageBtn:hover { background: var(--primary); color: var(--dark); }
 
-/* ── TOP-LEFT overlay group ── */
+/* ── TOP-LEFT overlay group (Centrer uniquement) ── */
 .topLeftControls {
   position: absolute;
   top: 12px;
   left: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+/* ── TOP-RIGHT overlay group (Gérer les logiciels) ── */
+.topRightControls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
   z-index: 10;
   display: flex;
   align-items: center;
@@ -701,7 +713,7 @@
     padding: 4px 8px;
   }
   
-  .fitViewBtn span { display: none; }
+  /* fitViewBtn span always visible — text "Centrer" shown on all screen sizes */
 }
 
 @media (max-width: 480px) {

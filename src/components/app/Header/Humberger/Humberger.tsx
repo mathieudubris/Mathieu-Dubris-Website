@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from '@/utils/firebase-api';
 import styles from './Humberger.module.css';
@@ -14,6 +14,7 @@ interface Props {
 
 const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<number | null>(null);
 
@@ -24,11 +25,11 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
     {
       title: 'Accueil',
       links: [
-        { label: "Bienvenue", path: "#section1" },
-        { label: "Nouveauté", path: "#section2" },
-        { label: "Nos Services", path: "#section3" },
-        { label: "Pourquoi nous", path: "#section4" },
-        { label: "Partenaire", path: "#section5" }
+        { label: "Bienvenue", path: "section1" },
+        { label: "Nouveauté", path: "section2" },
+        { label: "Nos Services", path: "section3" },
+        { label: "Pourquoi nous", path: "section4" },
+        { label: "Partenaire", path: "section5" }
       ]
     },
     { 
@@ -71,28 +72,76 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
     }
   }, [isOpen]);
 
+  // Fonction pour scroller vers une section avec offset
+  const scrollToSection = (sectionId: string) => {
+    // sectionId est maintenant sans # (ex: "section1")
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerHeight = 80; // Ajustez cette valeur selon la hauteur de votre header
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      const offsetPosition = elementPosition - headerHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+
+      // Optionnel : enlever le hash de l'URL après le scroll
+      setTimeout(() => {
+        if (window.location.hash) {
+          history.replaceState(null, '', window.location.pathname);
+        }
+      }, 100);
+    }
+  };
+
   const handleNav = (path: string) => {
     setIsOpen(false);
 
-    // Gestion des ancres internes (#section1, etc.)
-    if (path.startsWith('#')) {
-      const element = document.querySelector(path);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+    // Gestion des sections d'accueil (sans #)
+    if (path === "section1" || path === "section2" || path === "section3" || path === "section4" || path === "section5") {
+      // Si on est sur la page d'accueil
+      if (pathname === '/home') {
+        // On scroll directement vers la section
+        setTimeout(() => {
+          scrollToSection(path);
+        }, 100);
       } else {
-        // Si l'élément n'est pas sur la page actuelle, on redirige vers l'accueil + ancre
-        router.push(`/${path}`);
+        // On redirige vers /home et on scroll après chargement
+        router.push('/home');
+        // Le scroll sera géré par le useEffect ci-dessous
+        // On stocke la section cible dans sessionStorage pour la récupérer après navigation
+        sessionStorage.setItem('targetSection', path);
       }
       return;
     }
 
     // Gestion des routes standards avec vérification de connexion
-    if (user) {
-      router.push(path);
-    } else {
-      onRequireLogin();
+    if (path.startsWith('/')) {
+      if (user) {
+        router.push(path);
+      } else {
+        onRequireLogin();
+      }
     }
   };
+
+  // Effet pour gérer le scroll quand on arrive sur /home
+  useEffect(() => {
+    if (pathname === '/home') {
+      // Vérifier s'il y a une section cible dans sessionStorage
+      const targetSection = sessionStorage.getItem('targetSection');
+      if (targetSection) {
+        // Nettoyer sessionStorage
+        sessionStorage.removeItem('targetSection');
+        
+        // Petit délai pour que le DOM soit complètement chargé
+        setTimeout(() => {
+          scrollToSection(targetSection);
+        }, 300);
+      }
+    }
+  }, [pathname]);
 
   const handleProfileIntClick = () => {
     setIsOpen(false);

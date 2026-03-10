@@ -13,7 +13,7 @@
 //
 //    match /projects/{projectId}/roadmap_canvas/{docId} {
 //      allow read: if request.auth != null;
-//      allow write: if request.auth != null && 
+//      allow write: if request.auth != null &&
 //                   (isAdmin() ||
 //                    request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.createdBy ||
 //                    get(/databases/$(database)/documents/projects/$(projectId)).data.teamMembers.hasAny([request.auth.uid]));
@@ -38,9 +38,9 @@ import type { RoadmapArrow, RichPhase } from '@/components/portfolio/projet-en-c
 export interface RoadmapCanvasData {
   /** Phases enrichies (canvasX, canvasY, color, subNodes inclus) */
   phases: RichPhase[];
-  /** Flèches custom entre les phases */
+  /** Flèches entre les phases — TOUJOURS présentes si sauvegardées */
   arrows: RoadmapArrow[];
-  updatedAt?: any;
+  updatedAt?: unknown;
 }
 
 // ─────────────────────────────────────────────
@@ -58,6 +58,9 @@ const canvasRef = (projectId: string) =>
 /**
  * Charge les données canvas (positions + flèches) pour un projet.
  * Retourne null si le document n'existe pas encore.
+ *
+ * CORRECTIF : les flèches sont désormais toujours retournées comme tableau
+ * (jamais undefined), ce qui évite la perte silencieuse lors du chargement.
  */
 export const getRoadmapCanvas = async (
   projectId: string
@@ -66,19 +69,21 @@ export const getRoadmapCanvas = async (
     const snap = await getDoc(canvasRef(projectId));
     if (!snap.exists()) return null;
     const d = snap.data();
+
     return {
-      phases: d.phases ?? [],
-      arrows: d.arrows ?? [],
+      phases:    Array.isArray(d.phases) ? d.phases : [],
+      arrows:    Array.isArray(d.arrows) ? d.arrows : [],   // ← garanti tableau
       updatedAt: d.updatedAt,
     };
   } catch (error) {
-    // Ignorer silencieusement les erreurs de permission pour éviter le bruit dans la console
-    if (error instanceof Error && 
-        (error.message.includes('permission-denied') || 
-         error.message.includes('Missing or insufficient permissions'))) {
+    // Ignorer silencieusement les erreurs de permission
+    if (
+      error instanceof Error &&
+      (error.message.includes('permission-denied') ||
+       error.message.includes('Missing or insufficient permissions'))
+    ) {
       return null;
     }
-    // Logger uniquement les vraies erreurs techniques
     if (process.env.NODE_ENV === 'development') {
       console.error('getRoadmapCanvas error:', error);
     }
@@ -92,26 +97,52 @@ export const getRoadmapCanvas = async (
 
 /**
  * Sauvegarde la totalité du canvas roadmap (phases + flèches).
- * Utilise setDoc avec merge:false pour écraser proprement.
+ *
+ * CORRECTIF : serialise explicitement les flèches pour éviter que
+ * des propriétés undefined soient silencieusement supprimées par Firestore.
+ * Les fromSide / toSide sont préservés pour garantir la cohérence visuelle
+ * lors du rechargement dans RoadmapEditor.
  */
 export const saveRoadmapCanvas = async (
   projectId: string,
   data: Omit<RoadmapCanvasData, 'updatedAt'>
 ): Promise<{ success: boolean; error?: string }> => {
   try {
+    // Sérialisation propre des flèches — s'assure qu'aucun champ n'est undefined
+    const serializedArrows: RoadmapArrow[] = (data.arrows ?? []).map(a => ({
+      id:          a.id          ?? '',
+      fromPhaseId: a.fromPhaseId ?? '',
+      toPhaseId:   a.toPhaseId   ?? '',
+      fromSide:    a.fromSide    ?? 'right',
+      toSide:      a.toSide      ?? 'left',
+    }));
+
+    // Sérialisation propre des phases (canvasX/Y toujours présents)
+    const serializedPhases: RichPhase[] = (data.phases ?? []).map(p => ({
+      ...p,
+      canvasX: p.canvasX ?? 60,
+      canvasY: p.canvasY ?? 60,
+      nodeW:   p.nodeW   ?? 220,
+      nodeH:   p.nodeH   ?? 120,
+      color:   p.color   ?? '#7C3AED',
+    }));
+
     await setDoc(canvasRef(projectId), {
-      phases: data.phases,
-      arrows: data.arrows,
+      phases:    serializedPhases,
+      arrows:    serializedArrows,
       updatedAt: Timestamp.now(),
     });
+
     return { success: true };
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message.includes('permission-denied') || 
-          error.message.includes('Missing or insufficient permissions')) {
-        return { 
-          success: false, 
-          error: 'Vous n\'avez pas les permissions pour modifier cette roadmap' 
+      if (
+        error.message.includes('permission-denied') ||
+        error.message.includes('Missing or insufficient permissions')
+      ) {
+        return {
+          success: false,
+          error: "Vous n'avez pas les permissions pour modifier cette roadmap",
         };
       }
       if (process.env.NODE_ENV === 'development') {
@@ -124,10 +155,8 @@ export const saveRoadmapCanvas = async (
 };
 
 // ─────────────────────────────────────────────
-// MERGE — ne sauvegarde que les phases de base
-// dans le document projet principal (roadmapPhases).
-// Cette fonction n'inclut PAS canvasX/Y/color/subNodes
-// pour respecter les règles Firestore strictes.
+// MERGE — extrait les données "pures" (sans canvas)
+// pour le champ project.roadmapPhases.
 // ─────────────────────────────────────────────
 
 /**
