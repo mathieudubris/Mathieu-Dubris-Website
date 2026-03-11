@@ -1,23 +1,12 @@
 "use client";
 
-/**
- * Roadmap — Vue publique (lecture seule)
- * FIXES :
- * - Boucle infinie : useLayoutEffect avec dépendances stables (ref + flag)
- * - Flèches : ancres libres (fromT/toT), identiques à l'éditeur v7
- * - Toolbar identique à l'éditeur pour cohérence visuelle
- */
-
 import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
-import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, Target } from 'lucide-react';
 import { Circle, Clock, CheckCircle2 } from 'lucide-react';
 import type { RoadmapArrow, RichPhase } from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor';
 import type { RoadmapPhase } from '@/utils/projet-api';
-import styles from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor.module.css'; // ← même CSS que l'éditeur pour cohérence
+import styles from './Roadmap.module.css';
 
-/* ─────────────────────────────────────────────
-   Types
-───────────────────────────────────────────── */
 type ArrowSide = 'top' | 'right' | 'bottom' | 'left';
 
 interface RoadmapProps {
@@ -25,58 +14,38 @@ interface RoadmapProps {
   arrows?: RoadmapArrow[];
 }
 
-/* ─────────────────────────────────────────────
-   Constantes
-───────────────────────────────────────────── */
 const NODE_W        = 220;
-const DEFAULT_COLOR = '#7C3AED';
+const DEFAULT_COLOR = '#c7ff44';
+// ARROW_OFFSET = 0 : le path se termine exactement sur le bord du node.
+// markerEnd avec refX=8 (pointe du triangle) est aligné sur ce point.
+// => La pointe de flèche touche le bord, rien ne rentre dans le node.
+const ARROW_OFFSET  = 0;
 
 const STATUS_LIST = [
-  { value: 'planned'     as const, label: 'À venir',  Icon: Circle,       col: '#6B7280' },
-  { value: 'in-progress' as const, label: 'En cours', Icon: Clock,        col: '#0EA5E9' },
-  { value: 'completed'   as const, label: 'Terminé',  Icon: CheckCircle2, col: '#10B981' },
+  { value: 'planned'     as const, label: 'À venir',  Icon: Circle,       col: '#6b7280' },
+  { value: 'in-progress' as const, label: 'En cours', Icon: Clock,        col: '#3b82f6' },
+  { value: 'completed'   as const, label: 'Terminé',  Icon: CheckCircle2, col: '#10ce55' },
 ];
 
-/* ─────────────────────────────────────────────
-   Helpers
-───────────────────────────────────────────── */
-
-/**
- * Calcule les coordonnées absolues d'un point d'ancrage
- * à partir de { side, t } stockés dans la flèche.
- * Identique à anchorFromSideT dans RoadmapEditor v7.
- */
-const anchorFromSideT = (
-  phase: RichPhase,
-  side:  ArrowSide,
-  t:     number
-): { x: number; y: number } => {
+function anchorOutside(phase: RichPhase, side: ArrowSide, t: number): { x: number; y: number } {
   const x  = phase.canvasX ?? 0;
   const y  = phase.canvasY ?? 0;
   const w  = phase.nodeW   ?? NODE_W;
   const h  = phase.nodeH   ?? 120;
   const tc = Math.max(0, Math.min(1, t ?? 0.5));
+  const o  = ARROW_OFFSET;
   switch (side) {
-    case 'top':    return { x: x + tc * w, y };
-    case 'bottom': return { x: x + tc * w, y: y + h };
-    case 'left':   return { x,             y: y + tc * h };
-    case 'right':  return { x: x + w,      y: y + tc * h };
+    case 'top':    return { x: x + tc * w, y: y - o };
+    case 'bottom': return { x: x + tc * w, y: y + h + o };
+    case 'left':   return { x: x - o,      y: y + tc * h };
+    case 'right':  return { x: x + w + o,  y: y + tc * h };
   }
-};
+}
 
-/**
- * Courbe de Bézier cubique avec tangentes basées sur les deux côtés.
- * Identique à buildPath dans RoadmapEditor v7.
- */
-const buildPath = (
-  x1: number, y1: number,
-  x2: number, y2: number,
-  fromSide: ArrowSide,
-  toSide:   ArrowSide
-): string => {
+function buildPath(x1: number, y1: number, x2: number, y2: number, fromSide: ArrowSide, toSide: ArrowSide): string {
   const d = Math.max(60, Math.abs(x2 - x1) * 0.5, Math.abs(y2 - y1) * 0.5);
-  const tangent = (side: ArrowSide): [number, number] => {
-    switch (side) {
+  const tangent = (s: ArrowSide): [number, number] => {
+    switch (s) {
       case 'right':  return [+d, 0];
       case 'left':   return [-d, 0];
       case 'bottom': return [0, +d];
@@ -86,28 +55,22 @@ const buildPath = (
   const [dx1, dy1] = tangent(fromSide);
   const [dx2, dy2] = tangent(toSide);
   return `M ${x1} ${y1} C ${x1+dx1} ${y1+dy1}, ${x2-dx2} ${y2-dy2}, ${x2} ${y2}`;
-};
+}
 
-/* ─────────────────────────────────────────────
-   Component
-───────────────────────────────────────────── */
 const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
-  const canvasRef  = useRef<HTMLDivElement>(null);
-  const nodeRefs   = useRef<Record<string, HTMLDivElement | null>>({});
+  // Un seul ref sur le wrapper — plus de canvasInner séparé
+  const wrapperRef  = useRef<HTMLDivElement>(null);
+  const nodeRefs    = useRef<Record<string, HTMLDivElement | null>>({});
   const measuredRef = useRef<Record<string, { w: number; h: number }>>({});
 
-  // ── State local des phases (avec nodeH/W mesurés) ──
   const [localPhases, setLocalPhases] = useState<RichPhase[]>(() => phases as RichPhase[]);
   const prevPhasesJsonRef = useRef('');
 
-  // Sync quand phases change depuis l'extérieur (rechargement projet avec données canvas)
-  // On compare par JSON pour ne déclencher que si les données ont vraiment changé.
   useEffect(() => {
     const json = JSON.stringify(phases);
     if (json === prevPhasesJsonRef.current) return;
     prevPhasesJsonRef.current = json;
     setLocalPhases(phases as RichPhase[]);
-    // Reset mesures pour forcer une re-mesure avec les nouvelles phases
     measuredRef.current = {};
   }, [phases]);
 
@@ -118,22 +81,16 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
   const isPanning = useRef(false);
   const panStart  = useRef({ x: 0, y: 0 });
 
-  // Ref stable vers setLocalPhases pour le useLayoutEffect
   const setLocalPhasesRef = useRef(setLocalPhases);
   useEffect(() => { setLocalPhasesRef.current = setLocalPhases; });
 
-  /* ── Mesure des hauteurs — FIX boucle infinie ──
-     Tourne après chaque render mais ne setState que si les dimensions DOM
-     ont réellement changé. measuredRef est resetté quand phases change
-     depuis l'extérieur (voir useEffect ci-dessus), ce qui force une
-     nouvelle mesure après rechargement des données canvas. */
+  /* Mesure hauteur des nodes */
   useLayoutEffect(() => {
     let changed = false;
     const next = localPhases.map(p => {
       const el = nodeRefs.current[p.id];
       if (!el) return p;
-      const h = el.offsetHeight;
-      const w = el.offsetWidth;
+      const h = el.offsetHeight, w = el.offsetWidth;
       if (!h || !w) return p;
       const prev = measuredRef.current[p.id];
       if (prev?.h === h && prev?.w === w) return p;
@@ -142,53 +99,69 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
       return { ...p, nodeH: h, nodeW: w };
     });
     if (changed) setLocalPhasesRef.current(next);
-  // Pas de deps : tourne après chaque render, mais ne setState que si DOM a changé.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   });
 
-  /* ── Auto-centre quand les phases sont chargées (avec leurs positions canvas) ── */
-  const hasCenteredRef = useRef(false);
-  useEffect(() => {
-    // Se re-centre à chaque fois que les phases changent depuis l'extérieur
-    hasCenteredRef.current = false;
-  }, [phases]);
-
-  useEffect(() => {
-    if (hasCenteredRef.current) return;
-    if (sorted.length === 0) return;
-    // Vérifier qu'au moins une phase a une position canvas (pas juste 0,0)
-    const hasPositions = sorted.some(p => (p.canvasX ?? 0) > 0 || (p.canvasY ?? 0) > 0);
-    if (!hasPositions && sorted.length > 1) return; // Attendre les vraies positions
-
+  /* Centre la vue */
+  const centerView = useCallback(() => {
+    if (!wrapperRef.current || sorted.length === 0) return;
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const cw = rect.width  || 800;
+    const ch = rect.height || 500;
     const minX = Math.min(...sorted.map(p => p.canvasX ?? 0));
     const minY = Math.min(...sorted.map(p => p.canvasY ?? 0));
     const maxX = Math.max(...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W)));
     const maxY = Math.max(...sorted.map(p => (p.canvasY ?? 0) + (p.nodeH ?? 120)));
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cw = rect.width  || 800;
-    const ch = rect.height || 400;
     const contentW = Math.max(1, maxX - minX);
     const contentH = Math.max(1, maxY - minY);
-    const scaleX = cw / (contentW + 120);
-    const scaleY = ch / (contentH + 120);
-    const newZoom = Math.min(1, scaleX, scaleY);
-    const px = (cw - contentW * newZoom) / 2 - minX * newZoom;
-    const py = (ch - contentH * newZoom) / 2 - minY * newZoom;
-    setPan({ x: px, y: py });
+    const newZoom = Math.min(1, (cw - 80) / contentW, (ch - 80) / contentH);
+    setPan({
+      x: (cw - contentW * newZoom) / 2 - minX * newZoom,
+      y: (ch - contentH * newZoom) / 2 - minY * newZoom,
+    });
     setZoom(newZoom);
+  }, [sorted]);
+
+  /* Auto-centre au chargement */
+  const hasCenteredRef = useRef(false);
+  useEffect(() => { hasCenteredRef.current = false; }, [phases]);
+  useEffect(() => {
+    if (hasCenteredRef.current || sorted.length === 0) return;
+    const hasPositions = sorted.some(p => (p.canvasX ?? 0) > 0 || (p.canvasY ?? 0) > 0);
+    if (!hasPositions && sorted.length > 1) return;
+    centerView();
     hasCenteredRef.current = true;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localPhases]);
 
-  /* ── Pan (drag fond) ── */
-  const onCanvasMouseDown = (e: React.MouseEvent) => {
-    const el = e.target as HTMLElement;
-    if (
-      !el.classList.contains(styles.world) &&
-      !el.classList.contains(styles.dotGrid) &&
-      el !== canvasRef.current
-    ) return;
+  /* Zoom molette vers le curseur */
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const factor = e.deltaY < 0 ? 1.1 : 0.91;
+      setZoom(prev => {
+        const next = Math.min(2.5, Math.max(0.15, prev * factor));
+        setPan(p => ({
+          x: mx - (mx - p.x) * (next / prev),
+          y: my - (my - p.y) * (next / prev),
+        }));
+        return next;
+      });
+    };
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  /* Pan souris */
+  const onMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[data-phaseid]')) return;
+    e.preventDefault();
     isPanning.current = true;
     panStart.current  = { x: e.clientX - pan.x, y: e.clientY - pan.y };
     const onMove = (ev: MouseEvent) => {
@@ -198,18 +171,13 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     const onUp = () => {
       isPanning.current = false;
       window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup',   onUp);
+      window.removeEventListener('mouseup', onUp);
     };
     window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup',   onUp);
+    window.addEventListener('mouseup', onUp);
   };
 
-  const onWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    setZoom(z => Math.min(2.5, Math.max(0.15, z - e.deltaY * 0.001)));
-  };
-
-  /* ── Touch pan ── */
+  /* Pan tactile */
   const touchPan = useRef<{ x: number; y: number } | null>(null);
   const onTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length !== 1) return;
@@ -224,29 +192,6 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
   };
   const onTouchEnd = () => { touchPan.current = null; };
 
-  /* ── Centre ── */
-  const centerView = useCallback(() => {
-    if (sorted.length === 0) return;
-    const minX = Math.min(...sorted.map(p => p.canvasX ?? 0));
-    const minY = Math.min(...sorted.map(p => p.canvasY ?? 0));
-    const maxX = Math.max(...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W)));
-    const maxY = Math.max(...sorted.map(p => (p.canvasY ?? 0) + (p.nodeH ?? 120)));
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cw = rect.width  || 800;
-    const ch = rect.height || 400;
-    const contentW = maxX - minX;
-    const contentH = maxY - minY;
-    const scaleX = cw / (contentW + 120);
-    const scaleY = ch / (contentH + 120);
-    const newZoom = Math.min(1, scaleX, scaleY);
-    const px = (cw - contentW * newZoom) / 2 - minX * newZoom;
-    const py = (ch - contentH * newZoom) / 2 - minY * newZoom;
-    setPan({ x: px, y: py });
-    setZoom(newZoom);
-  }, [sorted]);
-
-  /* ── SVG arrows ── */
   const phaseMap = Object.fromEntries(localPhases.map(p => [p.id, p]));
   const canvasW  = Math.max(1600, ...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W) + 200));
   const canvasH  = Math.max(700,  ...sorted.map(p => (p.canvasY ?? 0) + (p.nodeH ?? 120) + 200));
@@ -256,155 +201,144 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
       const from = phaseMap[arrow.fromPhaseId] as RichPhase | undefined;
       const to   = phaseMap[arrow.toPhaseId]   as RichPhase | undefined;
       if (!from || !to) return null;
-
-      // Utilise les ancres stockées (side + t) pour un placement fidèle à l'éditeur
       const fromT = (arrow as any).fromT ?? 0.5;
       const toT   = (arrow as any).toT   ?? 0.5;
-      const { x: x1, y: y1 } = anchorFromSideT(from, arrow.fromSide, fromT);
-      const { x: x2, y: y2 } = anchorFromSideT(to,   arrow.toSide,   toT);
+      const { x: x1, y: y1 } = anchorOutside(from, arrow.fromSide, fromT);
+      const { x: x2, y: y2 } = anchorOutside(to,   arrow.toSide,   toT);
       const col  = from.color ?? DEFAULT_COLOR;
       const path = buildPath(x1, y1, x2, y2, arrow.fromSide, arrow.toSide);
       const mid  = `vm_${arrow.id}`;
-
       return (
         <g key={arrow.id}>
           <defs>
-            <marker id={mid} markerWidth="10" markerHeight="7"
-              refX="9" refY="3.5" orient="auto">
-              <polygon points="0 0, 10 3.5, 0 7" fill={col} fillOpacity="0.9"/>
+            <marker id={mid} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <polygon points="0 0, 8 3, 0 6" fill={col} fillOpacity="0.95" />
             </marker>
           </defs>
-          <path
-            d={path}
-            fill="none"
-            stroke={col}
-            strokeWidth="1.8"
-            strokeOpacity="0.7"
-            strokeDasharray="6 4"
-            markerEnd={`url(#${mid})`}
-          />
-          <circle cx={x1} cy={y1} r="4.5" fill={col} fillOpacity="0.9"/>
+          <path d={path} fill="none" stroke={col} strokeWidth="2" strokeOpacity="0.7" strokeDasharray="6 4" markerEnd={`url(#${mid})`} />
+          <circle cx={x1} cy={y1} r="4" fill={col} fillOpacity="0.95" />
         </g>
       );
     });
 
-  /* ── Render ── */
   return (
-    <div className={styles.wrapper}>
-      {/* Toolbar lecture seule */}
-      <div className={styles.toolbar}>
-        <div className={styles.tbL}>
-          <span className={styles.tbTitle}>Roadmap</span>
-          <span className={styles.tbBadge}>{phases.length} phase{phases.length !== 1 ? 's' : ''}</span>
-        </div>
-        <div className={styles.tbR}>
-          <button type="button" className={styles.tbBtn}
-            onClick={() => setZoom(z => Math.min(2.5, +(z + 0.1).toFixed(1)))}><ZoomIn size={13}/></button>
-          <span className={styles.tbZoom}>{Math.round(zoom * 100)}%</span>
-          <button type="button" className={styles.tbBtn}
-            onClick={() => setZoom(z => Math.max(0.15, +(z - 0.1).toFixed(1)))}><ZoomOut size={13}/></button>
-          <button type="button" className={styles.tbBtn} title="Centrer" onClick={centerView}>
-            <Maximize2 size={13}/>
+    <div
+      ref={wrapperRef}
+      className={styles.canvas}
+      style={{ cursor: isPanning.current ? 'grabbing' : 'grab' }}
+      onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Grille de fond */}
+      <div
+        className={styles.dotGrid}
+        style={{ backgroundPosition: `${pan.x % 28}px ${pan.y % 28}px` }}
+      />
+
+      {/* Bouton Centrer — haut gauche */}
+      <div className={styles.topLeftControls}>
+        <button
+          type="button"
+          className={`${styles.controlBtn} ${styles.fitViewBtn}`}
+          onClick={centerView}
+          title="Centrer la vue"
+        >
+          <Target size={13} /><span>Centrer</span>
+        </button>
+      </div>
+
+      {/* Boutons Zoom — bas droite */}
+      <div className={styles.zoomControls}>
+        <div className={styles.controlGroup}>
+          <button type="button" className={styles.controlBtn} onClick={() => setZoom(z => Math.min(2.5, z * 1.2))} title="Zoom +">
+            <ZoomIn size={13} />
+          </button>
+          <span className={styles.controlValue}>{Math.round(zoom * 100)}%</span>
+          <button type="button" className={styles.controlBtn} onClick={() => setZoom(z => Math.max(0.15, z / 1.2))} title="Zoom −">
+            <ZoomOut size={13} />
           </button>
         </div>
       </div>
 
-      {/* Canvas */}
+      {/* Monde pannable */}
       <div
-        ref={canvasRef}
-        className={styles.canvas}
-        style={{ cursor: 'grab' }}
-        onMouseDown={onCanvasMouseDown}
-        onWheel={onWheel}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+        className={styles.world}
+        style={{
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transformOrigin: '0 0',
+          width: canvasW,
+          height: canvasH,
+        }}
       >
-        <div className={styles.dotGrid}
-          style={{ backgroundPosition: `${pan.x % 28}px ${pan.y % 28}px` }}/>
+        {sorted.length === 0 && (
+          <div className={styles.emptyHint}>
+            <p>Aucune phase pour le moment</p>
+            <span>Créez des phases dans l&apos;éditeur de roadmap</span>
+          </div>
+        )}
 
-        <div
-          className={styles.world}
-          style={{
-            transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})`,
-            transformOrigin: '0 0',
-            width: canvasW,
-            height: canvasH,
-          }}
-        >
-          <svg width={canvasW} height={canvasH}
-            style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }}>
-            {renderArrows()}
-          </svg>
+        {sorted.map(phase => {
+          const rp     = phase as RichPhase;
+          const col    = rp.color ?? DEFAULT_COLOR;
+          const st     = STATUS_LIST.find(s => s.value === phase.status) ?? STATUS_LIST[0];
+          const StIcon = st.Icon;
+          const done   = phase.tasks.filter(t => t.done).length;
+          const total  = phase.tasks.length;
 
-          {sorted.length === 0 && (
-            <div className={styles.emptyHint}>
-              <p>Aucune phase pour le moment</p>
-              <span>Créez des phases dans l&apos;éditeur de roadmap</span>
-            </div>
-          )}
-
-          {sorted.map(phase => {
-            const rp     = phase as RichPhase;
-            const col    = rp.color ?? DEFAULT_COLOR;
-            const st     = STATUS_LIST.find(s => s.value === phase.status) ?? STATUS_LIST[0];
-            const StIcon = st.Icon;
-            const done   = phase.tasks.filter(t => t.done).length;
-            const total  = phase.tasks.length;
-
-            return (
-              <div
-                key={phase.id}
-                data-phaseid={phase.id}
-                ref={el => { nodeRefs.current[phase.id] = el; }}
-                className={styles.node}
-                style={{
-                  left:   rp.canvasX ?? 0,
-                  top:    rp.canvasY ?? 0,
-                  width:  NODE_W,
-                  cursor: 'default',
-                  '--nc': col,
-                } as React.CSSProperties}
-              >
-                {/* Barre couleur */}
-                <div className={styles.nodeBar} style={{ background: col }}/>
-                <div className={styles.nodeBody}>
-                  <h4 className={styles.nodeTitle}>{phase.title}</h4>
-                  <span className={styles.nodeBadge}
-                    style={{ color: st.col, background: `${st.col}18`, border: `1px solid ${st.col}44` }}>
-                    <StIcon size={9}/>{st.label}
-                  </span>
-                  {phase.description && <p className={styles.nodeDesc}>{phase.description}</p>}
-                  {(phase.startDate || phase.endDate) && (
-                    <div className={styles.nodeDates}>
-                      {phase.startDate && (
-                        <span>{new Date(phase.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                      )}
-                      {phase.startDate && phase.endDate && <span>→</span>}
-                      {phase.endDate && (
-                        <span>{new Date(phase.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                      )}
+          return (
+            <div
+              key={phase.id}
+              data-phaseid={phase.id}
+              ref={el => { nodeRefs.current[phase.id] = el; }}
+              className={styles.node}
+              style={{
+                position: 'absolute',
+                left:   rp.canvasX ?? 0,
+                top:    rp.canvasY ?? 0,
+                width:  NODE_W,
+                '--nc': col,
+                backgroundColor: `${col}33`,
+              } as React.CSSProperties}
+            >
+              <div className={styles.nodeBody}>
+                <h4 className={styles.nodeTitle}>{phase.title}</h4>
+                <span
+                  className={styles.nodeBadge}
+                  style={{ color: st.col, background: `${st.col}18`, border: `1px solid ${st.col}44` }}
+                >
+                  <StIcon size={9} />{st.label}
+                </span>
+                {phase.description && <p className={styles.nodeDesc}>{phase.description}</p>}
+                {(phase.startDate || phase.endDate) && (
+                  <div className={styles.nodeDates}>
+                    {phase.startDate && <span>{new Date(phase.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>}
+                    {phase.startDate && phase.endDate && <span>→</span>}
+                    {phase.endDate && <span>{new Date(phase.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>}
+                  </div>
+                )}
+                {total > 0 && (
+                  <div className={styles.nodeProgress}>
+                    <div className={styles.pBar}>
+                      <div className={styles.pFill} style={{ width: `${(done / total) * 100}%`, background: col }} />
                     </div>
-                  )}
-                  {total > 0 && (
-                    <div className={styles.nodeProgress}>
-                      <div className={styles.pBar}>
-                        <div className={styles.pFill} style={{ width: `${(done / total) * 100}%`, background: col }}/>
-                      </div>
-                      <span style={{ color: col, fontSize: 10, fontWeight: 600 }}>{done}/{total}</span>
-                    </div>
-                  )}
-                </div>
+                    <span style={{ color: col, fontSize: 10, fontWeight: 600 }}>{done}/{total}</span>
+                  </div>
+                )}
               </div>
-            );
-          })}
-        </div>
-      </div>
+            </div>
+          );
+        })}
 
-      {/* Footer */}
-      <div className={styles.footer}>
-        <span>🖱 Glisser pour naviguer</span><span>·</span>
-        <span>⚲ Scroll pour zoomer</span>
+        {/* SVG rendu APRÈS les nodes → flèches par-dessus les nodes */}
+        <svg
+          width={canvasW}
+          height={canvasH}
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible', zIndex: 10 }}
+        >
+          {renderArrows()}
+        </svg>
       </div>
     </div>
   );

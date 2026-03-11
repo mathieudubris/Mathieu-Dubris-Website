@@ -1,228 +1,174 @@
-/* ════════════════════════════════════════════════════════════════
-   CANVAS ROADMAP (viewer)
-   Structure identique à RoadmapEditor pour cohérence de taille
-════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   ROADMAP — Vue publique (lecture seule)
+════════════════════════════════════════════════════════════ */
 
+/* ── Wrapper principal ─────────────────────────────────────
+   Hauteur explicite pour garantir la visibilité même si le
+   parent n'est pas un flex container avec hauteur définie.
+─────────────────────────────────────────────────────────── */
 .canvas {
   position: relative;
-  background: #0A0C15;
-  border: 1px solid #1A1D2E;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
-  height: 420px;
-  font-family: 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: var(--font-main);
   user-select: none;
   touch-action: none;
+
+  /* Hauteur principale */
+  height: calc(100vh - 140px);
+  min-height: 400px;
+  max-height: 860px;
+
+  /* S'étire aussi dans un parent flex */
+  flex: 1;
+  min-width: 0;
 }
 
+/* ── Grille de fond ─────────────────────────────────────── */
 .dotGrid {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle, #1E2238 1px, transparent 1px);
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(163,163,163,0.15) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
+/* ── Monde pannable / zoomable ──────────────────────────── */
 .world {
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 1;
+  will-change: transform;
 }
 
-/* ════════════════════════════════════════════════════════════════
-   CONTRÔLES
-════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   CONTRÔLES OVERLAY
+════════════════════════════════════════════════════════════ */
 
-.controls {
+/* Haut-gauche : Centrer */
+.topLeftControls {
   position: absolute;
-  top: 14px;
+  top: 12px;
+  left: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Bas-droite : Zoom */
+.zoomControls {
+  position: absolute;
+  bottom: 14px;
   right: 14px;
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  max-width: calc(100% - 28px);
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
-.centerBtn {
+.controlGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.controlBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: #0D1020;
-  border: 1px solid #1E2238;
-  border-radius: 8px;
-  color: var(--purple, #7C3AED);
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--line);
+  border-radius: 5px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.15s;
   padding: 0;
-  flex-shrink: 0;
 }
-.centerBtn:hover  { background: #7C3AED20; border-color: var(--purple, #7C3AED); transform: scale(1.05); }
-.centerBtn:active { transform: scale(0.95); }
+.controlBtn:hover { color: var(--primary); background: rgba(199,255,68,0.12); }
 
-.nowPill {
+.controlValue {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--light);
+  min-width: 40px;
+  text-align: center;
+  font-family: var(--font-main);
+}
+
+/* Bouton "Centrer" */
+.fitViewBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #0D1020;
-  border: 1px solid #1E2238;
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 10.5px;
-  color: #3A3E5A;
-  pointer-events: none;
+  gap: 5px;
+  width: auto;
   height: 32px;
-  flex-shrink: 0;
-}
-
-.nowDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green, #10B981);
-  box-shadow: 0 0 6px var(--green, #10B981);
-  animation: blink 2.2s ease-in-out infinite;
-  flex-shrink: 0;
-}
-
-.nowLabel { /* masqué sur petits écrans */ }
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-.zoomHint {
-  font-size: 10px;
-  color: #252840;
-  background: #0D1020;
-  border: 1px solid #1E2238;
-  padding: 3px 8px;
+  padding: 0 12px;
+  background: rgba(199,255,68,0.08);
+  color: var(--primary);
+  border: 1px solid rgba(199,255,68,0.25) !important;
   border-radius: 6px;
-  pointer-events: none;
-  font-variant-numeric: tabular-nums;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  font-family: var(--font-main);
+  transition: background 0.15s, border-color 0.15s;
 }
-
-.dragHint {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: #181B2A;
-  letter-spacing: 0.5px;
-  pointer-events: none;
-  white-space: nowrap;
-  display: flex;
-  gap: 4px;
-  align-items: center;
+.fitViewBtn:hover {
+  background: rgba(199,255,68,0.16);
+  border-color: var(--primary) !important;
 }
+.fitViewBtn span { font-size: 11px; font-weight: 600; }
 
-.fallbackHint {
-  position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #1A1D2E;
-  border: 1px solid #3A3E5A;
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 10px;
-  color: #8B92B8;
-  pointer-events: none;
-  white-space: nowrap;
-  max-width: calc(100% - 160px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ════════════════════════════════════════════════════════════════
-   NŒUD DE PHASE
-   ⚠ Identique à RoadmapEditor en structure et padding pour que
-     les hauteurs mesurées soient cohérentes entre les deux vues.
-     PAS de height fixe — la hauteur dépend du contenu.
-════════════════════════════════════════════════════════════════ */
-
+/* ════════════════════════════════════════════════════════════
+   NŒUDS DE PHASE
+   • Pas de barre de couleur en haut
+   • Background coloré géré inline (backgroundColor: col + 26 hex ≈ 15% opacité)
+   • border de la couleur du node pour bien identifier
+════════════════════════════════════════════════════════════ */
 .node {
-  /* Pas de height fixe : on mesure via ResizeObserver */
-  background: #10132A;
-  border: 1px solid #252840;
+  border: 1px solid var(--line);
   border-radius: 12px;
-  overflow: visible; /* important pour le ::after */
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
-  position: relative; /* requis pour ::after */
-  z-index: 1;
+  overflow: visible;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;
+  /* Pas de background ici — géré inline pour la couleur */
 }
 
-/* Effet "connexion possible" : bordure en tirets au survol */
 .node:hover {
-  border-color: var(--nc, var(--purple, #7C3AED));
-  box-shadow:
-    0 6px 28px rgba(124, 58, 237, 0.27),
-    0 0 0 2px rgba(124, 58, 237, 0.15);
+  border-color: var(--nc, var(--primary));
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--nc, var(--primary)) 30%, transparent);
   transform: translateY(-2px);
 }
 
-.node:hover::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 14px;
-  border: 1.5px dashed var(--nc, #7C3AED);
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.nodeActive {
-  border-color: var(--nc, var(--purple, #7C3AED));
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25);
-}
-
-/* ── Barre colorée : supprimée ──
-   .nodeBar n'est plus rendu. La règle ci-dessous est conservée
-   uniquement au cas où un ancien nœud la référencerait encore. */
-.nodeBar {
-  display: none;
-}
-
-/* Padding identique à RoadmapEditor */
-.nodeInner {
+/* ── Contenu du node ── */
+.nodeBody {
   padding: 10px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-.nodeTitleRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
 .nodeTitle {
   font-size: 13.5px;
   font-weight: 700;
-  color: #DDE1FF;
+  color: var(--light);
   margin: 0;
   letter-spacing: -0.15px;
   line-height: 1.25;
-  flex: 1;
-  min-width: 0;
-  word-break: break-word;
 }
 
 .nodeBadge {
@@ -234,15 +180,15 @@
   padding: 2px 8px;
   border-radius: 20px;
   white-space: nowrap;
-  flex-shrink: 0;
+  width: fit-content;
 }
 
 .nodeDesc {
   font-size: 11.5px;
-  color: #3A3E5A;
+  color: var(--line);
   margin: 0;
   line-height: 1.4;
-  word-break: break-word;
+  opacity: 0.8;
 }
 
 .nodeDates {
@@ -250,8 +196,8 @@
   align-items: center;
   gap: 5px;
   font-size: 10.5px;
-  color: #2A2E48;
-  flex-wrap: wrap;
+  color: var(--line);
+  opacity: 0.6;
 }
 
 .nodeProgress {
@@ -263,7 +209,7 @@
 .pBar {
   flex: 1;
   height: 3px;
-  background: #1A1D2E;
+  background: rgba(163,163,163,0.2);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -273,142 +219,43 @@
   transition: width 0.4s;
 }
 
-.taskList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.taskItem {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #3A3E5A;
-}
-
-.taskDone {
-  text-decoration: line-through;
-  opacity: 0.4;
-}
-
-.taskBullet {
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-  border: 1.5px solid;
-  flex-shrink: 0;
-}
-
-.taskMore {
-  font-size: 10px;
-  color: #252840;
-  padding-left: 13px;
-}
-
-/* ════════════════════════════════════════════════════════════════
-   ÉTAT VIDE / CHARGEMENT
-════════════════════════════════════════════════════════════════ */
-
-.empty {
-  background: #0A0C15;
-  border: 1px solid #1A1D2E;
-  border-radius: 14px;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family: 'SF Pro Display', 'Inter', system-ui, sans-serif;
-  position: relative;
-  overflow: hidden;
-}
-
-.empty::before {
-  content: '';
+/* ════════════════════════════════════════════════════════════
+   ÉTAT VIDE
+════════════════════════════════════════════════════════════ */
+.emptyHint {
   position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, #1E2238 1px, transparent 1px);
-  background-size: 28px 28px;
-  opacity: 0.5;
-}
-
-.emptyIcon {
-  color: #1E2238;
-  position: relative;
-  z-index: 1;
-}
-
-.empty p {
-  font-size: 13px;
-  font-weight: 500;
-  color: #252840;
-  margin: 0;
-  position: relative;
-  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
-  padding: 0 16px;
+  pointer-events: none;
 }
+.emptyHint p    { font-size: 14px; font-weight: 600; color: var(--line); margin: 0 0 6px; opacity: 0.5; }
+.emptyHint span { font-size: 11px; color: var(--line); opacity: 0.3; }
 
-.spinner {
-  color: var(--purple, #7C3AED);
-  position: relative;
-  z-index: 1;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ════════════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    RESPONSIVE
-════════════════════════════════════════════════════════════════ */
-
+════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  .canvas { height: 400px; }
+  .canvas { height: calc(100vh - 120px); }
 }
 
 @media (max-width: 768px) {
-  .canvas { height: 360px; }
-
-  .controls { top: 10px; right: 10px; gap: 4px; }
-  .centerBtn { width: 28px; height: 28px; }
-
-  .nowPill  { padding: 2px 8px; font-size: 9px; height: 28px; }
-  .zoomHint { padding: 2px 6px; font-size: 9px; height: 28px; }
-
-  .dragHint    { font-size: 8px; bottom: 5px; }
-  .fallbackHint { font-size: 8px; padding: 2px 8px; top: 50px; max-width: calc(100% - 24px); }
-
-  .nodeTitle  { font-size: 12.5px; }
-  .nodeBadge  { font-size: 9px;    padding: 2px 6px; }
-  .nodeDesc   { font-size: 10.5px; }
-  .nodeInner  { padding: 8px 10px 10px; }
+  .canvas { height: calc(100dvh - 100px); min-height: 320px; border-radius: 10px; }
+  .zoomControls { bottom: 10px; right: 10px; padding: 4px 8px; }
+  .controlBtn { width: 24px; height: 24px; }
+  .controlValue { min-width: 32px; }
+  .nodeTitle { font-size: 12.5px; }
+  .nodeBody  { padding: 8px 10px 10px; }
 }
 
 @media (max-width: 480px) {
-  .canvas { height: 300px; }
-
-  .nowLabel { display: none; }
-  .nowPill  { padding: 2px 6px; }
-  .dragHint { display: none; }
-  .zoomHint { display: none; }
-
-  .fallbackHint { top: 48px; font-size: 7.5px; padding: 2px 6px; }
-
-  .nodeTitle  { font-size: 12px; }
-  .nodeInner  { padding: 7px 9px 9px; gap: 4px; }
+  .canvas { height: calc(100dvh - 80px); min-height: 260px; border-radius: 8px; }
+  .fitViewBtn span { font-size: 10px; }
+  .nodeTitle { font-size: 12px; }
+  .nodeBody  { padding: 6px 9px 9px; gap: 4px; }
 }
 
 @media (max-width: 360px) {
-  .canvas { height: 260px; }
-
-  .controls { gap: 3px; }
-  .centerBtn { width: 26px; height: 26px; }
-  .nowPill   { display: none; }
+  .canvas { min-height: 220px; }
 }

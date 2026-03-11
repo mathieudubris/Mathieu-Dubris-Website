@@ -88,6 +88,10 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   user-select: none;
+  /* Hauteur responsive : remplit l'écran sans scroll */
+  height: calc(100vh - 120px);
+  min-height: 400px;
+  max-height: 900px;
 }
 
 .canvasEmpty {
@@ -101,6 +105,8 @@
   padding: 60px 20px;
   border: 1px dashed var(--line);
   border-radius: 10px;
+  height: calc(100vh - 120px);
+  min-height: 400px;
 }
 
 .canvasEmpty svg  { opacity: 0.35; }
@@ -120,7 +126,7 @@
   pointer-events: none;
 }
 
-/* ── Controls (zoom & size) ── */
+/* ── Controls (zoom — bottom-right) ── */
 .controls {
   position: absolute;
   bottom: 14px;
@@ -201,23 +207,27 @@
   margin: 0 4px;
 }
 
+/* Bouton "Centrer" — top-left */
 .fitViewBtn {
   display: flex;
   align-items: center;
   gap: 5px;
   width: auto;
   padding: 0 10px;
+  height: 32px;
   background: rgba(199,255,68,0.08);
   color: var(--primary);
-  border: 1px solid rgba(199,255,68,0.2);
+  border: 1px solid rgba(199,255,68,0.2) !important;
+  border-radius: 6px;
+  cursor: pointer;
   backdrop-filter: blur(8px);
+  font-family: var(--font-main);
+  transition: background 0.15s, border-color 0.15s;
 }
-
 .fitViewBtn:hover {
   background: rgba(199,255,68,0.15);
-  border-color: var(--primary);
+  border-color: var(--primary) !important;
 }
-
 .fitViewBtn span {
   font-size: 11px;
   font-weight: 600;
@@ -233,10 +243,8 @@
   align-items: center;
   justify-content: center;
   transition: border-color 0.18s, box-shadow 0.18s, width 0.2s ease, height 0.2s ease;
-  /* transform appliqué inline */
 }
 
-/* En mode éditable, le curseur devient move au hover */
 .chipEditable {
   cursor: move;
 }
@@ -247,7 +255,6 @@
   z-index: 5;
 }
 
-/* Pendant le drag : agrandir légèrement, shadow fort */
 .chipDrag {
   border-color: var(--glow, var(--primary));
   box-shadow: 0 0 32px -4px var(--glow, var(--primary)), 0 8px 24px rgba(0,0,0,0.5);
@@ -292,7 +299,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #c01414;
+  background: var(--dark-red);
   border: none;
   color: white;
   display: flex;
@@ -303,7 +310,6 @@
   padding: 0;
   z-index: 30;
 }
-
 .chipRemove:hover { transform: scale(1.25); }
 
 /* ─────────────────────────────────────
@@ -412,8 +418,8 @@
 }
 
 .mCloseBtn:hover {
-  border-color: #c01414;
-  color: #c01414;
+  border-color: var(--dark-red);
+  color: var(--dark-red);
   transform: rotate(90deg);
 }
 
@@ -585,7 +591,7 @@
   font-family: var(--font-main);
 }
 
-.mCancelBtn:hover { border-color: #c01414; color: #c01414; }
+.mCancelBtn:hover { border-color: var(--dark-red); color: var(--dark-red); }
 
 .mSaveBtn {
   display: flex;
@@ -599,13 +605,11 @@
   padding: 9px 20px;
   border-radius: 7px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.12s;
+  transition: opacity 0.15s, transform 0.12s;
   font-family: var(--font-main);
 }
 
-.mSaveBtn:hover { background: #d4ff5e; transform: translateY(-1px); }
-
-/* Ajouter à la fin du fichier */
+.mSaveBtn:hover { opacity: 0.85; transform: translateY(-1px); }
 
 /* Handle de redimensionnement */
 .resizeHandle {
@@ -619,19 +623,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Always in DOM for touch targeting, but visually hidden by default */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s;
 }
 
-/* Visible when hovered or resizing */
 .resizeHandleVisible {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Always touchable on mobile (pointer-events always on in editable mode) */
 @media (pointer: coarse) {
   .resizeHandle {
     opacity: 0.5;
@@ -659,7 +660,6 @@
   opacity: 1;
 }
 
-/* Indicateur de taille pendant le redimensionnement */
 .sizeIndicator {
   position: absolute;
   top: -20px;
@@ -676,7 +676,6 @@
   pointer-events: none;
 }
 
-/* État de redimensionnement */
 .chipResize {
   border-color: var(--glow, var(--primary));
   box-shadow: 0 0 32px -4px var(--glow, var(--primary));
@@ -695,6 +694,16 @@
    RESPONSIVE
 ───────────────────────────────────── */
 @media (max-width: 768px) {
+  .canvasWrapper {
+    height: calc(100dvh - 100px);
+    min-height: 300px;
+    border-radius: 10px;
+  }
+  .canvasEmpty {
+    height: calc(100dvh - 100px);
+    min-height: 300px;
+  }
+
   .mHeader     { flex-wrap: wrap; padding: 12px 16px; gap: 10px; }
   .mSearch     { max-width: 100%; order: 3; flex-basis: 100%; }
   .mCats       { padding: 8px 16px; }
@@ -706,22 +715,28 @@
   .mFooterBtns { width: 100%; }
   .mCancelBtn, .mSaveBtn { flex: 1; justify-content: center; text-align: center; }
   .editHint    { display: none; }
-  
-  .controls {
-    bottom: 10px;
-    right: 10px;
-    padding: 4px 8px;
-  }
-  
-  /* fitViewBtn span always visible — text "Centrer" shown on all screen sizes */
+
+  .controls { bottom: 10px; right: 10px; padding: 4px 8px; }
+  .controlBtn { width: 24px; height: 24px; }
 }
 
 @media (max-width: 480px) {
+  .canvasWrapper {
+    height: calc(100dvh - 80px);
+    min-height: 260px;
+    border-radius: 8px;
+  }
+  .canvasEmpty {
+    height: calc(100dvh - 80px);
+    min-height: 260px;
+  }
+
   .mGrid    { grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 6px; }
   .mCard    { padding: 10px 4px 8px; }
   .mCardImg { width: 30px; height: 30px; }
   .mCardName{ font-size: 9px; }
-  
+
   .controlValue { min-width: 32px; }
   .controlBtn { width: 24px; height: 24px; }
+  .fitViewBtn span { font-size: 10px; }
 }

@@ -1,109 +1,40 @@
 /* ══════════════════════════════════════════════
-   WRAPPER
+   WRAPPER — prend toute la hauteur du parent flex
+   sans jamais générer de scroll sur la page
 ══════════════════════════════════════════════ */
 .wrapper {
   display: flex;
   flex-direction: column;
-  border: 1px solid #1A1D2E;
+  border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
-  font-family: 'SF Pro Display', 'Inter', system-ui, sans-serif;
-  background: #0A0C15;
+  font-family: var(--font-main);
+  background: var(--dark);
+  /* S'étire dans le parent flex, mais ne dépasse jamais l'écran */
+  flex: 1;
+  min-height: 0;
+  /* Fallback si le parent n'a pas de hauteur définie */
+  height: calc(100vh - 140px);
+  max-height: 860px;
 }
 
 /* ══════════════════════════════════════════════
-   TOOLBAR
-══════════════════════════════════════════════ */
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: #080A12;
-  border-bottom: 1px solid #181B2A;
-  flex-shrink: 0;
-  gap: 12px;
-}
-
-.tbL { display: flex; align-items: center; gap: 10px; }
-.tbR { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-
-.tbTitle {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #555A7A;
-  text-transform: uppercase;
-  letter-spacing: .7px;
-}
-
-.tbBadge {
-  font-size: 10.5px;
-  color: #333650;
-  background: #12152A;
-  border: 1px solid #252840;
-  padding: 1px 8px;
-  border-radius: 10px;
-}
-
-.tbBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: 1px solid #252840;
-  color: #3A3D58;
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 0;
-  transition: all .15s;
-}
-.tbBtn:hover { border-color: var(--purple); color: var(--purple); background: #7C3AED12; }
-
-.tbZoom {
-  font-size: 10.5px;
-  color: #3A3D58;
-  min-width: 36px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.tbSep { width: 1px; height: 20px; background: #181B2A; margin: 0 6px; }
-
-.addBtn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: transparent;
-  border: 1px solid var(--purple);
-  color: var(--purple);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 7px;
-  cursor: pointer;
-  transition: all .15s;
-  font-family: inherit;
-}
-.addBtn:hover { background: var(--purple); color: var(--white); }
-
-/* ══════════════════════════════════════════════
-   CANVAS
+   CANVAS — remplit le wrapper
 ══════════════════════════════════════════════ */
 .canvas {
   position: relative;
-  height: 520px;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
-  background: #0A0C15;
-  touch-action: none; /* requis pour les events touch */
+  background: var(--dark);
+  touch-action: none;
 }
 
 .dotGrid {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle, #20233A 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(163,163,163,0.15) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
@@ -115,70 +46,162 @@
 
 .emptyHint {
   position: absolute;
-  top: 180px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
 }
-.emptyHint p    { font-size: 14px; font-weight: 600; color: #252840; margin: 0 0 6px; }
-.emptyHint span { font-size: 11px; color: #1A1D2A; }
+.emptyHint p    { font-size: 14px; font-weight: 600; color: var(--line); margin: 0 0 6px; opacity: 0.5; }
+.emptyHint span { font-size: 11px; color: var(--line); opacity: 0.3; }
+
+/* ══════════════════════════════════════════════
+   CONTRÔLES OVERLAY
+══════════════════════════════════════════════ */
+.topLeftControls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.topRightControls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.controls {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.75);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.controlGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.controlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--line);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+  font-size: 12px;
+}
+.controlBtn:hover:not(:disabled) { color: var(--primary); background: rgba(199,255,68,0.12); }
+.controlBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.controlValue {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--light);
+  min-width: 40px;
+  text-align: center;
+  font-family: var(--font-main);
+}
+
+.fitViewBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+  padding: 0 10px;
+  height: 32px;
+  background: rgba(199,255,68,0.08);
+  color: var(--primary);
+  border: 1px solid rgba(199,255,68,0.2) !important;
+  border-radius: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  font-family: var(--font-main);
+  transition: background 0.15s, border-color 0.15s;
+}
+.fitViewBtn:hover { background: rgba(199,255,68,0.15); border-color: var(--primary) !important; }
+.fitViewBtn span  { font-size: 11px; font-weight: 600; }
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.75);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  font-family: var(--font-main);
+  backdrop-filter: blur(8px);
+}
+.addBtn:hover { background: var(--primary); color: var(--dark); }
 
 /* ══════════════════════════════════════════════
    PHASE NODE
+   Background coloré avec opacité 0.15 (hex 26)
+   géré inline dans le TSX via backgroundColor: `${col}26`
 ══════════════════════════════════════════════ */
 .node {
   position: absolute;
-  background: #10132A;
-  border: 1px solid #252840;
+  /* background géré inline : backgroundColor col + opacité 0x26 (~15%) */
+  border: 1px solid var(--line);
   border-radius: 12px;
-  overflow: visible;   /* la borderZone déborde */
+  overflow: visible;
   cursor: grab;
-  transition: box-shadow .2s, border-color .2s;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 
 .node:hover {
-  border-color: var(--nc, var(--purple));
-  box-shadow: 0 6px 28px #7C3AED44;
+  border-color: var(--nc, var(--primary));
+  box-shadow: 0 6px 28px rgba(199,255,68,0.15);
 }
 
 .node:active { cursor: grabbing; }
 
 .nodeOpen {
-  border-color: var(--nc, var(--purple));
-  box-shadow: 0 8px 36px #7C3AED44;
+  border-color: var(--nc, var(--primary));
+  box-shadow: 0 8px 36px rgba(199,255,68,0.2);
   cursor: default;
   z-index: 100;
   overflow: hidden;
 }
 
-/* Highlight bord quand hover connexion */
-.nodeBorderHover {
-  border-color: var(--nc, var(--purple)) !important;
-  box-shadow: 0 0 0 3px #7C3AED33, 0 6px 28px #7C3AED44;
-}
-
-/* ── Zone de bordure invisible (connexion) ── */
-.borderZone {
-  position: absolute;
-  inset: -14px;               /* épaisseur de la zone = BORDER_HIT */
-  border-radius: 18px;
-  border: 14px solid transparent;
-  pointer-events: none;
-  z-index: 5;
-  transition: border-color .15s;
-}
-
-.borderZoneActive {
-  border-color: #7C3AED22;    /* légère teinte visible pour feedback */
-}
-
-/* ── Barre couleur ── */
-.nodeBar { height: 3px; width: 100%; border-radius: 0; }
-
 /* ── Corps display ── */
 .nodeBody {
-  padding: 8px 12px 12px;
+  padding: 10px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -187,7 +210,7 @@
 .nodeTitle {
   font-size: 13.5px;
   font-weight: 700;
-  color: #DDE1FF;
+  color: var(--light);
   margin: 0;
   letter-spacing: -.15px;
   line-height: 1.25;
@@ -206,9 +229,10 @@
 
 .nodeDesc {
   font-size: 11.5px;
-  color: #3A3E5A;
+  color: var(--line);
   margin: 0;
   line-height: 1.4;
+  opacity: 0.8;
 }
 
 .nodeDates {
@@ -216,42 +240,52 @@
   align-items: center;
   gap: 5px;
   font-size: 10.5px;
-  color: #2A2E48;
+  color: var(--line);
+  opacity: 0.6;
 }
 
 .nodeProgress { display: flex; align-items: center; gap: 7px; }
-.pBar         { flex: 1; height: 3px; background: #1A1D2E; border-radius: 2px; overflow: hidden; }
+.pBar         { flex: 1; height: 3px; background: rgba(163,163,163,0.2); border-radius: 2px; overflow: hidden; }
 .pFill        { height: 100%; transition: width .3s; }
 
-.nodeActions {
+/* ══════════════════════════════════════════════
+   BOUTONS FLOTTANTS
+══════════════════════════════════════════════ */
+.nodeActionsFloat {
+  position: absolute;
+  top: -32px;
+  right: 0;
   display: flex;
   gap: 3px;
-  margin-top: 4px;
   opacity: 0;
+  z-index: 20;
+  pointer-events: none;
   transition: opacity .15s;
 }
-.node:hover .nodeActions { opacity: 1; }
 
-/* ══════════════════════════════════════════════
-   ACTION BUTTONS
-══════════════════════════════════════════════ */
+div:has(> .nodeActionsFloat):hover .nodeActionsFloat {
+  opacity: 1;
+  pointer-events: all;
+}
+
 .aBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  background: transparent;
-  border: 1px solid #252840;
-  color: #3A3D58;
+  width: 24px;
+  height: 24px;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid var(--line);
+  color: var(--line);
   border-radius: 5px;
   cursor: pointer;
   padding: 0;
   transition: all .15s;
+  backdrop-filter: blur(6px);
 }
-.aBtn:hover:not(:disabled) { border-color: var(--nc, var(--purple)); color: var(--nc, var(--purple)); }
+.aBtn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
 .aBtn:disabled              { opacity: .2; cursor: not-allowed; }
-.aBtnDel:hover              { border-color: var(--red) !important; color: var(--red) !important; }
+.aBtnDel:hover              { border-color: var(--dark-red) !important; color: var(--dark-red) !important; }
 
 /* ══════════════════════════════════════════════
    FORMULAIRE D'ÉDITION
@@ -266,36 +300,34 @@
 .eTitle {
   background: transparent;
   border: none;
-  border-bottom: 2px solid var(--ec, var(--purple));
-  color: #DDE1FF;
+  border-bottom: 2px solid var(--ec, var(--primary));
+  color: var(--light);
   font-size: 13px;
   font-weight: 700;
   padding: 3px 2px;
   outline: none;
   width: 100%;
-  font-family: inherit;
+  font-family: var(--font-main);
 }
-.eTitle::placeholder { color: #252840; }
+.eTitle::placeholder { color: var(--line); opacity: 0.4; }
 
 .eSelect,
 .eDesc {
-  background: #0D1020;
-  border: 1px solid #252840;
-  color: #8B92B8;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  color: var(--light);
   font-size: 12px;
   padding: 5px 8px;
   border-radius: 6px;
-  font-family: inherit;
+  font-family: var(--font-main);
   outline: none;
   transition: border-color .15s;
   width: 100%;
 }
-.eSelect:focus,
-.eDesc:focus   { border-color: var(--ec, var(--purple)); }
+.eSelect:focus, .eDesc:focus { border-color: var(--ec, var(--primary)); }
 .eDesc         { resize: vertical; }
-.eDesc::placeholder { color: #252840; }
+.eDesc::placeholder { color: var(--line); opacity: 0.4; }
 
-/* Palette couleur */
 .colorRow {
   position: relative;
   display: flex;
@@ -303,38 +335,35 @@
   gap: 8px;
 }
 .paletteToggle {
-  width: 24px;
-  height: 24px;
+  width: 24px; height: 24px;
   border-radius: 6px;
-  border: 2px solid #252840;
+  border: 2px solid var(--line);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--white);
+  color: var(--light);
   opacity: .7;
   transition: border-color .15s, opacity .15s;
 }
-.paletteToggle:hover { border-color: #555A7A; opacity: 1; }
+.paletteToggle:hover { border-color: var(--primary); opacity: 1; }
 
 .paletteGrid {
   position: absolute;
-  top: 30px;
-  left: 0;
+  top: 30px; left: 0;
   z-index: 200;
   display: grid;
   grid-template-columns: repeat(6, 22px);
   gap: 4px;
-  background: #0D1020;
-  border: 1px solid #252840;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px;
-  box-shadow: 0 8px 32px #00000099;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7);
 }
 
 .palSwatch {
-  width: 22px;
-  height: 22px;
+  width: 22px; height: 22px;
   border-radius: 5px;
   border: 2px solid transparent;
   cursor: pointer;
@@ -342,56 +371,43 @@
   padding: 0;
 }
 .palSwatch:hover  { transform: scale(1.15); }
-.palSwatchActive  { border-color: var(--white) !important; transform: scale(1.1); }
+.palSwatchActive  { border-color: var(--light) !important; transform: scale(1.1); }
 
-/* Dates */
 .eDates {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 10.5px;
-  color: #3A3D58;
+  color: var(--line);
   flex-wrap: wrap;
 }
-.eDates label {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 10px;
-  color: #3A3D58;
-}
+.eDates label { display: flex; flex-direction: column; gap: 2px; font-size: 10px; color: var(--line); }
 .eDateInput {
-  background: #0D1020;
-  border: 1px solid #252840;
-  color: #8B92B8;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  color: var(--light);
   font-size: 10.5px;
   padding: 4px 6px;
   border-radius: 5px;
-  font-family: inherit;
+  font-family: var(--font-main);
   outline: none;
   max-width: 115px;
 }
-.eDateInput:focus { border-color: var(--ec, var(--purple)); }
+.eDateInput:focus { border-color: var(--ec, var(--primary)); }
 
-/* Actions */
-.eActions {
-  display: flex;
-  gap: 5px;
-  margin-top: 2px;
-  align-items: center;
-}
+.eActions { display: flex; gap: 5px; margin-top: 2px; align-items: center; }
 .eSave {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--white);
+  color: var(--dark);
   border: none;
   border-radius: 6px;
   padding: 6px 13px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--font-main);
   transition: opacity .15s;
 }
 .eSave:hover { opacity: .85; }
@@ -399,97 +415,46 @@
 .eCancel {
   font-size: 11.5px;
   font-weight: 500;
-  color: #3A3D58;
+  color: var(--line);
   background: transparent;
-  border: 1px solid #252840;
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 6px 11px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--font-main);
   transition: all .15s;
 }
-.eCancel:hover { border-color: var(--red); color: var(--red); }
+.eCancel:hover { border-color: var(--dark-red); color: var(--dark-red); }
 
 .eDelete {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 28px; height: 28px;
   background: transparent;
-  border: 1px solid #252840;
-  color: #3A3D58;
+  border: 1px solid var(--line);
+  color: var(--line);
   border-radius: 6px;
   cursor: pointer;
   padding: 0;
   transition: all .15s;
   margin-left: auto;
 }
-.eDelete:hover { border-color: var(--red); color: var(--red); background: #EF444412; }
-
-/* ══════════════════════════════════════════════
-   FOOTER
-══════════════════════════════════════════════ */
-.footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-top: 1px solid #181B2A;
-  font-size: 10.5px;
-  color: #1E2135;
-  background: #080A12;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-.footer strong { font-weight: 600; }
+.eDelete:hover { border-color: var(--dark-red); color: var(--dark-red); background: rgba(192,20,20,0.1); }
 
 /* ══════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .canvas { height: 420px; }
-
-  .tbTitle { display: none; }
-
-  .addBtn {
-    font-size: 11px;
-    padding: 5px 10px;
-  }
-
-  .footer { display: none; }
+  .wrapper { height: calc(100dvh - 100px); max-height: none; }
+  .addBtn { font-size: 11px; padding: 5px 10px; }
+  .controls { bottom: 10px; right: 10px; padding: 4px 8px; }
+  .controlBtn { width: 24px; height: 24px; }
+  .controlValue { min-width: 32px; }
 }
 
 @media (max-width: 480px) {
-  .canvas { height: 360px; }
-
-  .tbBadge { display: none; }
-
-  .tbZoom { min-width: 28px; font-size: 10px; }
-}
-/* ══════════════════════════════════════════════
-   BOUTONS FLOTTANTS (extérieurs au node)
-══════════════════════════════════════════════ */
-
-/*
- * Les boutons Edit/Delete sont positionnés en absolute
- * au-dessus du node (top: -28px), dans le wrapper positionnel.
- * Ils sont masqués par défaut et apparaissent au hover du wrapper.
- */
-.nodeActionsFloat {
-  position: absolute;
-  top: -28px;
-  right: 0;
-  display: flex;
-  gap: 3px;
-  opacity: 0;
-  z-index: 20;
-  pointer-events: none;
-  transition: opacity .15s;
-}
-
-/* Afficher au hover du wrapper parent (div positionnelle) */
-div:has(> .nodeActionsFloat):hover .nodeActionsFloat {
-  opacity: 1;
-  pointer-events: all;
+  .wrapper { height: calc(100dvh - 80px); }
+  .fitViewBtn span { font-size: 10px; }
+  .addBtn span { display: none; }
 }
