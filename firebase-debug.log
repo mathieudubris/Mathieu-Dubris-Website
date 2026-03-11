@@ -1,0 +1,486 @@
+[debug] [2026-03-11T20:27:20.443Z] ----------------------------------------------------------------------
+[debug] [2026-03-11T20:27:20.448Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MIARANTSOA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-03-11T20:27:20.449Z] CLI Version:   15.5.1
+[debug] [2026-03-11T20:27:20.449Z] Platform:      win32
+[debug] [2026-03-11T20:27:20.450Z] Node Version:  v25.2.1
+[debug] [2026-03-11T20:27:20.450Z] Time:          Wed Mar 11 2026 21:27:20 GMT+0100 (heure normale d’Europe centrale)
+[debug] [2026-03-11T20:27:20.451Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-11T20:27:23.959Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-11T20:27:23.959Z] > authorizing via signed-in user (mathieudubris@gmail.com)
+[debug] [2026-03-11T20:27:23.960Z] [iam] checking project mathieu-dubris for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-11T20:27:23.962Z] Checked if tokens are valid: false, expires at: 1773255381260
+[debug] [2026-03-11T20:27:23.962Z] Checked if tokens are valid: false, expires at: 1773255381260
+[debug] [2026-03-11T20:27:23.962Z] > refreshing access token with scopes: []
+[debug] [2026-03-11T20:27:23.966Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-11T20:27:23.966Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-11T20:27:24.774Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-11T20:27:24.774Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-11T20:27:25.360Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions [none]
+[debug] [2026-03-11T20:27:25.360Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions  x-goog-user-project=mathieu-dubris
+[debug] [2026-03-11T20:27:25.360Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T20:27:27.463Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions 200
+[debug] [2026-03-11T20:27:27.463Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T20:27:27.464Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:27.464Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:27.465Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris [none]
+[debug] [2026-03-11T20:27:28.544Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris 200
+[debug] [2026-03-11T20:27:28.544Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris {"projectId":"mathieu-dubris","projectNumber":"1008303076758","displayName":"Mathieu Dubris","name":"projects/mathieu-dubris","resources":{"hostingSite":"mathieu-dubris"},"state":"ACTIVE","etag":"1_cb766782-97d6-46a8-8822-1dfd2f430ecc"}
+[debug] [2026-03-11T20:27:33.180Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:33.180Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:33.181Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites pageToken=&pageSize=10
+[debug] [2026-03-11T20:27:35.692Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites 200
+[debug] [2026-03-11T20:27:35.693Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites {"sites":[{"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}]}
+[debug] [2026-03-11T20:27:35.694Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:35.694Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:35.694Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config [none]
+[debug] [2026-03-11T20:27:36.958Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config 200
+[debug] [2026-03-11T20:27:36.959Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config {"projectId":"mathieu-dubris","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","storageBucket":"mathieu-dubris.firebasestorage.app","apiKey":"AIzaSyBrHGF359udLSaLuuCCarl4ovzCMYD-HDg","authDomain":"mathieu-dubris.firebaseapp.com","messagingSenderId":"1008303076758","measurementId":"G-B3ZL2MHVVN","projectNumber":"1008303076758","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-03-11T20:27:48.145Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:48.146Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:27:48.146Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris [none]
+[debug] [2026-03-11T20:27:50.345Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris 200
+[debug] [2026-03-11T20:27:50.345Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris {"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 13.0s
+
+[info]   Running TypeScript ...
+
+[info] Failed to compile.
+
+
+[info] .next/dev/types/routes.d.ts:70:1
+Type error: Unexpected keyword or identifier.
+
+  68 |   }
+  69 | }
+> 70 | er layout components
+     | ^
+  71 |    * @example
+  72 |    * ```tsx
+  73 |    * export default function Layout(props: LayoutProps<'/dashboard'>) {
+
+[info] Next.js build worker exited with code: 1 and signal: null
+
+[debug] [2026-03-11T20:28:27.350Z] Error: ENOENT: no such file or directory, open 'D:\PROJET\PROJET REACT\Mathieu Dubris\.next\export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-03-11T20:49:35.213Z] ----------------------------------------------------------------------
+[debug] [2026-03-11T20:49:35.224Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MIARANTSOA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-03-11T20:49:35.225Z] CLI Version:   15.5.1
+[debug] [2026-03-11T20:49:35.225Z] Platform:      win32
+[debug] [2026-03-11T20:49:35.226Z] Node Version:  v25.2.1
+[debug] [2026-03-11T20:49:35.226Z] Time:          Wed Mar 11 2026 21:49:35 GMT+0100 (heure normale d’Europe centrale)
+[debug] [2026-03-11T20:49:35.227Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-11T20:49:40.679Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-11T20:49:40.679Z] > authorizing via signed-in user (mathieudubris@gmail.com)
+[debug] [2026-03-11T20:49:40.679Z] [iam] checking project mathieu-dubris for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-11T20:49:40.681Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:40.682Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:40.684Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions [none]
+[debug] [2026-03-11T20:49:40.685Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions  x-goog-user-project=mathieu-dubris
+[debug] [2026-03-11T20:49:40.685Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T20:49:42.871Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions 200
+[debug] [2026-03-11T20:49:42.872Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T20:49:42.873Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:42.873Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:42.874Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris [none]
+[debug] [2026-03-11T20:49:43.959Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris 200
+[debug] [2026-03-11T20:49:43.959Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris {"projectId":"mathieu-dubris","projectNumber":"1008303076758","displayName":"Mathieu Dubris","name":"projects/mathieu-dubris","resources":{"hostingSite":"mathieu-dubris"},"state":"ACTIVE","etag":"1_cb766782-97d6-46a8-8822-1dfd2f430ecc"}
+[debug] [2026-03-11T20:49:48.879Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:48.879Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:48.879Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites pageToken=&pageSize=10
+[debug] [2026-03-11T20:49:51.402Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites 200
+[debug] [2026-03-11T20:49:51.402Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites {"sites":[{"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}]}
+[debug] [2026-03-11T20:49:51.403Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:51.403Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:49:51.403Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config [none]
+[debug] [2026-03-11T20:49:52.480Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config 200
+[debug] [2026-03-11T20:49:52.480Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config {"projectId":"mathieu-dubris","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","storageBucket":"mathieu-dubris.firebasestorage.app","apiKey":"AIzaSyBrHGF359udLSaLuuCCarl4ovzCMYD-HDg","authDomain":"mathieu-dubris.firebaseapp.com","messagingSenderId":"1008303076758","measurementId":"G-B3ZL2MHVVN","projectNumber":"1008303076758","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-03-11T20:50:04.567Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:50:04.567Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:50:04.567Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris [none]
+[debug] [2026-03-11T20:50:06.664Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris 200
+[debug] [2026-03-11T20:50:06.664Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris {"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] 
+
+[info] > Build error occurred
+
+[info] Error: Turbopack build failed with 3 errors:
+./src/app/portfolio/kanban/page.tsx:6:1
+Module not found: Can't resolve '@/utils/kanban-api'
+  4 | import { onAuthStateChanged } from "firebase/auth";
+  5 | import { auth } from "@/utils/firebase-api";
+> 6 | import { getBoards, type KanbanBoard } from "@/utils/kanban-api";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import KanbanEditor from "@/components/kanban/KanbanEditor";
+  8 | import KanbanDetail from "@/components/kanban/KanbanDetail";
+  9 | import styles from "./kanban.module.css";
+
+Import map: aliased to relative './src/utils/kanban-api' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./src/app/portfolio/kanban/page.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/portfolio/kanban/page.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./src/components/kanban/KanbanEditor.tsx:5:1
+Module not found: Can't resolve '@/utils/kanban-api'
+  3 | import React, { useState } from "react";
+  4 | import { Layout, Plus, X, AlertCircle, Edit2, Trash2 } from "lucide-react";
+> 5 | import { createBoard, seedDefaultColumns, updateBoard, deleteBoard } from "@/utils/kanban-api";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import type { KanbanBoard } from "@/utils/kanban-api";
+  7 | import styles from "./KanbanEditor.module.css";
+  8 |
+
+Import map: aliased to relative './src/utils/kanban-api' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./src/components/kanban/KanbanEditor.tsx:43:33
+Module not found: Can't resolve '@/utils/kanban-api'
+  41 |     await seedDefaultColumns(boardId);
+  42 |     
+> 43 |     const updatedBoards = await import("@/utils/kanban-api").then(m => m.getBoards(currentUser.uid));
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  44 |     const board = updatedBoards.find((b: KanbanBoard) => b.id === boardId);
+  45 |     
+  46 |     if (board) {
+
+Import map: aliased to relative './src/utils/kanban-api' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (./src/app/portfolio/kanban/page.tsx:6:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./src/components/kanban/KanbanEditor.tsx:5:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./src/components/kanban/KanbanEditor.tsx:43:33)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+
+[debug] [2026-03-11T20:50:26.955Z] Error: ENOENT: no such file or directory, open 'D:\PROJET\PROJET REACT\Mathieu Dubris\.next\server\middleware-manifest.json'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-03-11T20:50:47.378Z] ----------------------------------------------------------------------
+[debug] [2026-03-11T20:50:47.385Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MIARANTSOA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-03-11T20:50:47.385Z] CLI Version:   15.5.1
+[debug] [2026-03-11T20:50:47.385Z] Platform:      win32
+[debug] [2026-03-11T20:50:47.385Z] Node Version:  v25.2.1
+[debug] [2026-03-11T20:50:47.386Z] Time:          Wed Mar 11 2026 21:50:47 GMT+0100 (heure normale d’Europe centrale)
+[debug] [2026-03-11T20:50:47.386Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-11T20:50:51.634Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-11T20:50:51.635Z] > authorizing via signed-in user (mathieudubris@gmail.com)
+[debug] [2026-03-11T20:50:51.635Z] [iam] checking project mathieu-dubris for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-11T20:50:51.637Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:50:51.637Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:50:51.639Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions [none]
+[debug] [2026-03-11T20:50:51.639Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions  x-goog-user-project=mathieu-dubris
+[debug] [2026-03-11T20:50:51.639Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T20:50:53.592Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions 200
+[debug] [2026-03-11T20:50:53.592Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T20:50:53.593Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:50:53.593Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:50:53.594Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris [none]
+[debug] [2026-03-11T20:50:54.497Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris 200
+[debug] [2026-03-11T20:50:54.497Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris {"projectId":"mathieu-dubris","projectNumber":"1008303076758","displayName":"Mathieu Dubris","name":"projects/mathieu-dubris","resources":{"hostingSite":"mathieu-dubris"},"state":"ACTIVE","etag":"1_cb766782-97d6-46a8-8822-1dfd2f430ecc"}
+[debug] [2026-03-11T20:51:04.492Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:51:04.492Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:51:04.492Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites pageToken=&pageSize=10
+[debug] [2026-03-11T20:51:06.770Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites 200
+[debug] [2026-03-11T20:51:06.770Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites {"sites":[{"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}]}
+[debug] [2026-03-11T20:51:06.772Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:51:06.772Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:51:06.772Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config [none]
+[debug] [2026-03-11T20:51:07.824Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config 200
+[debug] [2026-03-11T20:51:07.824Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config {"projectId":"mathieu-dubris","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","storageBucket":"mathieu-dubris.firebasestorage.app","apiKey":"AIzaSyBrHGF359udLSaLuuCCarl4ovzCMYD-HDg","authDomain":"mathieu-dubris.firebaseapp.com","messagingSenderId":"1008303076758","measurementId":"G-B3ZL2MHVVN","projectNumber":"1008303076758","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-03-11T20:51:28.034Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:51:28.034Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T20:51:28.034Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris [none]
+[debug] [2026-03-11T20:51:30.057Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris 200
+[debug] [2026-03-11T20:51:30.057Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris {"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] 
+
+[info] > Build error occurred
+
+[info] Error: Turbopack build failed with 4 errors:
+./src/app/portfolio/kanban/page.tsx:6:1
+Module not found: Can't resolve '@/utils/kanban-api'
+  4 | import { onAuthStateChanged } from "firebase/auth";
+  5 | import { auth } from "@/utils/firebase-api";
+> 6 | import { getBoards, type KanbanBoard } from "@/utils/kanban-api";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import KanbanEditor from "@/components/kanban/KanbanEditor";
+  8 | import KanbanDetail from "@/components/kanban/KanbanDetail";
+  9 | import styles from "./kanban.module.css";
+
+Import map: aliased to relative './src/utils/kanban-api' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./src/app/portfolio/kanban/page.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/portfolio/kanban/page.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./src/app/security/admin/kanban/page.tsx:6:1
+Module not found: Can't resolve '@/utils/kanban-api'
+  4 | import { onAuthStateChanged } from "firebase/auth";
+  5 | import { auth } from "@/utils/firebase-api";
+> 6 | import { getBoards, type KanbanBoard } from "@/utils/kanban-api";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import KanbanEditor from "@/components/kanban/KanbanEditor";
+  8 | import KanbanDetail from "@/components/kanban/KanbanDetail";
+  9 | import styles from "./kanban.module.css";
+
+Import map: aliased to relative './src/utils/kanban-api' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./src/app/security/admin/kanban/page.tsx [Client Component Browser]
+    ./src/app/security/admin/kanban/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/security/admin/kanban/page.tsx [Client Component SSR]
+    ./src/app/security/admin/kanban/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./src/components/kanban/KanbanEditor.tsx:5:1
+Module not found: Can't resolve '@/utils/kanban-api'
+  3 | import React, { useState } from "react";
+  4 | import { Layout, Plus, X, AlertCircle, Edit2, Trash2 } from "lucide-react";
+> 5 | import { createBoard, seedDefaultColumns, updateBoard, deleteBoard } from "@/utils/kanban-api";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import type { KanbanBoard } from "@/utils/kanban-api";
+  7 | import styles from "./KanbanEditor.module.css";
+  8 |
+
+Import map: aliased to relative './src/utils/kanban-api' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./src/components/kanban/KanbanEditor.tsx:43:33
+Module not found: Can't resolve '@/utils/kanban-api'
+  41 |     await seedDefaultColumns(boardId);
+  42 |     
+> 43 |     const updatedBoards = await import("@/utils/kanban-api").then(m => m.getBoards(currentUser.uid));
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  44 |     const board = updatedBoards.find((b: KanbanBoard) => b.id === boardId);
+  45 |     
+  46 |     if (board) {
+
+Import map: aliased to relative './src/utils/kanban-api' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Client Component Browser]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/kanban/KanbanEditor.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Client Component SSR]
+    ./src/app/portfolio/kanban/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (./src/app/portfolio/kanban/page.tsx:6:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./src/app/security/admin/kanban/page.tsx:6:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./src/components/kanban/KanbanEditor.tsx:5:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./src/components/kanban/KanbanEditor.tsx:43:33)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+
+[debug] [2026-03-11T20:52:02.850Z] Error: ENOENT: no such file or directory, open 'D:\PROJET\PROJET REACT\Mathieu Dubris\.next\server\middleware-manifest.json'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-03-11T21:04:19.249Z] ----------------------------------------------------------------------
+[debug] [2026-03-11T21:04:19.253Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MIARANTSOA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-03-11T21:04:19.254Z] CLI Version:   15.5.1
+[debug] [2026-03-11T21:04:19.254Z] Platform:      win32
+[debug] [2026-03-11T21:04:19.254Z] Node Version:  v25.2.1
+[debug] [2026-03-11T21:04:19.255Z] Time:          Wed Mar 11 2026 22:04:19 GMT+0100 (heure normale d’Europe centrale)
+[debug] [2026-03-11T21:04:19.255Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-11T21:04:22.573Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-11T21:04:22.574Z] > authorizing via signed-in user (mathieudubris@gmail.com)
+[debug] [2026-03-11T21:04:22.574Z] [iam] checking project mathieu-dubris for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-11T21:04:22.576Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:22.576Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:22.578Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions [none]
+[debug] [2026-03-11T21:04:22.578Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions  x-goog-user-project=mathieu-dubris
+[debug] [2026-03-11T21:04:22.578Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T21:04:24.768Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions 200
+[debug] [2026-03-11T21:04:24.768Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mathieu-dubris:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-11T21:04:24.770Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:24.770Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:24.770Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris [none]
+[debug] [2026-03-11T21:04:25.666Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris 200
+[debug] [2026-03-11T21:04:25.666Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mathieu-dubris {"projectId":"mathieu-dubris","projectNumber":"1008303076758","displayName":"Mathieu Dubris","name":"projects/mathieu-dubris","resources":{"hostingSite":"mathieu-dubris"},"state":"ACTIVE","etag":"1_cb766782-97d6-46a8-8822-1dfd2f430ecc"}
+[debug] [2026-03-11T21:04:30.162Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:30.163Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:30.163Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites pageToken=&pageSize=10
+[debug] [2026-03-11T21:04:32.786Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites 200
+[debug] [2026-03-11T21:04:32.786Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites {"sites":[{"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}]}
+[debug] [2026-03-11T21:04:32.787Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:32.787Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:32.787Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config [none]
+[debug] [2026-03-11T21:04:34.060Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config 200
+[debug] [2026-03-11T21:04:34.060Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:1008303076758:web:aa441dbb7b086def0319b7/config {"projectId":"mathieu-dubris","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","storageBucket":"mathieu-dubris.firebasestorage.app","apiKey":"AIzaSyBrHGF359udLSaLuuCCarl4ovzCMYD-HDg","authDomain":"mathieu-dubris.firebaseapp.com","messagingSenderId":"1008303076758","measurementId":"G-B3ZL2MHVVN","projectNumber":"1008303076758","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-03-11T21:04:51.969Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:51.970Z] Checked if tokens are valid: true, expires at: 1773264443774
+[debug] [2026-03-11T21:04:51.970Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris [none]
+[debug] [2026-03-11T21:04:54.048Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris 200
+[debug] [2026-03-11T21:04:54.049Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mathieu-dubris/sites/mathieu-dubris {"name":"projects/mathieu-dubris/sites/mathieu-dubris","defaultUrl":"https://mathieu-dubris.web.app","appId":"1:1008303076758:web:aa441dbb7b086def0319b7","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] 
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 13.7s
+
+[info]   Running TypeScript ...
+
+[info] Failed to compile.
+
+
+[info] ./src/app/portfolio/kanban/navigation/SectionKanbanDetail.tsx:169:19
+Type error: Property 'projectId' is missing in type 'import("D:/PROJET/PROJET REACT/Mathieu Dubris/src/utils/kanban-api").KanbanCard' but required in type 'import("D:/PROJET/PROJET REACT/Mathieu Dubris/src/utils/kanban-projet-api").KanbanCard'.
+
+  167 |                 <KanbanTask
+  168 |                   key={card.id}
+> 169 |                   card={card}
+      |                   ^
+  170 |                   onClick={() => setDetailCard(card)}
+  171 |                   onEdit={() => setEditingCard(card)}
+  172 |                   onDragStart={handleDragStart}
+
+[info] Next.js build worker exited with code: 1 and signal: null
+
+[debug] [2026-03-11T21:05:33.052Z] Error: ENOENT: no such file or directory, open 'D:\PROJET\PROJET REACT\Mathieu Dubris\.next\export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.

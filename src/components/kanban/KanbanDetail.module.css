@@ -9,6 +9,32 @@
   overflow: hidden;
 }
 
+.boardScrollContainer {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+/* Style de la scrollbar pour PC */
+.boardScrollContainer::-webkit-scrollbar {
+  height: 8px;
+}
+
+.boardScrollContainer::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.boardScrollContainer::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+.boardScrollContainer::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
 .toast {
   position: fixed;
   bottom: 1.5rem;
@@ -23,6 +49,15 @@
   z-index: 9999;
   animation: toastIn 0.25s ease;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--line);
+  font-size: 0.9rem;
 }
 
 @keyframes toastIn {

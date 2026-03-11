@@ -2,8 +2,8 @@
 
 import React, { useState, type DragEvent } from "react";
 import { CheckSquare, MessageCircle, Clock, Edit2, Trash2 } from "lucide-react";
-import { deleteCard } from "@/utils/kanban-api";
-import type { KanbanCard } from "@/utils/kanban-api";
+import { deleteCard } from "@/utils/kanban-projet-api";
+import type { KanbanCard } from "@/utils/kanban-projet-api";
 import styles from "./KanbanTask.module.css";
 
 const PRIORITIES = {
@@ -18,9 +18,10 @@ interface KanbanTaskProps {
   onClick: () => void;
   onEdit: () => void;
   onDragStart: (e: DragEvent, cardId: string) => void;
+  readOnly?: boolean;
 }
 
-export default function KanbanTask({ card, onClick, onEdit, onDragStart }: KanbanTaskProps) {
+export default function KanbanTask({ card, onClick, onEdit, onDragStart, readOnly = false }: KanbanTaskProps) {
   const [dragging, setDragging] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
@@ -29,28 +30,34 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart }: Kanba
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (readOnly) return;
     if (confirm("Supprimer cette tâche ?")) {
-      await deleteCard(card.id!);
+      await deleteCard(card.projectId, card.id!);
     }
   };
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (readOnly) return;
     onEdit();
   };
 
   return (
     <div
       className={`${styles.card} ${dragging ? styles.dragging : ""}`}
-      draggable
+      draggable={!readOnly}
       onDragStart={(e) => {
+        if (readOnly) {
+          e.preventDefault();
+          return;
+        }
         setDragging(true);
         onDragStart(e, card.id!);
       }}
       onDragEnd={() => setDragging(false)}
       onClick={onClick}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onMouseEnter={() => !readOnly && setShowActions(true)}
+      onMouseLeave={() => !readOnly && setShowActions(false)}
     >
       {card.coverColor && (
         <div className={styles.cardCover} style={{ background: card.coverColor }} />
@@ -72,7 +79,7 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart }: Kanba
 
         <div className={styles.cardHeader}>
           <div className={styles.cardTitle}>{card.title}</div>
-          {showActions && (
+          {!readOnly && showActions && (
             <div className={styles.cardActions}>
               <button className={styles.actionBtn} onClick={handleEdit} title="Modifier">
                 <Edit2 size={12} />
@@ -132,7 +139,6 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart }: Kanba
           )}
         </div>
 
-        {/* Barre de progression toujours présente mais invisible si pas d'items */}
         <div className={styles.checklistBar}>
           <div
             className={styles.checklistBarFill}

@@ -2,8 +2,8 @@
 
 import React from "react";
 import { X, Flag, Calendar, CheckSquare, MessageCircle, Link2, Edit2, Trash2 } from "lucide-react";
-import { deleteCard } from "@/utils/kanban-api";
-import type { KanbanCard } from "@/utils/kanban-api";
+import { deleteCard } from "@/utils/kanban-projet-api";
+import type { KanbanCard } from "@/utils/kanban-projet-api";
 import styles from "./KanbanTaskDetail.module.css";
 
 const PRIORITIES = {
@@ -29,6 +29,8 @@ interface KanbanTaskDetailProps {
   onToast: (msg: string) => void;
   columnActions?: { id: string; label: string }[];
   onMoveCard?: (cardId: string, targetColumnId: string) => void;
+  readOnly?: boolean;
+  projectId: string;
 }
 
 export default function KanbanTaskDetail({
@@ -39,24 +41,26 @@ export default function KanbanTaskDetail({
   onToast,
   columnActions = [],
   onMoveCard,
+  readOnly = false,
+  projectId,
 }: KanbanTaskDetailProps) {
   const doneCount = card.checklist.filter((c) => c.done).length;
   const totalCount = card.checklist.length;
 
   const handleDelete = async () => {
+    if (readOnly) return;
     if (confirm("Supprimer cette tâche ?")) {
-      await deleteCard(card.id!);
+      await deleteCard(projectId, card.id!);
       onToast("Tâche supprimée");
       onClose();
     }
   };
 
   const handleMove = async (targetColumnId: string) => {
-    if (onMoveCard) {
-      await onMoveCard(card.id!, targetColumnId);
-      onToast(`Tâche déplacée vers ${columnActions.find(c => c.id === targetColumnId)?.label}`);
-      onClose();
-    }
+    if (readOnly || !onMoveCard) return;
+    await onMoveCard(card.id!, targetColumnId);
+    onToast(`Tâche déplacée vers ${columnActions.find(c => c.id === targetColumnId)?.label}`);
+    onClose();
   };
 
   const formatDate = (ts: any) => {
@@ -77,20 +81,24 @@ export default function KanbanTaskDetail({
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>{card.title}</h2>
           <div className={styles.headerActions}>
-            <button className={styles.btnIcon} onClick={onEdit} title="Modifier">
-              <Edit2 size={16} />
-            </button>
-            <button className={styles.btnIcon} onClick={handleDelete} title="Supprimer">
-              <Trash2 size={16} />
-            </button>
+            {!readOnly && (
+              <>
+                <button className={styles.btnIcon} onClick={onEdit} title="Modifier">
+                  <Edit2 size={16} />
+                </button>
+                <button className={styles.btnIcon} onClick={handleDelete} title="Supprimer">
+                  <Trash2 size={16} />
+                </button>
+              </>
+            )}
             <button className={styles.btnIcon} onClick={onClose}>
               <X size={18} />
             </button>
           </div>
         </div>
 
-        {/* Barre de déplacement rapide */}
-        {columnActions.length > 0 && (
+        {/* Barre de déplacement rapide - uniquement en édition */}
+        {!readOnly && columnActions.length > 0 && (
           <div className={styles.moveBar}>
             <span className={styles.moveLabel}>Déplacer vers :</span>
             <div className={styles.moveButtons}>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Layout, Plus, X, AlertCircle, Edit2, Trash2 } from "lucide-react";
-import { createBoard, seedDefaultColumns, updateBoard, deleteBoard } from "@/utils/kanban-api";
+import { createBoard, seedDefaultColumns, updateBoard, deleteBoard, getBoards } from "@/utils/kanban-api";
 import type { KanbanBoard } from "@/utils/kanban-api";
 import styles from "./KanbanEditor.module.css";
 
@@ -40,7 +40,7 @@ export default function KanbanEditor({
     const boardId = await createBoard(newBoardTitle.trim(), newBoardDescription.trim(), currentUser.uid);
     await seedDefaultColumns(boardId);
     
-    const updatedBoards = await import("@/utils/kanban-api").then(m => m.getBoards(currentUser.uid));
+    const updatedBoards = await getBoards(currentUser.uid);
     const board = updatedBoards.find((b: KanbanBoard) => b.id === boardId);
     
     if (board) {

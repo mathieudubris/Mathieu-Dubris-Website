@@ -2,8 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { X, Plus, Flag, Calendar, CheckSquare, Link2 } from "lucide-react";
-import { updateCard, addChecklistItem, toggleChecklistItem, deleteChecklistItem } from "@/utils/kanban-api";
-import type { KanbanCard, KanbanPriority } from "@/utils/kanban-api";
+import { 
+  updateCard, 
+  addChecklistItem, 
+  toggleChecklistItem, 
+  deleteChecklistItem 
+} from "@/utils/kanban-projet-api";
+import type { KanbanCard, KanbanPriority } from "@/utils/kanban-projet-api";
 import styles from "./KanbanTaskEditor.module.css";
 
 const PRIORITIES = [
@@ -30,6 +35,7 @@ interface KanbanTaskEditorProps {
   onToast: (msg: string) => void;
   columnActions?: { id: string; label: string }[];
   onMoveCard?: (cardId: string, targetColumnId: string) => void;
+  projectId: string;
 }
 
 export default function KanbanTaskEditor({
@@ -42,6 +48,7 @@ export default function KanbanTaskEditor({
   onToast,
   columnActions = [],
   onMoveCard,
+  projectId,
 }: KanbanTaskEditorProps) {
   const [title, setTitle] = useState(card?.title || "");
   const [description, setDescription] = useState(card?.description || "");
@@ -64,7 +71,6 @@ export default function KanbanTaskEditor({
 
   useEffect(() => {
     if (isNew && title.trim()) {
-      // Auto-focus sur le titre pour les nouvelles cartes
       const timer = setTimeout(() => {
         document.getElementById("task-title-input")?.focus();
       }, 100);
@@ -83,21 +89,27 @@ export default function KanbanTaskEditor({
     if (!card) return;
     
     setSaving(true);
-    await updateCard(card.id!, {
-      title,
-      description,
-      priority,
-      labels,
-      dueDate: dueDate ? new Date(dueDate) : null,
-    });
-    
-    if (onMoveCard && targetColumn !== card.columnId) {
-      await onMoveCard(card.id!, targetColumn);
+    try {
+      await updateCard(projectId, card.id!, {
+        title,
+        description,
+        priority,
+        labels,
+        dueDate: dueDate ? new Date(dueDate) : null,
+      });
+      
+      if (onMoveCard && targetColumn !== card.columnId) {
+        await onMoveCard(card.id!, targetColumn);
+      }
+      
+      onToast("Tâche mise à jour");
+      onClose();
+    } catch (error) {
+      console.error("Error saving card:", error);
+      onToast("Erreur lors de la sauvegarde");
+    } finally {
+      setSaving(false);
     }
-    
-    setSaving(false);
-    onToast("Tâche mise à jour");
-    onClose();
   };
 
   const handleAddLabel = () => {
@@ -118,18 +130,18 @@ export default function KanbanTaskEditor({
 
   const handleAddCheckItem = async () => {
     if (!newCheckItem.trim() || !card) return;
-    await addChecklistItem(card.id!, card.checklist, newCheckItem.trim());
+    await addChecklistItem(projectId, card.id!, card.checklist, newCheckItem.trim());
     setNewCheckItem("");
   };
 
   const handleToggleCheck = (itemId: string) => {
     if (!card) return;
-    toggleChecklistItem(card.id!, card.checklist, itemId);
+    toggleChecklistItem(projectId, card.id!, card.checklist, itemId);
   };
 
   const handleDeleteCheck = (itemId: string) => {
     if (!card) return;
-    deleteChecklistItem(card.id!, card.checklist, itemId);
+    deleteChecklistItem(projectId, card.id!, card.checklist, itemId);
   };
 
   const doneCount = card?.checklist.filter((c) => c.done).length || 0;

@@ -1,91 +1,119 @@
+// components/kanban/HeaderKanbanDetail.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Layout } from "lucide-react";
-import { subscribeToBoard, updateBoard } from "@/utils/kanban-api";
-import type { KanbanBoard, KanbanColumn, KanbanCard } from "@/utils/kanban-api";
-import HeaderKanbanDetail from "./HeaderKanbanDetail";
-import SectionKanbanDetail from "./SectionKanbanDetail";
-import styles from "./KanbanDetail.module.css";
+import React from "react";
+import { Layout, Search, X, Edit2, Check, ArrowLeft } from "lucide-react";
+import styles from "./HeaderKanbanDetail.module.css";
 
-interface KanbanDetailProps {
-  board: KanbanBoard;
-  currentUser: any;
+const PRIORITIES = [
+  { value: "low", label: "Basse", color: "#22c55e" },
+  { value: "medium", label: "Moyenne", color: "#3b82f6" },
+  { value: "high", label: "Haute", color: "#f59e0b" },
+  { value: "critical", label: "Critique", color: "#ef4444" },
+];
+
+interface HeaderKanbanDetailProps {
+  boardTitle: string;
+  editingTitle: boolean;
+  boardTitleValue: string;
+  onTitleChange: (value: string) => void;
+  onTitleEdit: () => void;
+  onTitleSave: () => void;
+  onTitleCancel: () => void;
+  search: string;
+  onSearchChange: (value: string) => void;
+  filterPriority: string;
+  onFilterChange: (value: string) => void;
   onBack: () => void;
-  onBoardUpdated: () => void;
+  readOnly?: boolean;
 }
 
-export default function KanbanDetail({ board, currentUser, onBack, onBoardUpdated }: KanbanDetailProps) {
-  const [columns, setColumns] = useState<KanbanColumn[]>([]);
-  const [cards, setCards] = useState<KanbanCard[]>([]);
-  const [search, setSearch] = useState("");
-  const [filterPriority, setFilterPriority] = useState<string>("all");
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [boardTitle, setBoardTitle] = useState(board.title);
-  const [toast, setToast] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!board.id) return;
-    const unsub = subscribeToBoard(board.id, setColumns, setCards);
-    return unsub;
-  }, [board.id]);
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
-  };
-
-  const handleUpdateTitle = async () => {
-    if (!boardTitle.trim() || boardTitle === board.title) {
-      setBoardTitle(board.title);
-      setEditingTitle(false);
-      return;
-    }
-    
-    await updateBoard(board.id!, { title: boardTitle.trim() });
-    onBoardUpdated();
-    setEditingTitle(false);
-    showToast("Titre mis à jour");
-  };
-
-  // Filtrer les cartes
-  const filteredCards = cards.filter((card) => {
-    const matchSearch = !search ||
-      card.title.toLowerCase().includes(search.toLowerCase()) ||
-      card.description?.toLowerCase().includes(search.toLowerCase());
-    const matchPriority = filterPriority === "all" || card.priority === filterPriority;
-    return matchSearch && matchPriority;
-  });
-
+export default function HeaderKanbanDetail({
+  boardTitle,
+  editingTitle,
+  boardTitleValue,
+  onTitleChange,
+  onTitleEdit,
+  onTitleSave,
+  onTitleCancel,
+  search,
+  onSearchChange,
+  filterPriority,
+  onFilterChange,
+  onBack,
+  readOnly = false,
+}: HeaderKanbanDetailProps) {
   return (
-    <div className={styles.wrapper}>
-      <HeaderKanbanDetail
-        boardTitle={board.title}
-        editingTitle={editingTitle}
-        boardTitleValue={boardTitle}
-        onTitleChange={setBoardTitle}
-        onTitleEdit={() => setEditingTitle(true)}
-        onTitleSave={handleUpdateTitle}
-        onTitleCancel={() => {
-          setBoardTitle(board.title);
-          setEditingTitle(false);
-        }}
-        search={search}
-        onSearchChange={setSearch}
-        filterPriority={filterPriority}
-        onFilterChange={setFilterPriority}
-        onBack={onBack}
-      />
+    <>
+      <div className={styles.topbar}>
+        <div className={styles.topbarLeft}>
+          <button className={styles.btnIcon} onClick={onBack} title="Retour">
+            <ArrowLeft size={18} />
+          </button>
+          
+          {editingTitle && !readOnly ? (
+            <div className={styles.titleEditor}>
+              <input
+                className={styles.titleInput}
+                value={boardTitleValue}
+                onChange={(e) => onTitleChange(e.target.value)}
+                autoFocus
+                onKeyDown={(e) => e.key === "Enter" && onTitleSave()}
+              />
+              <button className={styles.btnIcon} onClick={onTitleSave}>
+                <Check size={16} />
+              </button>
+              <button className={styles.btnIcon} onClick={onTitleCancel}>
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <div className={styles.titleWrapper}>
+              <span className={styles.boardTitle}>{boardTitle}</span>
+              {!readOnly && (
+                <button className={styles.btnIcon} onClick={onTitleEdit} title="Renommer">
+                  <Edit2 size={14} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
-      <SectionKanbanDetail
-        columns={columns}
-        cards={filteredCards}
-        currentUser={currentUser}
-        boardId={board.id!}
-        onToast={showToast}
-      />
+      <div className={styles.filterBar}>
+        <div className={styles.searchWrapper}>
+          <Search size={14} className={styles.searchIcon} />
+          <input
+            className={styles.searchInput}
+            placeholder="Rechercher..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+          {search && (
+            <button className={styles.clearSearch} onClick={() => onSearchChange("")}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
 
-      {toast && <div className={styles.toast}>{toast}</div>}
-    </div>
+        <button
+          className={filterPriority === "all" ? styles.filterChipActive : styles.filterChip}
+          onClick={() => onFilterChange("all")}
+        >
+          Tous
+        </button>
+        
+        {PRIORITIES.map((p) => (
+          <button
+            key={p.value}
+            className={filterPriority === p.value ? styles.filterChipActive : styles.filterChip}
+            onClick={() => onFilterChange(filterPriority === p.value ? "all" : p.value)}
+            style={filterPriority === p.value ? { borderColor: p.color, color: p.color } : {}}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+    </>
   );
 }

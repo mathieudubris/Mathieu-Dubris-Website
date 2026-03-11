@@ -2,8 +2,11 @@
 
 import React, { useState, useRef, type DragEvent } from "react";
 import { Plus } from "lucide-react";
-import { createCard, updateCard } from "@/utils/kanban-api";
-import type { KanbanColumn, KanbanCard } from "@/utils/kanban-api";
+import { 
+  createCard, 
+  moveCard 
+} from "@/utils/kanban-projet-api";  // ← Changé de kanban-api à kanban-projet-api
+import type { KanbanColumn, KanbanCard } from "@/utils/kanban-projet-api";  // ← Changé de kanban-api à kanban-projet-api
 import KanbanTask from "@/components/kanban/KanbanTask";
 import KanbanTaskEditor from "@/components/kanban/KanbanTaskEditor";
 import KanbanTaskDetail from "@/components/kanban/KanbanTaskDetail";
@@ -29,16 +32,18 @@ interface SectionKanbanDetailProps {
   columns: KanbanColumn[];
   cards: KanbanCard[];
   currentUser: any;
-  boardId: string;
+  projectId: string;
   onToast: (msg: string) => void;
+  readOnly?: boolean;
 }
 
 export default function SectionKanbanDetail({
   columns: dbColumns,
   cards,
   currentUser,
-  boardId,
+  projectId,
   onToast,
+  readOnly = false,
 }: SectionKanbanDetailProps) {
   const [addingCardColumn, setAddingCardColumn] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<KanbanCard | null>(null);
@@ -46,64 +51,46 @@ export default function SectionKanbanDetail({
   const [isDragOver, setIsDragOver] = useState<string | null>(null);
   const dragCardId = useRef<string | null>(null);
 
-  // Fusionner les colonnes de la DB avec les colonnes par défaut
-  const mergedColumns = DEFAULT_COLUMNS.map((defaultCol, index) => {
-    const dbCol = dbColumns.find(c => c.title === defaultCol.title) || {
-      id: `temp-${defaultCol.id}`,
-      title: defaultCol.title,
-      boardId,
-      position: index,
-      color: defaultCol.color,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    return dbCol;
-  }).sort((a, b) => a.position - b.position);
-
   const getColumnCards = (columnId: string) =>
     cards.filter((c) => c.columnId === columnId).sort((a, b) => a.position - b.position);
 
   const handleAddCard = async (columnId: string) => {
+    if (readOnly) return;
     setAddingCardColumn(columnId);
   };
 
   const handleCreateCard = async (columnId: string, title: string) => {
-    if (!title.trim() || !currentUser) return;
+    if (readOnly || !title.trim() || !currentUser) return;
     
-    const colCards = cards.filter((c) => c.columnId === columnId);
-    const newCardId = await createCard(boardId, columnId, title.trim(), currentUser.uid, colCards.length);
-    
-    // Récupérer la carte créée pour l'éditer directement
-    const newCard = {
-      id: newCardId,
-      title: title.trim(),
-      description: "",
-      columnId,
-      boardId,
-      position: colCards.length,
-      priority: "medium" as const,
-      labels: [],
-      assignees: [],
-      checklist: [],
-      comments: [],
-      attachments: [],
-      archived: false,
-      createdBy: currentUser.uid,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    setAddingCardColumn(null);
-    setEditingCard(newCard as KanbanCard);
-    onToast("Tâche créée");
+    try {
+      const colCards = cards.filter((c) => c.columnId === columnId);
+      await createCard(
+        projectId,
+        columnId, 
+        title.trim(), 
+        currentUser.uid, 
+        colCards.length
+      );
+      
+      setAddingCardColumn(null);
+      onToast("Tâche créée");
+    } catch (error) {
+      console.error("Error creating card:", error);
+      onToast("Erreur lors de la création");
+    }
   };
 
   const handleDragStart = (e: DragEvent, cardId: string) => {
+    if (readOnly) {
+      e.preventDefault();
+      return;
+    }
     dragCardId.current = cardId;
     e.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragOver = (e: DragEvent, columnId: string) => {
+    if (readOnly) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setIsDragOver(columnId);
@@ -114,6 +101,7 @@ export default function SectionKanbanDetail({
   };
 
   const handleDrop = async (e: DragEvent, targetColumnId: string) => {
+    if (readOnly) return;
     e.preventDefault();
     setIsDragOver(null);
     
@@ -123,32 +111,50 @@ export default function SectionKanbanDetail({
     const card = cards.find((c) => c.id === cardId);
     if (!card || card.columnId === targetColumnId) return;
     
-    const colCards = cards.filter((c) => c.columnId === targetColumnId);
-    await updateCard(cardId, {
-      columnId: targetColumnId,
-      position: colCards.length,
-    });
-    
-    dragCardId.current = null;
-    onToast("Tâche déplacée");
+    try {
+      const colCards = cards.filter((c) => c.columnId === targetColumnId);
+      await moveCard(
+        projectId,
+        cardId, 
+        targetColumnId, 
+        colCards.length
+      );
+      
+      onToast("Tâche déplacée");
+    } catch (error) {
+      console.error("Error moving card:", error);
+      onToast("Erreur lors du déplacement");
+    } finally {
+      dragCardId.current = null;
+    }
   };
 
   const handleMoveCard = async (cardId: string, targetColumnId: string) => {
+    if (readOnly) return;
     const card = cards.find((c) => c.id === cardId);
     if (!card || card.columnId === targetColumnId) return;
     
-    const colCards = cards.filter((c) => c.columnId === targetColumnId);
-    await updateCard(cardId, {
-      columnId: targetColumnId,
-      position: colCards.length,
-    });
-    
-    onToast("Tâche déplacée");
+    try {
+      const colCards = cards.filter((c) => c.columnId === targetColumnId);
+      await moveCard(
+        projectId,
+        cardId, 
+        targetColumnId, 
+        colCards.length
+      );
+      
+      onToast("Tâche déplacée");
+    } catch (error) {
+      console.error("Error moving card:", error);
+      onToast("Erreur lors du déplacement");
+    }
   };
+
+  const columnsToDisplay = dbColumns.length > 0 ? dbColumns : DEFAULT_COLUMNS;
 
   return (
     <div className={styles.boardScroll}>
-      {mergedColumns.map((col) => (
+      {columnsToDisplay.map((col) => (
         <div
           key={col.id}
           className={`${styles.column} ${isDragOver === col.id ? styles.dragOver : ""}`}
@@ -165,14 +171,15 @@ export default function SectionKanbanDetail({
               <span className={styles.columnCount}>{getColumnCards(col.id!).length}</span>
             </div>
             
-            {/* Bouton Ajouter en haut de la colonne */}
-            <button
-              className={styles.addColumnBtn}
-              onClick={() => handleAddCard(col.id!)}
-              title="Ajouter une tâche"
-            >
-              <Plus size={16} />
-            </button>
+            {!readOnly && (
+              <button
+                className={styles.addColumnBtn}
+                onClick={() => handleAddCard(col.id!)}
+                title="Ajouter une tâche"
+              >
+                <Plus size={16} />
+              </button>
+            )}
           </div>
 
           <div className={styles.cardsList}>
@@ -186,8 +193,9 @@ export default function SectionKanbanDetail({
                   key={card.id}
                   card={card}
                   onClick={() => setDetailCard(card)}
-                  onEdit={() => setEditingCard(card)}
+                  onEdit={() => !readOnly && setEditingCard(card)}
                   onDragStart={handleDragStart}
+                  readOnly={readOnly}
                 />
               ))
             )}
@@ -195,7 +203,7 @@ export default function SectionKanbanDetail({
         </div>
       ))}
 
-      {addingCardColumn && (
+      {!readOnly && addingCardColumn && (
         <KanbanTaskEditor
           isNew
           columnId={addingCardColumn}
@@ -203,10 +211,11 @@ export default function SectionKanbanDetail({
           onClose={() => setAddingCardColumn(null)}
           onSave={(title) => handleCreateCard(addingCardColumn, title)}
           onToast={onToast}
+          projectId={projectId}
         />
       )}
 
-      {editingCard && !addingCardColumn && (
+      {!readOnly && editingCard && !addingCardColumn && (
         <KanbanTaskEditor
           card={editingCard}
           currentUser={currentUser}
@@ -214,21 +223,26 @@ export default function SectionKanbanDetail({
           onToast={onToast}
           columnActions={COLUMN_ACTIONS}
           onMoveCard={handleMoveCard}
+          projectId={projectId}
         />
       )}
 
-      {detailCard && !editingCard && (
+      {detailCard && (
         <KanbanTaskDetail
           card={detailCard}
           currentUser={currentUser}
           onClose={() => setDetailCard(null)}
           onEdit={() => {
-            setDetailCard(null);
-            setEditingCard(detailCard);
+            if (!readOnly) {
+              setDetailCard(null);
+              setEditingCard(detailCard);
+            }
           }}
           onToast={onToast}
-          columnActions={COLUMN_ACTIONS}
-          onMoveCard={handleMoveCard}
+          columnActions={readOnly ? [] : COLUMN_ACTIONS}
+          onMoveCard={readOnly ? undefined : handleMoveCard}
+          readOnly={readOnly}
+          projectId={projectId}
         />
       )}
     </div>

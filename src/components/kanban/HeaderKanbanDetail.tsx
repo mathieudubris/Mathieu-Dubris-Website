@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Layout, Search, X, Edit2, Check } from "lucide-react";
+import { Layout, Search, X, Edit2, Check, ArrowLeft } from "lucide-react";
 import styles from "./HeaderKanbanDetail.module.css";
 
 const PRIORITIES = [
@@ -24,6 +24,7 @@ interface HeaderKanbanDetailProps {
   filterPriority: string;
   onFilterChange: (value: string) => void;
   onBack: () => void;
+  readOnly?: boolean;
 }
 
 export default function HeaderKanbanDetail({
@@ -39,16 +40,17 @@ export default function HeaderKanbanDetail({
   filterPriority,
   onFilterChange,
   onBack,
+  readOnly = false,
 }: HeaderKanbanDetailProps) {
   return (
     <>
       <div className={styles.topbar}>
         <div className={styles.topbarLeft}>
-          <button className={styles.btnIcon} onClick={onBack} title="Retour aux tableaux">
-            <Layout size={18} />
+          <button className={styles.btnIcon} onClick={onBack} title="Retour">
+            <ArrowLeft size={18} />
           </button>
           
-          {editingTitle ? (
+          {editingTitle && !readOnly ? (
             <div className={styles.titleEditor}>
               <input
                 className={styles.titleInput}
@@ -67,9 +69,11 @@ export default function HeaderKanbanDetail({
           ) : (
             <div className={styles.titleWrapper}>
               <span className={styles.boardTitle}>{boardTitle}</span>
-              <button className={styles.btnIcon} onClick={onTitleEdit} title="Renommer">
-                <Edit2 size={14} />
-              </button>
+              {!readOnly && (
+                <button className={styles.btnIcon} onClick={onTitleEdit} title="Renommer">
+                  <Edit2 size={14} />
+                </button>
+              )}
             </div>
           )}
         </div>

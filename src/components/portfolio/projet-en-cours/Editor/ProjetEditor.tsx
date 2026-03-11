@@ -64,11 +64,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
 
   // Champs projet avancés
   const [roadmapPhases, setRoadmapPhases] = useState<any[]>([]);
-  /**
-   * CORRECTION : les flèches sont maintenant stockées dans le state
-   * et passées au RoadmapEditor via onArrowsChange.
-   * Sans ça, elles n'étaient jamais sauvegardées.
-   */
   const [roadmapArrows, setRoadmapArrows] = useState<RoadmapArrow[]>([]);
   const [kanbanBoardId, setKanbanBoardId] = useState<string | null>(null);
   const [docLinks, setDocLinks] = useState<any[]>([]);
@@ -114,17 +109,14 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
         setDocLinks((project as any).docLinks || []);
 
         // 3. Charger les données canvas (positions + flèches) depuis la sous-collection
-        //    et les fusionner avec les phases métier stockées dans le document principal.
         const rawPhases = (project as any).roadmapPhases || [];
         if (project.id) {
           try {
             const canvas = await loadRoadmapCanvas(project.id);
-            // mergeCanvasIntoPhases restaure canvasX/Y/color sur chaque phase
             const richPhases = mergeCanvasIntoPhases(rawPhases, canvas);
             setRoadmapPhases(richPhases);
             setRoadmapArrows(canvas?.arrows || []);
           } catch {
-            // En cas d'erreur, on affiche quand même les phases sans positions
             setRoadmapPhases(rawPhases);
             setRoadmapArrows([]);
           }
@@ -205,8 +197,7 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
       const enrichedMembers = enrichMembers(teamMembers);
       const finalSlug = slug.trim() || generateSlug(title.trim());
 
-      // Séparer les données canvas (canvasX/Y/color/subNodes/arrows)
-      // des données "pures" stockées dans le document projet principal
+      // Séparer les données canvas des données "pures"
       const phasesForProject = stripCanvasData(roadmapPhases as RichPhase[]);
 
       const projectData: Omit<Project, 'id'> = {
@@ -239,12 +230,10 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
       if (project?.id) {
         await updateProject(project.id, projectData);
       } else {
-        // createProject retourne l'id du document créé
         savedProjectId = await createProject(projectData);
       }
 
-      // Sauvegarder les données canvas (positions + flèches) dans la sous-collection
-      // CORRECTION : on passe maintenant roadmapArrows qui est correctement mis à jour
+      // Sauvegarder les données canvas
       if (savedProjectId) {
         await saveRoadmapCanvas(savedProjectId, {
           phases: roadmapPhases as RichPhase[],
@@ -327,8 +316,8 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
           ))}
         </div>
 
-        {/* Formulaire */}
-        <form onSubmit={handleSubmit} className={styles.editorForm}>
+        {/* Formulaire - Le formulaire n'englobe plus tout le contenu pour éviter les soumissions involontaires */}
+        <div className={styles.editorForm}>
           {error && <div className={styles.errorMessage}>{error}</div>}
 
           <div className={styles.tabContent}>
@@ -385,8 +374,7 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
 
             {activeTab === 'progression' && (
               <ProgressionEditor
-                kanbanBoardId={kanbanBoardId}
-                onKanbanBoardChange={setKanbanBoardId}
+                projectId={project?.id || ''}
                 currentUser={currentUser}
                 progress={progress}
                 onProgressChange={setProgress}
@@ -408,7 +396,7 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
               />
             )}
           </div>
-        </form>
+        </div>
       </motion.div>
 
       {showNouveauteModal && project?.id && (

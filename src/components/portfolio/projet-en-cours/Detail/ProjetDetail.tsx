@@ -11,7 +11,7 @@ import {
 } from '@/utils/projet-api';
 import { loadRoadmapCanvas, mergeCanvasIntoPhases } from '@/utils/roadmap-api';
 import type { RoadmapArrow, RichPhase } from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor';
-import { useTheme } from '@/utils/ThemeProvider'; // Import si nécessaire
+import { useTheme } from '@/utils/ThemeProvider';
 
 import Overview from './navigation/Overview';
 import Galerie from './navigation/Galerie';
@@ -263,7 +263,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
 
           <div className={`${styles.tabContent} ${activeTab === 'progression' ? styles.visible : ''}`}>
             <Progression
-              kanbanBoardId={(project as any).kanbanBoardId}
+              projectId={project.id!}
               projectTitle={project.title}
             />
           </div>
