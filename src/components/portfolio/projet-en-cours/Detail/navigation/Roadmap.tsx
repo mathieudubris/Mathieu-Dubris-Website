@@ -16,10 +16,7 @@ interface RoadmapProps {
 
 const NODE_W        = 220;
 const DEFAULT_COLOR = '#c7ff44';
-// ARROW_OFFSET = 0 : le path se termine exactement sur le bord du node.
-// markerEnd avec refX=8 (pointe du triangle) est aligné sur ce point.
-// => La pointe de flèche touche le bord, rien ne rentre dans le node.
-const ARROW_OFFSET  = 0;
+const MARKER_LEN    = 10;
 
 const STATUS_LIST = [
   { value: 'planned'     as const, label: 'À venir',  Icon: Circle,       col: '#6b7280' },
@@ -27,41 +24,33 @@ const STATUS_LIST = [
   { value: 'completed'   as const, label: 'Terminé',  Icon: CheckCircle2, col: '#10ce55' },
 ];
 
-function anchorOutside(phase: RichPhase, side: ArrowSide, t: number): { x: number; y: number } {
-  const x  = phase.canvasX ?? 0;
-  const y  = phase.canvasY ?? 0;
-  const w  = phase.nodeW   ?? NODE_W;
-  const h  = phase.nodeH   ?? 120;
+/**
+ * Calcule le point exact sur la bordure du node (identique à RoadmapEditor).
+ */
+function anchorOnBorder(phase: RichPhase, side: ArrowSide, t: number): { x: number; y: number } {
+  const x = phase.canvasX ?? 0;
+  const y = phase.canvasY ?? 0;
+  const w = phase.nodeW ?? NODE_W;
+  const h = phase.nodeH ?? 120;
   const tc = Math.max(0, Math.min(1, t ?? 0.5));
-  const o  = ARROW_OFFSET;
+  
   switch (side) {
-    case 'top':    return { x: x + tc * w, y: y - o };
-    case 'bottom': return { x: x + tc * w, y: y + h + o };
-    case 'left':   return { x: x - o,      y: y + tc * h };
-    case 'right':  return { x: x + w + o,  y: y + tc * h };
+    case 'top':    return { x: x + tc * w, y: y };
+    case 'bottom': return { x: x + tc * w, y: y + h };
+    case 'left':   return { x: x,          y: y + tc * h };
+    case 'right':  return { x: x + w,      y: y + tc * h };
   }
 }
 
-function buildPath(x1: number, y1: number, x2: number, y2: number, fromSide: ArrowSide, toSide: ArrowSide): string {
-  const d = Math.max(60, Math.abs(x2 - x1) * 0.5, Math.abs(y2 - y1) * 0.5);
-  const tangent = (s: ArrowSide): [number, number] => {
-    switch (s) {
-      case 'right':  return [+d, 0];
-      case 'left':   return [-d, 0];
-      case 'bottom': return [0, +d];
-      case 'top':    return [0, -d];
-    }
-  };
-  const [dx1, dy1] = tangent(fromSide);
-  const [dx2, dy2] = tangent(toSide);
-  return `M ${x1} ${y1} C ${x1+dx1} ${y1+dy1}, ${x2-dx2} ${y2-dy2}, ${x2} ${y2}`;
+function buildPath(x1: number, y1: number, x2: number, y2: number): string {
+  return `M ${x1} ${y1} L ${x2} ${y2}`;
 }
 
 const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
-  // Un seul ref sur le wrapper — plus de canvasInner séparé
   const wrapperRef  = useRef<HTMLDivElement>(null);
   const nodeRefs    = useRef<Record<string, HTMLDivElement | null>>({});
   const measuredRef = useRef<Record<string, { w: number; h: number }>>({});
+  const [isMobile, setIsMobile] = useState(false);
 
   const [localPhases, setLocalPhases] = useState<RichPhase[]>(() => phases as RichPhase[]);
   const prevPhasesJsonRef = useRef('');
@@ -84,7 +73,16 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
   const setLocalPhasesRef = useRef(setLocalPhases);
   useEffect(() => { setLocalPhasesRef.current = setLocalPhases; });
 
-  /* Mesure hauteur des nodes */
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useLayoutEffect(() => {
     let changed = false;
     const next = localPhases.map(p => {
@@ -99,10 +97,8 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
       return { ...p, nodeH: h, nodeW: w };
     });
     if (changed) setLocalPhasesRef.current(next);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   });
 
-  /* Centre la vue */
   const centerView = useCallback(() => {
     if (!wrapperRef.current || sorted.length === 0) return;
     const rect = wrapperRef.current.getBoundingClientRect();
@@ -114,27 +110,71 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     const maxY = Math.max(...sorted.map(p => (p.canvasY ?? 0) + (p.nodeH ?? 120)));
     const contentW = Math.max(1, maxX - minX);
     const contentH = Math.max(1, maxY - minY);
-    const newZoom = Math.min(1, (cw - 80) / contentW, (ch - 80) / contentH);
+    
+    // Sur mobile, on utilise un zoom légèrement différent pour mieux voir
+    const padding = isMobile ? 40 : 80;
+    const newZoom = Math.min(1, (cw - padding) / contentW, (ch - padding) / contentH);
+    
     setPan({
       x: (cw - contentW * newZoom) / 2 - minX * newZoom,
       y: (ch - contentH * newZoom) / 2 - minY * newZoom,
     });
     setZoom(newZoom);
-  }, [sorted]);
+  }, [sorted, isMobile]);
 
-  /* Auto-centre au chargement */
   const hasCenteredRef = useRef(false);
-  useEffect(() => { hasCenteredRef.current = false; }, [phases]);
+  
+  // Réinitialiser le flag quand les phases changent
+  useEffect(() => { 
+    hasCenteredRef.current = false; 
+  }, [phases]);
+
+  // Centrage automatique amélioré pour mobile
   useEffect(() => {
+    // Ne centrer qu'une fois
     if (hasCenteredRef.current || sorted.length === 0) return;
+    
+    // Vérifier que les positions sont définies
     const hasPositions = sorted.some(p => (p.canvasX ?? 0) > 0 || (p.canvasY ?? 0) > 0);
     if (!hasPositions && sorted.length > 1) return;
-    centerView();
-    hasCenteredRef.current = true;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localPhases]);
+    
+    // Petit délai pour s'assurer que le DOM est prêt et que les dimensions sont calculées
+    const timer = setTimeout(() => {
+      // Vérifier que le wrapper a des dimensions valides
+      if (wrapperRef.current) {
+        const rect = wrapperRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          centerView();
+          hasCenteredRef.current = true;
+        } else {
+          // Si les dimensions ne sont pas encore disponibles, réessayer
+          setTimeout(() => {
+            centerView();
+            hasCenteredRef.current = true;
+          }, 200);
+        }
+      }
+    }, 300); // Délai plus long pour mobile
+    
+    return () => clearTimeout(timer);
+  }, [sorted, centerView]);
 
-  /* Zoom molette vers le curseur */
+  // Re-centrer lors du redimensionnement (surtout utile pour mobile/orientation)
+  useEffect(() => {
+    const handleResize = () => {
+      if (sorted.length > 0) {
+        // Petit délai pour laisser le temps au DOM de se mettre à jour
+        setTimeout(() => {
+          centerView();
+        }, 100);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sorted, centerView]);
+
+  // Gestion du zoom avec la molette (desktop)
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
@@ -157,7 +197,67 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     return () => el.removeEventListener('wheel', handleWheel);
   }, []);
 
-  /* Pan souris */
+  // Gestion du zoom tactile (pinch) sur mobile
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    let initialDistance = 0;
+    let initialZoom = zoom;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        initialDistance = Math.sqrt(dx * dx + dy * dy);
+        initialZoom = zoom;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const currentDistance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (initialDistance > 0) {
+          const rect = el.getBoundingClientRect();
+          const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+          const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+          
+          const factor = currentDistance / initialDistance;
+          const newZoom = Math.min(2.5, Math.max(0.15, initialZoom * factor));
+          
+          setPan(p => ({
+            x: mx - (mx - p.x) * (newZoom / zoom),
+            y: my - (my - p.y) * (newZoom / zoom),
+          }));
+          setZoom(newZoom);
+        }
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        initialDistance = 0;
+      }
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd);
+    el.addEventListener('touchcancel', handleTouchEnd);
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+      el.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [zoom]);
+
   const onMouseDown = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('[data-phaseid]')) return;
@@ -177,20 +277,27 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     window.addEventListener('mouseup', onUp);
   };
 
-  /* Pan tactile */
-  const touchPan = useRef<{ x: number; y: number } | null>(null);
+  // Gestion du pan tactile améliorée
   const onTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    touchPan.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[data-phaseid]')) return;
     e.preventDefault();
-    if (!touchPan.current || e.touches.length !== 1) return;
-    const t = e.touches[0];
-    setPan({ x: t.clientX - touchPan.current.x, y: t.clientY - touchPan.current.y });
+    const touch = e.touches[0];
+    isPanning.current = true;
+    panStart.current = { x: touch.clientX - pan.x, y: touch.clientY - pan.y };
   };
-  const onTouchEnd = () => { touchPan.current = null; };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1 || !isPanning.current) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    setPan({ x: touch.clientX - panStart.current.x, y: touch.clientY - panStart.current.y });
+  };
+
+  const onTouchEnd = () => {
+    isPanning.current = false;
+  };
 
   const phaseMap = Object.fromEntries(localPhases.map(p => [p.id, p]));
   const canvasW  = Math.max(1600, ...sorted.map(p => (p.canvasX ?? 0) + (p.nodeW ?? NODE_W) + 200));
@@ -201,21 +308,41 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
       const from = phaseMap[arrow.fromPhaseId] as RichPhase | undefined;
       const to   = phaseMap[arrow.toPhaseId]   as RichPhase | undefined;
       if (!from || !to) return null;
-      const fromT = (arrow as any).fromT ?? 0.5;
-      const toT   = (arrow as any).toT   ?? 0.5;
-      const { x: x1, y: y1 } = anchorOutside(from, arrow.fromSide, fromT);
-      const { x: x2, y: y2 } = anchorOutside(to,   arrow.toSide,   toT);
+      
+      const fromT = arrow.fromT ?? 0.5;
+      const toT   = arrow.toT   ?? 0.5;
+      
+      const { x: x1, y: y1 } = anchorOnBorder(from, arrow.fromSide, fromT);
+      const { x: x2, y: y2 } = anchorOnBorder(to, arrow.toSide, toT);
+      
       const col  = from.color ?? DEFAULT_COLOR;
-      const path = buildPath(x1, y1, x2, y2, arrow.fromSide, arrow.toSide);
+      const path = buildPath(x1, y1, x2, y2);
       const mid  = `vm_${arrow.id}`;
+      
       return (
         <g key={arrow.id}>
           <defs>
-            <marker id={mid} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-              <polygon points="0 0, 8 3, 0 6" fill={col} fillOpacity="0.95" />
+            <marker 
+              id={mid} 
+              markerWidth="10" 
+              markerHeight="8" 
+              refX="10"
+              refY="4" 
+              orient="auto" 
+              markerUnits="userSpaceOnUse"
+            >
+              <polygon points="0 0, 10 4, 0 8" fill={col} fillOpacity="0.95" />
             </marker>
           </defs>
-          <path d={path} fill="none" stroke={col} strokeWidth="2" strokeOpacity="0.7" strokeDasharray="6 4" markerEnd={`url(#${mid})`} />
+          <path 
+            d={path} 
+            fill="none" 
+            stroke={col} 
+            strokeWidth="2" 
+            strokeOpacity="0.7" 
+            strokeDasharray="6 4" 
+            markerEnd={`url(#${mid})`} 
+          />
           <circle cx={x1} cy={y1} r="4" fill={col} fillOpacity="0.95" />
         </g>
       );
@@ -230,86 +357,34 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
     >
-      {/* Grille de fond */}
-      <div
-        className={styles.dotGrid}
-        style={{ backgroundPosition: `${pan.x % 28}px ${pan.y % 28}px` }}
-      />
-
-      {/* Bouton Centrer — haut gauche */}
+      <div className={styles.dotGrid} style={{ backgroundPosition: `${pan.x % 28}px ${pan.y % 28}px` }} />
       <div className={styles.topLeftControls}>
-        <button
-          type="button"
-          className={`${styles.controlBtn} ${styles.fitViewBtn}`}
-          onClick={centerView}
-          title="Centrer la vue"
-        >
-          <Target size={13} /><span>Centrer</span>
+        <button type="button" className={`${styles.controlBtn} ${styles.fitViewBtn}`} onClick={centerView} title="Centrer la vue">
+          <Target size={13} /><span className={styles.fitViewText}>Centrer</span>
         </button>
       </div>
-
-      {/* Boutons Zoom — bas droite */}
       <div className={styles.zoomControls}>
         <div className={styles.controlGroup}>
-          <button type="button" className={styles.controlBtn} onClick={() => setZoom(z => Math.min(2.5, z * 1.2))} title="Zoom +">
-            <ZoomIn size={13} />
-          </button>
+          <button type="button" className={styles.controlBtn} onClick={() => setZoom(z => Math.min(2.5, z * 1.2))} title="Zoom +"><ZoomIn size={13} /></button>
           <span className={styles.controlValue}>{Math.round(zoom * 100)}%</span>
-          <button type="button" className={styles.controlBtn} onClick={() => setZoom(z => Math.max(0.15, z / 1.2))} title="Zoom −">
-            <ZoomOut size={13} />
-          </button>
+          <button type="button" className={styles.controlBtn} onClick={() => setZoom(z => Math.max(0.15, z / 1.2))} title="Zoom −"><ZoomOut size={13} /></button>
         </div>
       </div>
-
-      {/* Monde pannable */}
-      <div
-        className={styles.world}
-        style={{
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          transformOrigin: '0 0',
-          width: canvasW,
-          height: canvasH,
-        }}
-      >
-        {sorted.length === 0 && (
-          <div className={styles.emptyHint}>
-            <p>Aucune phase pour le moment</p>
-            <span>Créez des phases dans l&apos;éditeur de roadmap</span>
-          </div>
-        )}
-
+      <div className={styles.world} style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: '0 0', width: canvasW, height: canvasH }}>
         {sorted.map(phase => {
-          const rp     = phase as RichPhase;
-          const col    = rp.color ?? DEFAULT_COLOR;
-          const st     = STATUS_LIST.find(s => s.value === phase.status) ?? STATUS_LIST[0];
+          const rp = phase as RichPhase;
+          const col = rp.color ?? DEFAULT_COLOR;
+          const st = STATUS_LIST.find(s => s.value === phase.status) ?? STATUS_LIST[0];
           const StIcon = st.Icon;
-          const done   = phase.tasks.filter(t => t.done).length;
-          const total  = phase.tasks.length;
-
+          const done = phase.tasks.filter(t => t.done).length;
+          const total = phase.tasks.length;
           return (
-            <div
-              key={phase.id}
-              data-phaseid={phase.id}
-              ref={el => { nodeRefs.current[phase.id] = el; }}
-              className={styles.node}
-              style={{
-                position: 'absolute',
-                left:   rp.canvasX ?? 0,
-                top:    rp.canvasY ?? 0,
-                width:  NODE_W,
-                '--nc': col,
-                backgroundColor: `${col}33`,
-              } as React.CSSProperties}
-            >
+            <div key={phase.id} data-phaseid={phase.id} ref={el => { nodeRefs.current[phase.id] = el; }} className={styles.node} style={{ position: 'absolute', left: rp.canvasX ?? 0, top: rp.canvasY ?? 0, width: NODE_W, '--nc': col, backgroundColor: `${col}33` } as React.CSSProperties}>
               <div className={styles.nodeBody}>
                 <h4 className={styles.nodeTitle}>{phase.title}</h4>
-                <span
-                  className={styles.nodeBadge}
-                  style={{ color: st.col, background: `${st.col}18`, border: `1px solid ${st.col}44` }}
-                >
-                  <StIcon size={9} />{st.label}
-                </span>
+                <span className={styles.nodeBadge} style={{ color: st.col, background: `${st.col}18`, border: `1px solid ${st.col}44` }}><StIcon size={9} />{st.label}</span>
                 {phase.description && <p className={styles.nodeDesc}>{phase.description}</p>}
                 {(phase.startDate || phase.endDate) && (
                   <div className={styles.nodeDates}>
@@ -320,9 +395,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
                 )}
                 {total > 0 && (
                   <div className={styles.nodeProgress}>
-                    <div className={styles.pBar}>
-                      <div className={styles.pFill} style={{ width: `${(done / total) * 100}%`, background: col }} />
-                    </div>
+                    <div className={styles.pBar}><div className={styles.pFill} style={{ width: `${(done / total) * 100}%`, background: col }} /></div>
                     <span style={{ color: col, fontSize: 10, fontWeight: 600 }}>{done}/{total}</span>
                   </div>
                 )}
@@ -330,13 +403,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
             </div>
           );
         })}
-
-        {/* SVG rendu APRÈS les nodes → flèches par-dessus les nodes */}
-        <svg
-          width={canvasW}
-          height={canvasH}
-          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible', zIndex: 10 }}
-        >
+        <svg width={canvasW} height={canvasH} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible', zIndex: 10 }}>
           {renderArrows()}
         </svg>
       </div>

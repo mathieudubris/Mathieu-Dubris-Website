@@ -99,8 +99,10 @@
   cursor: pointer;
   transition: all 0.15s;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 .controlBtn:hover { color: var(--primary); background: rgba(199,255,68,0.12); }
+.controlBtn:active { color: var(--primary); background: rgba(199,255,68,0.2); }
 
 .controlValue {
   font-size: 11px;
@@ -132,7 +134,13 @@
   background: rgba(199,255,68,0.16);
   border-color: var(--primary) !important;
 }
-.fitViewBtn span { font-size: 11px; font-weight: 600; }
+.fitViewBtn:active {
+  background: rgba(199,255,68,0.25);
+}
+.fitViewText { 
+  font-size: 11px; 
+  font-weight: 600; 
+}
 
 /* ════════════════════════════════════════════════════════════
    NŒUDS DE PHASE
@@ -151,7 +159,6 @@
 .node:hover {
   border-color: var(--nc, var(--primary));
   box-shadow: 0 4px 20px color-mix(in srgb, var(--nc, var(--primary)) 30%, transparent);
-  transform: translateY(-2px);
 }
 
 /* ── Contenu du node ── */
@@ -197,7 +204,7 @@
   gap: 5px;
   font-size: 10.5px;
   color: var(--line);
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .nodeProgress {
@@ -243,19 +250,38 @@
 @media (max-width: 768px) {
   .canvas { height: calc(100dvh - 100px); min-height: 320px; border-radius: 10px; }
   .zoomControls { bottom: 10px; right: 10px; padding: 4px 8px; }
-  .controlBtn { width: 24px; height: 24px; }
-  .controlValue { min-width: 32px; }
-  .nodeTitle { font-size: 12.5px; }
+  .controlBtn { width: 28px; height: 28px; } /* Légèrement plus grand pour le tactile */
+  .controlValue { min-width: 36px; }
+  .fitViewBtn { padding: 0 10px; height: 36px; } /* Plus grand pour le tactile */
+  .fitViewText { font-size: 12px; } /* Plus lisible */
+  .nodeTitle { font-size: 13px; }
   .nodeBody  { padding: 8px 10px 10px; }
+  
+  /* Amélioration des zones tactiles */
+  .topLeftControls { top: 10px; left: 10px; }
+  .zoomControls { bottom: 12px; right: 12px; }
 }
 
 @media (max-width: 480px) {
   .canvas { height: calc(100dvh - 80px); min-height: 260px; border-radius: 8px; }
-  .fitViewBtn span { font-size: 10px; }
-  .nodeTitle { font-size: 12px; }
+  .fitViewBtn { padding: 0 8px; height: 40px; } /* Encore plus grand pour le tactile */
+  .fitViewBtn span { font-size: 13px; } /* Plus gros */
+  .fitViewBtn svg { width: 16px; height: 16px; } /* Icône plus grosse */
+  .controlBtn { width: 36px; height: 36px; } /* Boutons zoom plus grands */
+  .controlBtn svg { width: 16px; height: 16px; }
+  .controlValue { font-size: 13px; min-width: 45px; }
+  .nodeTitle { font-size: 13px; }
   .nodeBody  { padding: 6px 9px 9px; gap: 4px; }
+  
+  /* Ajustement des contrôles pour l'écran plus petit */
+  .zoomControls { padding: 6px 10px; }
+  .topLeftControls { top: 8px; left: 8px; }
+  .zoomControls { bottom: 12px; right: 12px; }
 }
 
 @media (max-width: 360px) {
   .canvas { min-height: 220px; }
+  .fitViewText { font-size: 12px; } /* Un peu plus petit sur très petit écran */
+  .fitViewBtn { height: 36px; }
+  .controlBtn { width: 32px; height: 32px; }
 }

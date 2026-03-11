@@ -10,12 +10,12 @@
   overflow: hidden;
   font-family: var(--font-main);
   background: var(--dark);
-  /* S'étire dans le parent flex, mais ne dépasse jamais l'écran */
-  flex: 1;
+  /* S'étire dans le parent flex sans jamais déborder */
+  flex: 1 1 0;
   min-height: 0;
-  /* Fallback si le parent n'a pas de hauteur définie */
-  height: calc(100vh - 140px);
-  max-height: 860px;
+  max-height: 100%;
+  /* Fallback si le parent n'est pas flex */
+  height: 100%;
 }
 
 /* ══════════════════════════════════════════════
@@ -446,7 +446,7 @@ div:has(> .nodeActionsFloat):hover .nodeActionsFloat {
    RESPONSIVE
 ══════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .wrapper { height: calc(100dvh - 100px); max-height: none; }
+  .wrapper { height: 100%; max-height: none; }
   .addBtn { font-size: 11px; padding: 5px 10px; }
   .controls { bottom: 10px; right: 10px; padding: 4px 8px; }
   .controlBtn { width: 24px; height: 24px; }
