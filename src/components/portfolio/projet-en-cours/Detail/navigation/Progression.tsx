@@ -22,8 +22,9 @@ export default function Progression({ projectId, projectTitle }: ProgressionProp
     <div className={styles.wrapper}>
       <KanbanViewer
         projectId={projectId}
-        currentUser={null} // ← Ajoutez cette ligne
+        currentUser={null}
         readOnly={true}
+        boardTitle={projectTitle || "Tableau Kanban"}
         onBack={() => {}}
       />
     </div>

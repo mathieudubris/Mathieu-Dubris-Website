@@ -12,8 +12,6 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #1f1f1f;
-  background: #0a0a0a;
 }
 
 .topbarLeft {
@@ -51,7 +49,7 @@
 }
 
 .btnPrimary:hover {
-  background: #d4ff66;
+  background: var(--primary);
   transform: translateY(-1px);
 }
 
@@ -59,11 +57,10 @@
   composes: btnPrimary;
   background: transparent;
   color: var(--light);
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--line);
 }
 
 .btnGhost:hover {
-  background: #1a1a1a;
   border-color: var(--line);
 }
 
@@ -90,16 +87,16 @@
   gap: 0.5rem;
   width: 100%;
   max-width: 500px;
-  background: #111;
+  background: var(--dark);
   padding: 1rem;
   border-radius: 12px;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--line);
 }
 
 .input {
   width: 100%;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   color: var(--light);
@@ -133,8 +130,8 @@
 }
 
 .boardCard {
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -144,7 +141,6 @@
 
 .boardCard:hover {
   border-color: var(--primary);
-  box-shadow: 0 8px 24px rgba(199, 255, 68, 0.08);
 }
 
 .boardCardContent {
@@ -168,7 +164,7 @@
 
 .boardCardActions {
   display: flex;
-  border-top: 1px solid #1e1e1e;
+  border-top: 1px solid var(--line);
 }
 
 .boardActionBtn {

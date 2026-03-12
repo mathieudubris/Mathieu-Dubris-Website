@@ -21,7 +21,13 @@ interface KanbanTaskProps {
   readOnly?: boolean;
 }
 
-export default function KanbanTask({ card, onClick, onEdit, onDragStart, readOnly = false }: KanbanTaskProps) {
+export default function KanbanTask({
+  card,
+  onClick,
+  onEdit,
+  onDragStart,
+  readOnly = false,
+}: KanbanTaskProps) {
   const [dragging, setDragging] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
@@ -47,10 +53,7 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart, readOnl
       className={`${styles.card} ${dragging ? styles.dragging : ""}`}
       draggable={!readOnly}
       onDragStart={(e) => {
-        if (readOnly) {
-          e.preventDefault();
-          return;
-        }
+        if (readOnly) { e.preventDefault(); return; }
         setDragging(true);
         onDragStart(e, card.id!);
       }}
@@ -142,7 +145,9 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart, readOnl
         <div className={styles.checklistBar}>
           <div
             className={styles.checklistBarFill}
-            style={{ width: totalCount > 0 ? `${(doneCount / totalCount) * 100}%` : "0%" }}
+            style={{
+              width: totalCount > 0 ? `${(doneCount / totalCount) * 100}%` : "0%",
+            }}
           />
         </div>
       </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, type DragEvent } from "react";
+import React, { useState, type DragEvent } from "react";
 import { CheckSquare, MessageCircle, Clock, Edit2, Trash2 } from "lucide-react";
-import { deleteCard, getBoardMemberProfiles } from "@/utils/kanban-api";
+import { deleteCard } from "@/utils/kanban-api";
 import type { KanbanCard, KanbanMember } from "@/utils/kanban-api";
 import styles from "./KanbanTask.module.css";
 
@@ -21,7 +21,13 @@ interface KanbanTaskProps {
   boardMembers?: KanbanMember[];
 }
 
-export default function KanbanTask({ card, onClick, onEdit, onDragStart, boardMembers = [] }: KanbanTaskProps) {
+export default function KanbanTask({
+  card,
+  onClick,
+  onEdit,
+  onDragStart,
+  boardMembers = [],
+}: KanbanTaskProps) {
   const [dragging, setDragging] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
@@ -42,11 +48,17 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart, boardMe
 
   const getMemberDisplay = (uid: string) => {
     const member = boardMembers.find((m) => m.uid === uid);
-    if (!member) return { initials: uid.slice(0, 2).toUpperCase(), name: uid, photoURL: undefined };
-    const initials = member.firstName && member.lastName
-      ? (member.firstName[0] + member.lastName[0]).toUpperCase()
-      : (member.displayName || uid).slice(0, 2).toUpperCase();
-    return { initials, name: member.displayName || `${member.firstName} ${member.lastName}`, photoURL: member.photoURL };
+    if (!member)
+      return { initials: uid.slice(0, 2).toUpperCase(), name: uid, photoURL: undefined };
+    const initials =
+      member.firstName && member.lastName
+        ? (member.firstName[0] + member.lastName[0]).toUpperCase()
+        : (member.displayName || uid).slice(0, 2).toUpperCase();
+    return {
+      initials,
+      name: member.displayName || `${member.firstName} ${member.lastName}`,
+      photoURL: member.photoURL,
+    };
   };
 
   return (
@@ -131,7 +143,6 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart, boardMe
             )}
           </div>
 
-          {/* Avatars des assignés avec vraies photos */}
           {card.assignees.length > 0 && (
             <div className={styles.avatarStack}>
               {card.assignees.slice(0, 3).map((uid) => {
@@ -139,7 +150,11 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart, boardMe
                 return (
                   <div key={uid} className={styles.avatar} title={display.name}>
                     {display.photoURL ? (
-                      <img src={display.photoURL} alt={display.name} className={styles.avatarImg} />
+                      <img
+                        src={display.photoURL}
+                        alt={display.name}
+                        className={styles.avatarImg}
+                      />
                     ) : (
                       <span>{display.initials}</span>
                     )}
@@ -158,7 +173,9 @@ export default function KanbanTask({ card, onClick, onEdit, onDragStart, boardMe
         <div className={styles.checklistBar}>
           <div
             className={styles.checklistBarFill}
-            style={{ width: totalCount > 0 ? `${(doneCount / totalCount) * 100}%` : "0%" }}
+            style={{
+              width: totalCount > 0 ? `${(doneCount / totalCount) * 100}%` : "0%",
+            }}
           />
         </div>
       </div>

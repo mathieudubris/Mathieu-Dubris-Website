@@ -1,7 +1,16 @@
 "use client";
 
 import React from "react";
-import { X, Flag, Calendar, CheckSquare, MessageCircle, Link2, Edit2, Trash2 } from "lucide-react";
+import {
+  X,
+  Flag,
+  Calendar,
+  CheckSquare,
+  MessageCircle,
+  Link2,
+  Edit2,
+  Trash2,
+} from "lucide-react";
 import { deleteCard } from "@/utils/kanban-api";
 import type { KanbanCard, KanbanMember } from "@/utils/kanban-api";
 import styles from "./KanbanTaskDetail.module.css";
@@ -56,7 +65,9 @@ export default function KanbanTaskDetail({
   const handleMove = async (targetColumnId: string) => {
     if (onMoveCard) {
       await onMoveCard(card.id!, targetColumnId);
-      onToast(`Tâche déplacée vers ${columnActions.find(c => c.id === targetColumnId)?.label}`);
+      onToast(
+        `Tâche déplacée vers ${columnActions.find((c) => c.id === targetColumnId)?.label}`
+      );
       onClose();
     }
   };
@@ -64,22 +75,35 @@ export default function KanbanTaskDetail({
   const formatDate = (ts: any) => {
     if (!ts) return "";
     const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    return d.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   };
 
   const getMemberDisplay = (uid: string) => {
     const member = boardMembers.find((m) => m.uid === uid);
-    if (!member) return { initials: uid.slice(0, 2).toUpperCase(), name: uid, photoURL: undefined };
-    const initials = member.firstName && member.lastName
-      ? (member.firstName[0] + member.lastName[0]).toUpperCase()
-      : (member.displayName || uid).slice(0, 2).toUpperCase();
-    return { initials, name: member.displayName || `${member.firstName} ${member.lastName}`, photoURL: member.photoURL };
+    if (!member)
+      return { initials: uid.slice(0, 2).toUpperCase(), name: uid, photoURL: undefined };
+    const initials =
+      member.firstName && member.lastName
+        ? (member.firstName[0] + member.lastName[0]).toUpperCase()
+        : (member.displayName || uid).slice(0, 2).toUpperCase();
+    return {
+      initials,
+      name: member.displayName || `${member.firstName} ${member.lastName}`,
+      photoURL: member.photoURL,
+    };
   };
 
-  const currentColumn = columnActions.find(c => c.id === card.columnId);
+  const currentColumn = columnActions.find((c) => c.id === card.columnId);
 
   return (
-    <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className={styles.modalOverlay}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div className={styles.modal}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>{card.title}</h2>
@@ -96,7 +120,6 @@ export default function KanbanTaskDetail({
           </div>
         </div>
 
-        {/* Déplacement rapide */}
         {columnActions.length > 0 && (
           <div className={styles.moveBar}>
             <span className={styles.moveLabel}>Déplacer vers :</span>
@@ -165,7 +188,9 @@ export default function KanbanTaskDetail({
                       checked={item.done}
                       readOnly
                     />
-                    <span className={`${styles.checklistItemText} ${item.done ? styles.done : ""}`}>
+                    <span
+                      className={`${styles.checklistItemText} ${item.done ? styles.done : ""}`}
+                    >
                       {item.text}
                     </span>
                   </div>
@@ -203,7 +228,13 @@ export default function KanbanTaskDetail({
                   <Link2 size={14} /> Liens
                 </h3>
                 {card.attachments.map((link) => (
-                  <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.linkItem}
+                  >
                     {link.name}
                   </a>
                 ))}
@@ -214,14 +245,20 @@ export default function KanbanTaskDetail({
           <div className={styles.modalSidebar}>
             <div className={styles.sidebarItem}>
               <span className={styles.sidebarLabel}>Colonne</span>
-              <div className={styles.columnBadge} style={{ color: COLUMN_STYLES[card.columnId]?.color }}>
+              <div
+                className={styles.columnBadge}
+                style={{ color: COLUMN_STYLES[card.columnId]?.color }}
+              >
                 {currentColumn?.label || card.columnId}
               </div>
             </div>
 
             <div className={styles.sidebarItem}>
               <span className={styles.sidebarLabel}>Priorité</span>
-              <div className={styles.priorityBadge} style={{ color: PRIORITIES[card.priority].color }}>
+              <div
+                className={styles.priorityBadge}
+                style={{ color: PRIORITIES[card.priority].color }}
+              >
                 {PRIORITIES[card.priority].label}
               </div>
             </div>
@@ -235,17 +272,22 @@ export default function KanbanTaskDetail({
               </div>
             )}
 
-            {/* Assignés avec vrais profils */}
             {card.assignees.length > 0 && (
               <div className={styles.sidebarItem}>
-                <span className={styles.sidebarLabel}>Membres ({card.assignees.length})</span>
+                <span className={styles.sidebarLabel}>
+                  Membres ({card.assignees.length})
+                </span>
                 <div className={styles.assigneesList}>
                   {card.assignees.map((uid) => {
                     const display = getMemberDisplay(uid);
                     return (
                       <div key={uid} className={styles.assignee} title={display.name}>
                         {display.photoURL ? (
-                          <img src={display.photoURL} alt={display.name} className={styles.assigneeImg} />
+                          <img
+                            src={display.photoURL}
+                            alt={display.name}
+                            className={styles.assigneeImg}
+                          />
                         ) : (
                           <span>{display.initials}</span>
                         )}
@@ -256,7 +298,11 @@ export default function KanbanTaskDetail({
                 <div className={styles.assigneeNames}>
                   {card.assignees.map((uid) => {
                     const { name } = getMemberDisplay(uid);
-                    return <div key={uid} className={styles.assigneeName}>{name}</div>;
+                    return (
+                      <div key={uid} className={styles.assigneeName}>
+                        {name}
+                      </div>
+                    );
                   })}
                 </div>
               </div>

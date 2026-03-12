@@ -52,10 +52,6 @@ export default function ProgressionEditor({
     }
   };
 
-  if (isLoading) {
-    return <div className={styles.loading}>Chargement...</div>;
-  }
-
   if (!projectId) {
     return (
       <div className={styles.emptyState}>
@@ -64,11 +60,15 @@ export default function ProgressionEditor({
     );
   }
 
+  if (isLoading) {
+    return <div className={styles.loading}>Chargement...</div>;
+  }
+
   if (hasKanban === false) {
     return (
       <div className={styles.emptyState}>
         <p>Aucun tableau Kanban associé à ce projet.</p>
-        <button 
+        <button
           className={styles.createBtn}
           onClick={handleCreateKanban}
           disabled={isLoading}
@@ -85,12 +85,8 @@ export default function ProgressionEditor({
         projectId={projectId}
         currentUser={currentUser}
         readOnly={false}
-        onBoardUpdated={() => {
-          // Rafraîchir si nécessaire
-        }}
-        onToast={(msg) => {
-          console.log(msg);
-        }}
+        onBoardUpdated={() => {}}
+        onToast={(msg) => console.log(msg)}
       />
     </div>
   );

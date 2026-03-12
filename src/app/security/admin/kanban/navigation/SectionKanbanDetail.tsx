@@ -4,9 +4,10 @@ import React, { useState, useRef, type DragEvent } from "react";
 import { Plus } from "lucide-react";
 import { createCard, updateCard } from "@/utils/kanban-api";
 import type { KanbanColumn, KanbanCard } from "@/utils/kanban-api";
-import KanbanTask from "@/components/kanban/KanbanTask";
-import KanbanTaskEditor from "@/components/kanban/KanbanTaskEditor";
-import KanbanTaskDetail from "@/components/kanban/KanbanTaskDetail";
+// ⚠️ Composants locaux (dossier navigation/) — PAS ceux de src/components/kanban/
+import KanbanTask from "./KanbanTask";
+import KanbanTaskEditor from "./KanbanTaskEditor";
+import KanbanTaskDetail from "./KanbanTaskDetail";
 import styles from "./SectionKanbanDetail.module.css";
 
 const DEFAULT_COLUMNS = [
@@ -47,7 +48,7 @@ export default function SectionKanbanDetail({
   const dragCardId = useRef<string | null>(null);
 
   const mergedColumns = DEFAULT_COLUMNS.map((defaultCol, index) => {
-    const dbCol = dbColumns.find(c => c.title === defaultCol.title) || {
+    const dbCol = dbColumns.find((c) => c.title === defaultCol.title) || {
       id: `temp-${defaultCol.id}`,
       title: defaultCol.title,
       boardId,
@@ -66,7 +67,13 @@ export default function SectionKanbanDetail({
     if (!title.trim() || !currentUser) return;
 
     const colCards = cards.filter((c) => c.columnId === columnId);
-    const newCardId = await createCard(boardId, columnId, title.trim(), currentUser.uid, colCards.length);
+    const newCardId = await createCard(
+      boardId,
+      columnId,
+      title.trim(),
+      currentUser.uid,
+      colCards.length
+    );
 
     const newCard: KanbanCard = {
       id: newCardId,
@@ -88,7 +95,7 @@ export default function SectionKanbanDetail({
     };
 
     setAddingCardColumn(null);
-    setEditingCard(newCard as KanbanCard);
+    setEditingCard(newCard);
     onToast("Tâche créée");
   };
 
@@ -108,13 +115,10 @@ export default function SectionKanbanDetail({
   const handleDrop = async (e: DragEvent, targetColumnId: string) => {
     e.preventDefault();
     setIsDragOver(null);
-
     const cardId = dragCardId.current;
     if (!cardId) return;
-
     const card = cards.find((c) => c.id === cardId);
     if (!card || card.columnId === targetColumnId) return;
-
     const colCards = cards.filter((c) => c.columnId === targetColumnId);
     await updateCard(cardId, { columnId: targetColumnId, position: colCards.length });
     dragCardId.current = null;
@@ -124,7 +128,6 @@ export default function SectionKanbanDetail({
   const handleMoveCard = async (cardId: string, targetColumnId: string) => {
     const card = cards.find((c) => c.id === cardId);
     if (!card || card.columnId === targetColumnId) return;
-
     const colCards = cards.filter((c) => c.columnId === targetColumnId);
     await updateCard(cardId, { columnId: targetColumnId, position: colCards.length });
     onToast("Tâche déplacée");
@@ -142,7 +145,10 @@ export default function SectionKanbanDetail({
         >
           <div className={styles.columnHeader}>
             {col.color && (
-              <div className={styles.columnHeaderAccent} style={{ background: col.color }} />
+              <div
+                className={styles.columnHeaderAccent}
+                style={{ background: col.color }}
+              />
             )}
             <div className={styles.columnTitleGroup}>
               <span className={styles.columnTitle}>{col.title}</span>

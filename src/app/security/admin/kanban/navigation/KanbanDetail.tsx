@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Layout } from "lucide-react";
 import { subscribeToBoard, updateBoard } from "@/utils/kanban-api";
 import type { KanbanBoard, KanbanColumn, KanbanCard } from "@/utils/kanban-api";
+// ⚠️ Composants locaux (dossier navigation/) — PAS ceux de src/components/kanban/
 import HeaderKanbanDetail from "./HeaderKanbanDetail";
 import SectionKanbanDetail from "./SectionKanbanDetail";
 import styles from "./KanbanDetail.module.css";
@@ -15,7 +15,12 @@ interface KanbanDetailProps {
   onBoardUpdated: () => void;
 }
 
-export default function KanbanDetail({ board, currentUser, onBack, onBoardUpdated }: KanbanDetailProps) {
+export default function KanbanDetail({
+  board,
+  currentUser,
+  onBack,
+  onBoardUpdated,
+}: KanbanDetailProps) {
   const [columns, setColumns] = useState<KanbanColumn[]>([]);
   const [cards, setCards] = useState<KanbanCard[]>([]);
   const [search, setSearch] = useState("");
@@ -41,16 +46,15 @@ export default function KanbanDetail({ board, currentUser, onBack, onBoardUpdate
       setEditingTitle(false);
       return;
     }
-    
     await updateBoard(board.id!, { title: boardTitle.trim() });
     onBoardUpdated();
     setEditingTitle(false);
     showToast("Titre mis à jour");
   };
 
-  // Filtrer les cartes
   const filteredCards = cards.filter((card) => {
-    const matchSearch = !search ||
+    const matchSearch =
+      !search ||
       card.title.toLowerCase().includes(search.toLowerCase()) ||
       card.description?.toLowerCase().includes(search.toLowerCase());
     const matchPriority = filterPriority === "all" || card.priority === filterPriority;

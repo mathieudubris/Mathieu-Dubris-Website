@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/utils/firebase-api";
 import { getBoards, type KanbanBoard } from "@/utils/kanban-api";
-import KanbanEditor from "@/components/kanban/KanbanEditor";
-import KanbanDetail from "@/components/kanban/KanbanDetail";
+// ⚠️ Composants locaux (dossier navigation/) — PAS ceux de src/components/kanban/
+import KanbanEditor from "./navigation/KanbanEditor";
+import KanbanDetail from "./navigation/KanbanDetail";
 import styles from "./kanban.module.css";
 
 export default function KanbanPage() {
@@ -13,7 +14,6 @@ export default function KanbanPage() {
   const [boards, setBoards] = useState<KanbanBoard[]>([]);
   const [activeBoard, setActiveBoard] = useState<KanbanBoard | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showEditor, setShowEditor] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (user) => {
@@ -29,7 +29,6 @@ export default function KanbanPage() {
 
   const handleBoardCreated = (board: KanbanBoard) => {
     setActiveBoard(board);
-    setShowEditor(false);
   };
 
   const handleBoardUpdated = async () => {
@@ -49,7 +48,7 @@ export default function KanbanPage() {
     );
   }
 
-  if (!activeBoard || showEditor) {
+  if (!activeBoard) {
     return (
       <KanbanEditor
         boards={boards}
@@ -57,7 +56,7 @@ export default function KanbanPage() {
         onBoardSelect={setActiveBoard}
         onBoardCreated={handleBoardCreated}
         onBoardUpdated={handleBoardUpdated}
-        onClose={() => setShowEditor(false)}
+        onClose={() => setActiveBoard(null)}
       />
     );
   }

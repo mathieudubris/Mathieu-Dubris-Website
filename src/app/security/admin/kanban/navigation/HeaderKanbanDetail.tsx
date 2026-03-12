@@ -47,7 +47,7 @@ export default function HeaderKanbanDetail({
           <button className={styles.btnIcon} onClick={onBack} title="Retour aux tableaux">
             <Layout size={18} />
           </button>
-          
+
           {editingTitle ? (
             <div className={styles.titleEditor}>
               <input
@@ -97,13 +97,19 @@ export default function HeaderKanbanDetail({
         >
           Tous
         </button>
-        
+
         {PRIORITIES.map((p) => (
           <button
             key={p.value}
-            className={filterPriority === p.value ? styles.filterChipActive : styles.filterChip}
-            onClick={() => onFilterChange(filterPriority === p.value ? "all" : p.value)}
-            style={filterPriority === p.value ? { borderColor: p.color, color: p.color } : {}}
+            className={
+              filterPriority === p.value ? styles.filterChipActive : styles.filterChip
+            }
+            onClick={() =>
+              onFilterChange(filterPriority === p.value ? "all" : p.value)
+            }
+            style={
+              filterPriority === p.value ? { borderColor: p.color, color: p.color } : {}
+            }
           >
             {p.label}
           </button>

@@ -2,7 +2,13 @@
 
 import React, { useState } from "react";
 import { Layout, Plus, X, AlertCircle, Edit2, Trash2 } from "lucide-react";
-import { createBoard, seedDefaultColumns, updateBoard, deleteBoard } from "@/utils/kanban-api";
+import {
+  createBoard,
+  seedDefaultColumns,
+  updateBoard,
+  deleteBoard,
+  getBoards,
+} from "@/utils/kanban-api";
 import type { KanbanBoard } from "@/utils/kanban-api";
 import styles from "./KanbanEditor.module.css";
 
@@ -36,18 +42,22 @@ export default function KanbanEditor({
 
   const handleCreateBoard = async () => {
     if (!newBoardTitle.trim() || !currentUser) return;
-    
-    const boardId = await createBoard(newBoardTitle.trim(), newBoardDescription.trim(), currentUser.uid);
+
+    const boardId = await createBoard(
+      newBoardTitle.trim(),
+      newBoardDescription.trim(),
+      currentUser.uid
+    );
     await seedDefaultColumns(boardId);
-    
-    const updatedBoards = await import("@/utils/kanban-api").then(m => m.getBoards(currentUser.uid));
+
+    const updatedBoards = await getBoards(currentUser.uid);
     const board = updatedBoards.find((b: KanbanBoard) => b.id === boardId);
-    
+
     if (board) {
       onBoardCreated(board);
       showToast("Tableau créé !");
     }
-    
+
     setNewBoardTitle("");
     setNewBoardDescription("");
     setCreatingBoard(false);
@@ -55,12 +65,12 @@ export default function KanbanEditor({
 
   const handleUpdateBoard = async () => {
     if (!editingBoard || !newBoardTitle.trim()) return;
-    
+
     await updateBoard(editingBoard.id!, {
       title: newBoardTitle.trim(),
       description: newBoardDescription.trim(),
     });
-    
+
     onBoardUpdated();
     setEditingBoard(null);
     setNewBoardTitle("");
@@ -89,10 +99,7 @@ export default function KanbanEditor({
           <span className={styles.title}>Kanban</span>
         </div>
         <div className={styles.topbarRight}>
-          <button
-            className={styles.btnPrimary}
-            onClick={() => setCreatingBoard(true)}
-          >
+          <button className={styles.btnPrimary} onClick={() => setCreatingBoard(true)}>
             <Plus size={15} /> Nouveau tableau
           </button>
         </div>
@@ -117,8 +124,8 @@ export default function KanbanEditor({
               placeholder="Description (optionnel)"
             />
             <div className={styles.formActions}>
-              <button 
-                className={styles.btnPrimary} 
+              <button
+                className={styles.btnPrimary}
                 onClick={editingBoard ? handleUpdateBoard : handleCreateBoard}
               >
                 {editingBoard ? "Mettre à jour" : "Créer"}
@@ -147,21 +154,24 @@ export default function KanbanEditor({
           <div className={styles.boardGrid}>
             {boards.map((board) => (
               <div key={board.id} className={styles.boardCard}>
-                <div className={styles.boardCardContent} onClick={() => onBoardSelect(board)}>
+                <div
+                  className={styles.boardCardContent}
+                  onClick={() => onBoardSelect(board)}
+                >
                   <div className={styles.boardCardTitle}>{board.title}</div>
                   {board.description && (
                     <div className={styles.boardCardDesc}>{board.description}</div>
                   )}
                 </div>
                 <div className={styles.boardCardActions}>
-                  <button 
+                  <button
                     className={styles.boardActionBtn}
                     onClick={() => startEdit(board)}
                     title="Modifier"
                   >
                     <Edit2 size={14} />
                   </button>
-                  <button 
+                  <button
                     className={styles.boardActionBtn}
                     onClick={() => handleDeleteBoard(board.id!)}
                     title="Supprimer"

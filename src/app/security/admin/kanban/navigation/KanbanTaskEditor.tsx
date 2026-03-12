@@ -1,8 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Plus, Flag, Calendar, CheckSquare, Link2, Users, UserCheck } from "lucide-react";
-import { updateCard, addChecklistItem, toggleChecklistItem, deleteChecklistItem, getBoardMemberProfiles } from "@/utils/kanban-api";
+import {
+  X,
+  Plus,
+  Flag,
+  Calendar,
+  CheckSquare,
+  Link2,
+  Users,
+  UserCheck,
+} from "lucide-react";
+import {
+  updateCard,
+  addChecklistItem,
+  toggleChecklistItem,
+  deleteChecklistItem,
+  getBoardMemberProfiles,
+} from "@/utils/kanban-api";
 import type { KanbanCard, KanbanPriority, KanbanMember } from "@/utils/kanban-api";
 import styles from "./KanbanTaskEditor.module.css";
 
@@ -17,7 +32,7 @@ const COLOR_PALETTE = [
   "#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899",
   "#14b8a6", "#f97316", "#06b6d4", "#84cc16", "#a855f7", "#d946ef",
   "#64748b", "#6b7280", "#78716c", "#71717a", "#737373", "#525252",
-  "#ef4444cc", "#f59e0bcc", "#22c55ecc", "#3b82f6cc", "#8b5cf6cc", "#ec4899cc"
+  "#ef4444cc", "#f59e0bcc", "#22c55ecc", "#3b82f6cc", "#8b5cf6cc", "#ec4899cc",
 ];
 
 interface KanbanTaskEditorProps {
@@ -63,10 +78,11 @@ export default function KanbanTaskEditor({
   const [targetColumn, setTargetColumn] = useState(card?.columnId || columnId || "");
   const [boardMembers, setBoardMembers] = useState<KanbanMember[]>([]);
 
-  // Charger les membres du board
   useEffect(() => {
     if (!card?.boardId) return;
-    getBoardMemberProfiles(card.boardId).then(setBoardMembers).catch(() => {});
+    getBoardMemberProfiles(card.boardId)
+      .then(setBoardMembers)
+      .catch(() => {});
   }, [card?.boardId]);
 
   const handleSave = async () => {
@@ -76,7 +92,6 @@ export default function KanbanTaskEditor({
       onClose();
       return;
     }
-
     if (!card) return;
 
     setSaving(true);
@@ -100,25 +115,21 @@ export default function KanbanTaskEditor({
 
   const handleAddLabel = () => {
     if (!newLabelName.trim()) return;
-    const newLabel = {
-      id: `label-${Date.now()}`,
-      name: newLabelName.trim(),
-      color: selectedColor,
-    };
-    setLabels([...labels, newLabel]);
+    setLabels([
+      ...labels,
+      { id: `label-${Date.now()}`, name: newLabelName.trim(), color: selectedColor },
+    ]);
     setNewLabelName("");
     setShowLabelCreator(false);
   };
 
-  const handleRemoveLabel = (labelId: string) => {
+  const handleRemoveLabel = (labelId: string) =>
     setLabels(labels.filter((l) => l.id !== labelId));
-  };
 
-  const handleToggleAssignee = (uid: string) => {
+  const handleToggleAssignee = (uid: string) =>
     setAssignees((prev) =>
       prev.includes(uid) ? prev.filter((u) => u !== uid) : [...prev, uid]
     );
-  };
 
   const handleAddCheckItem = async () => {
     if (!newCheckItem.trim() || !card) return;
@@ -138,18 +149,27 @@ export default function KanbanTaskEditor({
 
   const getMemberDisplay = (uid: string) => {
     const member = boardMembers.find((m) => m.uid === uid);
-    if (!member) return { initials: uid.slice(0, 2).toUpperCase(), name: uid, photoURL: undefined };
-    const initials = member.firstName && member.lastName
-      ? (member.firstName[0] + member.lastName[0]).toUpperCase()
-      : (member.displayName || uid).slice(0, 2).toUpperCase();
-    return { initials, name: member.displayName || `${member.firstName} ${member.lastName}`, photoURL: member.photoURL };
+    if (!member)
+      return { initials: uid.slice(0, 2).toUpperCase(), name: uid, photoURL: undefined };
+    const initials =
+      member.firstName && member.lastName
+        ? (member.firstName[0] + member.lastName[0]).toUpperCase()
+        : (member.displayName || uid).slice(0, 2).toUpperCase();
+    return {
+      initials,
+      name: member.displayName || `${member.firstName} ${member.lastName}`,
+      photoURL: member.photoURL,
+    };
   };
 
   const doneCount = card?.checklist.filter((c) => c.done).length || 0;
   const totalCount = card?.checklist.length || 0;
 
   return (
-    <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className={styles.modalOverlay}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div className={styles.modal}>
         <div className={styles.modalHeader}>
           <input
@@ -192,12 +212,18 @@ export default function KanbanTaskEditor({
                     style={{ background: label.color + "20", color: label.color }}
                   >
                     {label.name}
-                    <button className={styles.removeLabel} onClick={() => handleRemoveLabel(label.id)}>
+                    <button
+                      className={styles.removeLabel}
+                      onClick={() => handleRemoveLabel(label.id)}
+                    >
                       <X size={10} />
                     </button>
                   </div>
                 ))}
-                <button className={styles.addLabelBtn} onClick={() => setShowLabelCreator(!showLabelCreator)}>
+                <button
+                  className={styles.addLabelBtn}
+                  onClick={() => setShowLabelCreator(!showLabelCreator)}
+                >
                   <Plus size={12} /> Ajouter
                 </button>
               </div>
@@ -222,8 +248,15 @@ export default function KanbanTaskEditor({
                     ))}
                   </div>
                   <div className={styles.labelActions}>
-                    <button className={styles.btnPrimary} onClick={handleAddLabel}>Ajouter</button>
-                    <button className={styles.btnGhost} onClick={() => setShowLabelCreator(false)}>Annuler</button>
+                    <button className={styles.btnPrimary} onClick={handleAddLabel}>
+                      Ajouter
+                    </button>
+                    <button
+                      className={styles.btnGhost}
+                      onClick={() => setShowLabelCreator(false)}
+                    >
+                      Annuler
+                    </button>
                   </div>
                 </div>
               )}
@@ -243,12 +276,16 @@ export default function KanbanTaskEditor({
                       <button
                         key={member.uid}
                         type="button"
-                        className={`${styles.memberChip} ${isAssigned ? styles.memberAssigned : ''}`}
+                        className={`${styles.memberChip} ${isAssigned ? styles.memberAssigned : ""}`}
                         onClick={() => handleToggleAssignee(member.uid)}
                         title={display.name}
                       >
                         {display.photoURL ? (
-                          <img src={display.photoURL} alt={display.name} className={styles.memberAvatar} />
+                          <img
+                            src={display.photoURL}
+                            alt={display.name}
+                            className={styles.memberAvatar}
+                          />
                         ) : (
                           <div className={styles.memberInitials}>{display.initials}</div>
                         )}
@@ -277,10 +314,15 @@ export default function KanbanTaskEditor({
                       checked={item.done}
                       onChange={() => handleToggleCheck(item.id)}
                     />
-                    <span className={`${styles.checklistItemText} ${item.done ? styles.done : ""}`}>
+                    <span
+                      className={`${styles.checklistItemText} ${item.done ? styles.done : ""}`}
+                    >
                       {item.text}
                     </span>
-                    <button className={styles.btnIcon} onClick={() => handleDeleteCheck(item.id)}>
+                    <button
+                      className={styles.btnIcon}
+                      onClick={() => handleDeleteCheck(item.id)}
+                    >
                       <X size={12} />
                     </button>
                   </div>
@@ -301,16 +343,13 @@ export default function KanbanTaskEditor({
               </div>
             )}
 
-            {/* Links */}
+            {/* Liens */}
             <div className={styles.modalSection}>
               <span className={styles.modalSectionTitle}>
                 <Link2 size={12} /> Liens
               </span>
               <div className={styles.addItemRow}>
-                <input
-                  className={styles.addItemInput}
-                  placeholder="Ajouter un lien..."
-                />
+                <input className={styles.addItemInput} placeholder="Ajouter un lien..." />
                 <button className={styles.btnPrimary}>
                   <Plus size={14} />
                 </button>
@@ -319,7 +358,6 @@ export default function KanbanTaskEditor({
           </div>
 
           <div className={styles.modalSidebar}>
-            {/* Déplacer */}
             {columnActions.length > 0 && card && (
               <div className={styles.modalSection}>
                 <span className={styles.modalSectionTitle}>Déplacer vers</span>
@@ -329,7 +367,9 @@ export default function KanbanTaskEditor({
                   onChange={(e) => setTargetColumn(e.target.value)}
                 >
                   {columnActions.map((col) => (
-                    <option key={col.id} value={col.id}>{col.label}</option>
+                    <option key={col.id} value={col.id}>
+                      {col.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -343,7 +383,9 @@ export default function KanbanTaskEditor({
                 onChange={(e) => setPriority(e.target.value as KanbanPriority)}
               >
                 {PRIORITIES.map((p) => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -360,10 +402,11 @@ export default function KanbanTaskEditor({
               />
             </div>
 
-            {/* Aperçu des assignés */}
             {assignees.length > 0 && (
               <div className={styles.modalSection}>
-                <span className={styles.modalSectionTitle}>Assignés ({assignees.length})</span>
+                <span className={styles.modalSectionTitle}>
+                  Assignés ({assignees.length})
+                </span>
                 <div className={styles.assigneePreview}>
                   {assignees.map((uid) => {
                     const display = getMemberDisplay(uid);
@@ -386,7 +429,9 @@ export default function KanbanTaskEditor({
             <button className={styles.btnPrimary} onClick={handleSave} disabled={saving}>
               {saving ? "Sauvegarde..." : isNew ? "Créer" : "Sauvegarder"}
             </button>
-            <button className={styles.btnGhost} onClick={onClose}>Annuler</button>
+            <button className={styles.btnGhost} onClick={onClose}>
+              Annuler
+            </button>
           </div>
         </div>
       </div>
