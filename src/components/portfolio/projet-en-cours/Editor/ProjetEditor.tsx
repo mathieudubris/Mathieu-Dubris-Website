@@ -1,11 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, Send, Image as ImageIcon, Map, Star, Users, Package, Clock, FileText, Eye, AlertCircle } from 'lucide-react';
 import { isAdmin, getAllUsers } from '@/utils/firebase-api';
-import { createProject, updateProject, generateSlug, deleteProject, Project as FirebaseProject } from '@/utils/projet-api';
-import { saveRoadmapCanvas, loadRoadmapCanvas, mergeCanvasIntoPhases, stripCanvasData } from '@/utils/roadmap-api';
+import { 
+  createProject, 
+  updateProject, 
+  generateSlug, 
+  getFullProject,
+  Project as FirebaseProject 
+} from '@/utils/projet-api';
+import { saveRoadmapPhases, saveRoadmapCanvas, loadRoadmapPhases, loadRoadmapCanvas, mergeCanvasIntoPhases, stripCanvasData } from '@/utils/roadmap-api';
 import { Timestamp } from 'firebase/firestore';
 
 import OverviewEditor from './navigation/OverviewEditor';
@@ -43,113 +49,124 @@ interface ProjetEditorProps {
 
 const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, currentUser }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  // PERF: isLoading ne bloque plus l'affichage du panel — l'UI s'ouvre immédiatement
+  // et les champs se remplissent dès que les données arrivent (~300-600ms après)
+  const [isLoading, setIsLoading] = useState(!!project?.id);
 
-  // Champs principaux
+  // Champs principaux (document projet)
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
-  const [carouselImages, setCarouselImages] = useState<MediaItem[]>([]);
-  const [progress, setProgress] = useState(0);
-  const [software, setSoftware] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<'public' | 'early_access'>('public');
-  const [views, setViews] = useState(0);
+
+  // Overview
+  const [description, setDescription] = useState('');
   const [projectType, setProjectType] = useState('');
   const [objective, setObjective] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
   const [status, setStatus] = useState('in_progress');
-  const [createdAtEditable, setCreatedAtEditable] = useState<any>(null);
-  const [updatedAtEditable, setUpdatedAtEditable] = useState<any>(null);
 
-  // Champs projet avancés
+  // Media
+  const [image, setImage] = useState('');
+  const [carouselImages, setCarouselImages] = useState<MediaItem[]>([]);
+
+  // Software
+  const [software, setSoftware] = useState<any[]>([]);
+
+  // Roadmap
   const [roadmapPhases, setRoadmapPhases] = useState<any[]>([]);
   const [roadmapArrows, setRoadmapArrows] = useState<RoadmapArrow[]>([]);
+
+  // Stats
+  const [views, setViews] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [kanbanBoardId, setKanbanBoardId] = useState<string | null>(null);
+
+  // Documentation
   const [docLinks, setDocLinks] = useState<any[]>([]);
+
+  // Dates
+  const [createdAtEditable, setCreatedAtEditable] = useState<any>(null);
+  const [updatedAtEditable, setUpdatedAtEditable] = useState<any>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [showNouveauteModal, setShowNouveauteModal] = useState(false);
 
+  // Pour nouveau projet (pas d'id), initialiser immédiatement sans loader
   useEffect(() => {
-    const loadAll = async () => {
-      // 1. Charger les utilisateurs
-      try {
-        const users = await getAllUsers();
-        setAllUsers(users);
-      } catch (err) {
-        console.error('Erreur lors du chargement des utilisateurs:', err);
-      }
+    if (!project?.id) {
+      setTitle('');
+      setSlug('');
+      setTeamMembers(currentUser?.uid ? [currentUser.uid] : []);
+      setVisibility('public');
+      setDescription('');
+      setProjectType('');
+      setObjective('');
+      setTargetAudience('');
+      setStatus('in_progress');
+      setImage('');
+      setCarouselImages([]);
+      setSoftware([]);
+      setRoadmapPhases([]);
+      setRoadmapArrows([]);
+      setViews(0);
+      setProgress(0);
+      setKanbanBoardId(null);
+      setDocLinks([]);
+      setCreatedAtEditable(null);
+      setUpdatedAtEditable(null);
+      setIsLoading(false);
+      // Charger les users en arrière-plan
+      getAllUsers().then(setAllUsers).catch(console.error);
+      return;
+    }
 
-      if (project) {
-        // 2. Champs principaux
-        setTitle(project.title);
-        setSlug(project.slug || generateSlug(project.title));
-        setDescription(project.description);
-        setImage(project.image || '');
+    // PERF: Pour un projet existant — charger tout en parallèle en une seule vague
+    // L'UI s'ouvre immédiatement, les champs se peuplent dès que les données arrivent
+    setIsLoading(true);
+
+    Promise.all([
+      getAllUsers().catch(() => []),
+      getFullProject(project.id).catch(() => null),
+      loadRoadmapPhases(project.id).catch(() => null),
+      loadRoadmapCanvas(project.id).catch(() => null),
+    ]).then(([users, fullProject, phases, canvas]) => {
+      setAllUsers(users);
+
+      if (fullProject) {
+        setTitle(fullProject.title || '');
+        setSlug(fullProject.slug || generateSlug(fullProject.title || ''));
+        setTeamMembers(fullProject.teamMembers || []);
+        setVisibility(fullProject.visibility || 'public');
+        setDescription(fullProject.description || '');
+        setProjectType(fullProject.projectType || '');
+        setObjective(fullProject.objective || '');
+        setTargetAudience(fullProject.targetAudience || '');
+        setStatus(fullProject.status || 'in_progress');
+        setImage(fullProject.image || '');
         setCarouselImages(
-          (project.carouselImages || []).map((item: string | MediaItem) =>
+          (fullProject.carouselImages || []).map((item: string | MediaItem) =>
             typeof item === 'string' ? { url: item, type: 'image' as const } : item
           )
         );
-        setProgress(project.progress || 0);
-        setSoftware(project.software || []);
-        setTeamMembers(project.teamMembers || []);
-        setVisibility(project.visibility || 'public');
-        setViews(project.views || 0);
-        setProjectType((project as any).projectType || '');
-        setObjective((project as any).objective || '');
-        setTargetAudience((project as any).targetAudience || '');
-        setStatus((project as any).status || 'in_progress');
-        setCreatedAtEditable(project.createdAt || null);
-        setUpdatedAtEditable(project.updatedAt || null);
-        setKanbanBoardId((project as any).kanbanBoardId || null);
-        setDocLinks((project as any).docLinks || []);
-
-        // 3. Charger les données canvas (positions + flèches) depuis la sous-collection
-        const rawPhases = (project as any).roadmapPhases || [];
-        if (project.id) {
-          try {
-            const canvas = await loadRoadmapCanvas(project.id);
-            const richPhases = mergeCanvasIntoPhases(rawPhases, canvas);
-            setRoadmapPhases(richPhases);
-            setRoadmapArrows(canvas?.arrows || []);
-          } catch {
-            setRoadmapPhases(rawPhases);
-            setRoadmapArrows([]);
-          }
-        } else {
-          setRoadmapPhases(rawPhases);
-          setRoadmapArrows([]);
-        }
-      } else {
-        // Nouveau projet
-        setTitle('');
-        setSlug('');
-        setDescription('');
-        setImage('');
-        setCarouselImages([]);
-        setProgress(0);
-        setSoftware([]);
-        setTeamMembers(currentUser?.uid ? [currentUser.uid] : []);
-        setVisibility('public');
-        setViews(0);
-        setProjectType('');
-        setObjective('');
-        setTargetAudience('');
-        setStatus('in_progress');
-        setCreatedAtEditable(null);
-        setUpdatedAtEditable(null);
-        setRoadmapPhases([]);
-        setRoadmapArrows([]);
-        setKanbanBoardId(null);
-        setDocLinks([]);
+        setSoftware(fullProject.software || []);
+        setViews(fullProject.views || 0);
+        setProgress(fullProject.progress || 0);
+        setKanbanBoardId(fullProject.kanbanBoardId || null);
+        setDocLinks(fullProject.docLinks || []);
+        setCreatedAtEditable(fullProject.createdAt || null);
+        setUpdatedAtEditable(fullProject.updatedAt || null);
       }
-    };
 
-    loadAll();
+      // Roadmap — fusionner phases + canvas
+      const richPhases = mergeCanvasIntoPhases(phases || [], canvas);
+      setRoadmapPhases(richPhases);
+      setRoadmapArrows(canvas?.arrows || []);
+    }).finally(() => {
+      setIsLoading(false);
+    });
   }, [project, currentUser]);
 
   if (!isAdmin(currentUser?.email)) {
@@ -197,48 +214,81 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
       const enrichedMembers = enrichMembers(teamMembers);
       const finalSlug = slug.trim() || generateSlug(title.trim());
 
-      // Séparer les données canvas des données "pures"
-      const phasesForProject = stripCanvasData(roadmapPhases as RichPhase[]);
+      const phasesForProject = Array.isArray(roadmapPhases) && roadmapPhases.length > 0
+        ? stripCanvasData(roadmapPhases as RichPhase[])
+        : [];
 
-      const projectData: Omit<Project, 'id'> = {
+      const projectData = {
         title: title.trim(),
         slug: finalSlug,
-        description: description.trim(),
-        image: image || '/default-project.jpg',
-        carouselImages: carouselImages.map(item => item.url),
-        progress,
-        software,
-        features: [],
-        members: enrichedMembers,
-        createdBy: currentUser.uid,
-        createdAt: createdAtEditable || (project ? project.createdAt : Timestamp.now()),
-        updatedAt: updatedAtEditable || Timestamp.now(),
         teamMembers,
-        views: project?.views || 0,
         visibility,
+        createdBy: project?.createdBy || currentUser.uid,
+        createdAt: createdAtEditable || (project?.createdAt || Timestamp.now()),
+        updatedAt: updatedAtEditable || Timestamp.now(),
+      };
+
+      const overviewData = {
+        description: description.trim(),
         projectType,
         objective,
         targetAudience,
         status,
-        roadmapPhases: phasesForProject,
+        features: (project as any)?.features || [],
+      };
+
+      const mediaData = {
+        image: image || '/default-project.jpg',
+        carouselImages: carouselImages.map(item => item.url),
+      };
+
+      const softwareData = {
+        items: software,
+      };
+
+      const statsData = {
+        views,
+        progress,
         kanbanBoardId,
-        docLinks,
-      } as any;
+      };
+
+      const docLinksData = {
+        links: docLinks,
+      };
 
       let savedProjectId: string | undefined = project?.id;
 
       if (project?.id) {
-        await updateProject(project.id, projectData);
+        await updateProject(project.id, {
+          ...projectData,
+          ...overviewData,
+          ...mediaData,
+          software: softwareData.items,
+          ...statsData,
+          docLinks: docLinksData.links,
+        });
       } else {
-        savedProjectId = await createProject(projectData);
+        savedProjectId = await createProject({
+          ...projectData,
+          ...overviewData,
+          ...mediaData,
+          software: softwareData.items,
+          ...statsData,
+          docLinks: docLinksData.links,
+          roadmapPhases: phasesForProject,
+        });
       }
 
-      // Sauvegarder les données canvas
       if (savedProjectId) {
-        await saveRoadmapCanvas(savedProjectId, {
-          phases: roadmapPhases as RichPhase[],
-          arrows: roadmapArrows,
-        });
+        if (phasesForProject) {
+          await saveRoadmapPhases(savedProjectId, phasesForProject);
+        }
+        if (roadmapPhases && roadmapArrows) {
+          await saveRoadmapCanvas(savedProjectId, {
+            phases: roadmapPhases as RichPhase[],
+            arrows: roadmapArrows,
+          });
+        }
       }
 
       onSave();
@@ -263,9 +313,10 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
     >
       <motion.div
         className={styles.editorPanel}
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.15 }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -277,7 +328,7 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
               className={styles.publishBtnTop}
             >
               <Send size={16} />
@@ -316,86 +367,93 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
           ))}
         </div>
 
-        {/* Formulaire - Le formulaire n'englobe plus tout le contenu pour éviter les soumissions involontaires */}
+        {/* Formulaire */}
         <div className={styles.editorForm}>
           {error && <div className={styles.errorMessage}>{error}</div>}
 
-          <div className={styles.tabContent}>
-            {activeTab === 'overview' && (
-              <OverviewEditor
-                title={title}
-                slug={slug}
-                description={description}
-                projectType={projectType}
-                objective={objective}
-                targetAudience={targetAudience}
-                status={status}
-                createdAt={createdAtEditable}
-                updatedAt={updatedAtEditable}
-                onTitleChange={setTitle}
-                onSlugChange={setSlug}
-                onDescriptionChange={setDescription}
-                onProjectTypeChange={setProjectType}
-                onObjectiveChange={setObjective}
-                onTargetAudienceChange={setTargetAudience}
-                onStatusChange={setStatus}
-                onCreatedAtChange={setCreatedAtEditable}
-                onUpdatedAtChange={setUpdatedAtEditable}
-                views={views}
-                onViewsChange={setViews}
-                isNewProject={!project}
-              />
-            )}
+          {/* PERF: Skeleton léger inline — le panel est déjà visible, seul le contenu
+              des champs est masqué le temps du chargement (~300ms max) */}
+          {isLoading ? (
+            <div className={styles.inlineLoadingWrapper}>
+              <div className={styles.loadingSpinner} />
+              <span className={styles.inlineLoadingText}>Chargement des données...</span>
+            </div>
+          ) : (
+            <div className={styles.tabContent}>
+              {activeTab === 'overview' && (
+                <OverviewEditor
+                  title={title}
+                  slug={slug}
+                  description={description}
+                  projectType={projectType}
+                  objective={objective}
+                  targetAudience={targetAudience}
+                  status={status}
+                  createdAt={createdAtEditable}
+                  updatedAt={updatedAtEditable}
+                  onTitleChange={setTitle}
+                  onSlugChange={setSlug}
+                  onDescriptionChange={setDescription}
+                  onProjectTypeChange={setProjectType}
+                  onObjectiveChange={setObjective}
+                  onTargetAudienceChange={setTargetAudience}
+                  onStatusChange={setStatus}
+                  onCreatedAtChange={setCreatedAtEditable}
+                  onUpdatedAtChange={setUpdatedAtEditable}
+                  views={views}
+                  onViewsChange={setViews}
+                  isNewProject={!project}
+                />
+              )}
 
-            {activeTab === 'galerie' && (
-              <GalerieEditor
-                mainImage={image}
-                carouselImages={carouselImages}
-                onMainImageChange={setImage}
-                onCarouselImagesChange={setCarouselImages}
-              />
-            )}
+              {activeTab === 'galerie' && (
+                <GalerieEditor
+                  mainImage={image}
+                  carouselImages={carouselImages}
+                  onMainImageChange={setImage}
+                  onCarouselImagesChange={setCarouselImages}
+                />
+              )}
 
-            {activeTab === 'ressources' && (
-              <RessourcesEditor
-                software={software}
-                onSoftwareChange={setSoftware}
-              />
-            )}
+              {activeTab === 'ressources' && (
+                <RessourcesEditor
+                  software={software}
+                  onSoftwareChange={setSoftware}
+                />
+              )}
 
-            {activeTab === 'roadmap' && (
-              <RoadmapEditor
-                phases={roadmapPhases}
-                onPhasesChange={setRoadmapPhases}
-                arrows={roadmapArrows}
-                onArrowsChange={setRoadmapArrows}
-              />
-            )}
+              {activeTab === 'roadmap' && (
+                <RoadmapEditor
+                  phases={roadmapPhases}
+                  onPhasesChange={setRoadmapPhases}
+                  arrows={roadmapArrows}
+                  onArrowsChange={setRoadmapArrows}
+                />
+              )}
 
-            {activeTab === 'progression' && (
-              <ProgressionEditor
-                projectId={project?.id || ''}
-                currentUser={currentUser}
-                progress={progress}
-                onProgressChange={setProgress}
-              />
-            )}
+              {activeTab === 'progression' && (
+                <ProgressionEditor
+                  projectId={project?.id || ''}
+                  currentUser={currentUser}
+                />
+              )}
 
-            {activeTab === 'equipe' && (
-              <EquipeEditor
-                teamMembers={teamMembers}
-                allUsers={allUsers}
-                onTeamMembersChange={setTeamMembers}
-              />
-            )}
+              {activeTab === 'equipe' && (
+                <EquipeEditor
+                  teamMembers={teamMembers}
+                  allUsers={allUsers}
+                  onTeamMembersChange={setTeamMembers}
+                />
+              )}
 
-            {activeTab === 'documentation' && (
-              <DocumentationEditor
-                docLinks={docLinks}
-                onDocLinksChange={setDocLinks}
-              />
-            )}
-          </div>
+              {activeTab === 'documentation' && (
+                <DocumentationEditor
+                  docLinks={docLinks}
+                  onDocLinksChange={setDocLinks}
+                />
+              )}
+            </div>
+          )}
         </div>
       </motion.div>
 

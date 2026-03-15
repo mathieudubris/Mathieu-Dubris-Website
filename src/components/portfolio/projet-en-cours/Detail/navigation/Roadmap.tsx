@@ -67,11 +67,15 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
 
   const [pan,  setPan]  = useState({ x: 60, y: 40 });
   const [zoom, setZoom] = useState(1);
+  const zoomRef = useRef(1); // toujours à jour, safe dans les event listeners natifs
   const isPanning = useRef(false);
   const panStart  = useRef({ x: 0, y: 0 });
 
   const setLocalPhasesRef = useRef(setLocalPhases);
   useEffect(() => { setLocalPhasesRef.current = setLocalPhases; });
+
+  // Garder zoomRef synchronisé
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
 
   // Détection mobile
   useEffect(() => {
@@ -203,7 +207,8 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
     if (!el) return;
 
     let initialDistance = 0;
-    let initialZoom = zoom;
+    let initialZoom = 1;
+    let lastZoom = 1; // zoom de la frame précédente, local à ce gesture
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
@@ -211,7 +216,8 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         initialDistance = Math.sqrt(dx * dx + dy * dy);
-        initialZoom = zoom;
+        initialZoom = zoomRef.current;
+        lastZoom = zoomRef.current;
       }
     };
 
@@ -229,12 +235,15 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
           
           const factor = currentDistance / initialDistance;
           const newZoom = Math.min(2.5, Math.max(0.15, initialZoom * factor));
-          
+          const prevZoom = lastZoom; // valeur de la frame précédente, toujours fraîche
+          lastZoom = newZoom;
+
           setPan(p => ({
-            x: mx - (mx - p.x) * (newZoom / zoom),
-            y: my - (my - p.y) * (newZoom / zoom),
+            x: mx - (mx - p.x) * (newZoom / prevZoom),
+            y: my - (my - p.y) * (newZoom / prevZoom),
           }));
           setZoom(newZoom);
+          zoomRef.current = newZoom;
         }
       }
     };
@@ -256,7 +265,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ phases, arrows = [] }) => {
       el.removeEventListener('touchend', handleTouchEnd);
       el.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [zoom]);
+  }, []); // plus de dépendance sur zoom → pas de re-enregistrement pendant le pinch
 
   const onMouseDown = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;

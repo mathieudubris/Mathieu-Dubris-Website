@@ -156,6 +156,11 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
   const isPanning  = useRef(false);
   const [isPanningState, setIsPanningState] = useState(false);
   const panStart   = useRef({ x: 0, y: 0 });
+  // Refs miroir pour accès sans stale closure dans les handlers touch natifs
+  const zoomRef = useRef(1);
+  const panRef  = useRef({ x: 60, y: 40 });
+  zoomRef.current = zoom;
+  panRef.current  = pan;
 
   const draggingNode = useRef<string | null>(null);
   const dragOffset   = useRef({ x: 0, y: 0 });
@@ -295,66 +300,102 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
     return () => el.removeEventListener('wheel', handleWheel);
   }, []);
 
-  // Gestion du zoom tactile (pinch) sur mobile
+  // Gestion du zoom tactile (pinch) + pan sur mobile — logique ref-based (pas de stale closure)
+  const touchRef = useRef<{
+    mode: 'none' | 'pan' | 'pinch';
+    lastDist: number;
+    lastZoom: number;
+    lastPan: { x: number; y: number };
+    singleStart: { x: number; y: number; px: number; py: number } | null;
+  }>({ mode: 'none', lastDist: 0, lastZoom: 1, lastPan: { x: 0, y: 0 }, singleStart: null });
+
+  const handleTouchStartNative = useCallback((e: TouchEvent) => {
+    const tr = touchRef.current;
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      tr.mode = 'pinch';
+      tr.singleStart = null;
+      const t0 = e.touches[0]; const t1 = e.touches[1];
+      tr.lastDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      // Capturer zoom et pan courants via setState callback au prochain tick n'est pas possible,
+      // on lit les valeurs depuis des refs dédiées (voir zoomRef/panRef ci-dessous)
+      tr.lastZoom = zoomRef.current;
+      tr.lastPan  = { x: panRef.current.x, y: panRef.current.y };
+      isPanning.current = false;
+      setIsPanningState(false);
+      return;
+    }
+    if (e.touches.length === 1) {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-phaseid]') || target.closest('button') || target.closest('[data-nodrag]')) return;
+      e.preventDefault();
+      tr.mode = 'pan';
+      tr.singleStart = {
+        x: e.touches[0].clientX, y: e.touches[0].clientY,
+        px: panRef.current.x,    py: panRef.current.y,
+      };
+      isPanning.current = true;
+      setIsPanningState(true);
+    }
+  }, []);
+
+  const handleTouchMoveNative = useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    const tr = touchRef.current;
+    if (tr.mode === 'pinch' && e.touches.length === 2) {
+      const el = canvasRef.current;
+      if (!el) return;
+      const t0 = e.touches[0]; const t1 = e.touches[1];
+      const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      if (tr.lastDist === 0) return;
+      const newZoom = Math.min(2.5, Math.max(0.15, tr.lastZoom * (dist / tr.lastDist)));
+      const rect = el.getBoundingClientRect();
+      const midX = (t0.clientX + t1.clientX) / 2 - rect.left;
+      const midY = (t0.clientY + t1.clientY) / 2 - rect.top;
+      const newPan = {
+        x: midX - (midX - tr.lastPan.x) * (newZoom / tr.lastZoom),
+        y: midY - (midY - tr.lastPan.y) * (newZoom / tr.lastZoom),
+      };
+      setZoom(newZoom);
+      setPan(newPan);
+      // Mettre à jour les refs pour les mouvements suivants dans ce même geste
+      tr.lastZoom = newZoom;
+      tr.lastPan  = newPan;
+      tr.lastDist = dist;
+      return;
+    }
+    if (tr.mode === 'pan' && tr.singleStart && e.touches.length === 1) {
+      const { x, y, px, py } = tr.singleStart;
+      const dx = e.touches[0].clientX - x;
+      const dy = e.touches[0].clientY - y;
+      const newPan = { x: px + dx, y: py + dy };
+      setPan(newPan);
+      panRef.current = newPan;
+    }
+  }, []);
+
+  const handleTouchEndNative = useCallback(() => {
+    const tr = touchRef.current;
+    tr.mode = 'none';
+    tr.singleStart = null;
+    isPanning.current = false;
+    setIsPanningState(false);
+  }, []);
+
   useEffect(() => {
     const el = canvasRef.current;
     if (!el) return;
-
-    let initialDistance = 0;
-    let initialZoom = zoom;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 2) {
-        e.preventDefault();
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        initialDistance = Math.sqrt(dx * dx + dy * dy);
-        initialZoom = zoom;
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2) {
-        e.preventDefault();
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const currentDistance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (initialDistance > 0) {
-          const rect = el.getBoundingClientRect();
-          const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-          const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-          
-          const factor = currentDistance / initialDistance;
-          const newZoom = Math.min(2.5, Math.max(0.15, initialZoom * factor));
-          
-          setPan(p => ({
-            x: mx - (mx - p.x) * (newZoom / zoom),
-            y: my - (my - p.y) * (newZoom / zoom),
-          }));
-          setZoom(newZoom);
-        }
-      }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (e.touches.length < 2) {
-        initialDistance = 0;
-      }
-    };
-
-    el.addEventListener('touchstart', handleTouchStart, { passive: false });
-    el.addEventListener('touchmove', handleTouchMove, { passive: false });
-    el.addEventListener('touchend', handleTouchEnd);
-    el.addEventListener('touchcancel', handleTouchEnd);
-
+    el.addEventListener('touchstart',  handleTouchStartNative, { passive: false });
+    el.addEventListener('touchmove',   handleTouchMoveNative,  { passive: false });
+    el.addEventListener('touchend',    handleTouchEndNative);
+    el.addEventListener('touchcancel', handleTouchEndNative);
     return () => {
-      el.removeEventListener('touchstart', handleTouchStart);
-      el.removeEventListener('touchmove', handleTouchMove);
-      el.removeEventListener('touchend', handleTouchEnd);
-      el.removeEventListener('touchcancel', handleTouchEnd);
+      el.removeEventListener('touchstart',  handleTouchStartNative);
+      el.removeEventListener('touchmove',   handleTouchMoveNative);
+      el.removeEventListener('touchend',    handleTouchEndNative);
+      el.removeEventListener('touchcancel', handleTouchEndNative);
     };
-  }, [zoom]);
+  }, [handleTouchStartNative, handleTouchMoveNative, handleTouchEndNative]);
 
   const onWinMove = useCallback((e: MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
@@ -479,29 +520,7 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
     attachWin();
   };
 
-  // Gestion du pan tactile améliorée
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return;
-    const target = e.target as HTMLElement;
-    if (target.closest('[data-phaseid]') || target.closest('button') || target.closest('[data-nodrag]')) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    isPanning.current = true;
-    setIsPanningState(true);
-    panStart.current = { x: touch.clientX - pan.x, y: touch.clientY - pan.y };
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length !== 1 || !isPanning.current) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    setPan({ x: touch.clientX - panStart.current.x, y: touch.clientY - panStart.current.y });
-  };
-
-  const onTouchEnd = () => {
-    isPanning.current = false;
-    setIsPanningState(false);
-  };
+  // Pan tactile géré via les listeners natifs (handleTouchStartNative etc.) — pas de handlers React inline
 
   const addPhase = () => {
     const maxX = sorted.length > 0 ? 
@@ -641,11 +660,7 @@ const RoadmapEditor: React.FC<RoadmapEditorProps> = ({
         style={{ cursor: globalCursor }} 
         onMouseDown={onCanvasMouseDown} 
         onMouseLeave={() => setConnHover(null)} 
-        onMouseMove={e => { if (drawingArrow) setMousePos({ x: e.clientX, y: e.clientY }); }} 
-        onTouchStart={onTouchStart} 
-        onTouchMove={onTouchMove} 
-        onTouchEnd={onTouchEnd}
-        onTouchCancel={onTouchEnd}
+        onMouseMove={e => { if (drawingArrow) setMousePos({ x: e.clientX, y: e.clientY }); }}
       >
         <div className={styles.dotGrid} style={{ backgroundPosition: `${pan.x % 28}px ${pan.y % 28}px` }} />
         <div className={styles.topLeftControls}>

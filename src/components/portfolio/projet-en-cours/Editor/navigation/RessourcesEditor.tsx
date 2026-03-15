@@ -3,21 +3,17 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wrench, Search, X, Check, Plus, ZoomIn, ZoomOut, Target } from 'lucide-react';
+import { ALL_SOFTWARE, WHITE_LOGO_IDS, SOFTWARE_CATEGORIES } from '@/utils/software';
+import type { SoftwareItem } from '@/utils/software';
 import styles from './RessourcesEditor.module.css';
+
+// Re-export pour les composants qui importaient depuis ici
+export type { SoftwareItem };
+export { ALL_SOFTWARE };
 
 // ─────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────
-export interface SoftwareItem {
-  id: string;
-  name: string;
-  logoUrl: string;
-  category: string;
-  color?: string;
-  posX?: number;
-  posY?: number;
-  size?: number;
-}
 
 interface RessourcesEditorProps {
   software: SoftwareItem[];
@@ -25,142 +21,18 @@ interface RessourcesEditorProps {
 }
 
 // ─────────────────────────────────────────────
-// CDN DEVICON
-// ─────────────────────────────────────────────
-const DI = (name: string, variant = 'original') =>
-  `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${name}/${name}-${variant}.svg`;
-
-// ─────────────────────────────────────────────
-// CATALOGUE
-// ─────────────────────────────────────────────
-export const ALL_SOFTWARE: SoftwareItem[] = [
-  // DESIGN
-  { id: 'photoshop',    name: 'Photoshop',      logoUrl: DI('photoshop'),          category: 'design',   color: '#31A8FF' },
-  { id: 'illustrator',  name: 'Illustrator',    logoUrl: DI('illustrator'),        category: 'design',   color: '#FF9A00' },
-  // After Effects — icône moderne officielle
-  { id: 'aftereffects', name: 'After Effects',  logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Adobe_After_Effects_CC_icon.svg', category: 'video', color: '#9999FF' },
-  { id: 'premierepro',  name: 'Premiere Pro',   logoUrl: DI('premierepro'),        category: 'video',    color: '#EA77FF' },
-  { id: 'xd',           name: 'Adobe XD',       logoUrl: DI('xd'),                 category: 'design',   color: '#FF61F6' },
-  // Figma
-  { id: 'figma',        name: 'Figma',          logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg', category: 'design', color: '#F24E1E' },
-  { id: 'sketch',       name: 'Sketch',         logoUrl: DI('sketch'),             category: 'design',   color: '#FDB300' },
-  { id: 'canva',        name: 'Canva',          logoUrl: DI('canva'),              category: 'design',   color: '#00C4CC' },
-  // 3D & GAME
-  { id: 'blender',      name: 'Blender',        logoUrl: DI('blender'),            category: '3d',       color: '#F57900' },
-  { id: 'maya',         name: 'Maya',           logoUrl: DI('maya'),               category: '3d',       color: '#00D8FF' },
-  { id: 'unity',        name: 'Unity',          logoUrl: DI('unity','original'),   category: 'game',     color: '#C0C0C0' },
-  { id: 'unrealengine', name: 'Unreal Engine',  logoUrl: DI('unrealengine'),       category: 'game',     color: '#C0C0C0' },
-  { id: 'godot',        name: 'Godot',          logoUrl: DI('godot'),              category: 'game',     color: '#478CBF' },
-  // DEV — ÉDITEURS
-  { id: 'vscode',       name: 'VS Code',        logoUrl: DI('vscode'),             category: 'dev',      color: '#007ACC' },
-  { id: 'intellij',     name: 'IntelliJ',       logoUrl: DI('intellij'),           category: 'dev',      color: '#FC0FC0' },
-  { id: 'vim',          name: 'Vim',            logoUrl: DI('vim'),                category: 'dev',      color: '#019733' },
-  // DEV — LANGAGES
-  { id: 'javascript',   name: 'JavaScript',     logoUrl: DI('javascript'),         category: 'dev',      color: '#F7DF1E' },
-  { id: 'typescript',   name: 'TypeScript',     logoUrl: DI('typescript'),         category: 'dev',      color: '#3178C6' },
-  { id: 'python',       name: 'Python',         logoUrl: DI('python'),             category: 'dev',      color: '#3776AB' },
-  { id: 'java',         name: 'Java',           logoUrl: DI('java'),               category: 'dev',      color: '#007396' },
-  { id: 'csharp',       name: 'C#',             logoUrl: DI('csharp'),             category: 'dev',      color: '#9B4F96' },
-  { id: 'cplusplus',    name: 'C++',            logoUrl: DI('cplusplus'),          category: 'dev',      color: '#00599C' },
-  { id: 'c',            name: 'C',              logoUrl: DI('c'),                  category: 'dev',      color: '#A8B9CC' },
-  { id: 'php',          name: 'PHP',            logoUrl: DI('php'),                category: 'dev',      color: '#777BB3' },
-  { id: 'ruby',         name: 'Ruby',           logoUrl: DI('ruby'),               category: 'dev',      color: '#CC342D' },
-  { id: 'swift',        name: 'Swift',          logoUrl: DI('swift'),              category: 'dev',      color: '#F05138' },
-  { id: 'kotlin',       name: 'Kotlin',         logoUrl: DI('kotlin'),             category: 'dev',      color: '#7F52FF' },
-  { id: 'go',           name: 'Go',             logoUrl: DI('go'),                 category: 'dev',      color: '#00ADD8' },
-  { id: 'rust',         name: 'Rust',           logoUrl: DI('rust'),               category: 'dev',      color: '#CE422B' },
-  { id: 'scala',        name: 'Scala',          logoUrl: DI('scala'),              category: 'dev',      color: '#DC322F' },
-  { id: 'dart',         name: 'Dart',           logoUrl: DI('dart'),               category: 'dev',      color: '#0175C2' },
-  { id: 'html5',        name: 'HTML5',          logoUrl: DI('html5'),              category: 'dev',      color: '#E34F26' },
-  { id: 'css3',         name: 'CSS3',           logoUrl: DI('css3'),               category: 'dev',      color: '#1572B6' },
-  { id: 'bash',         name: 'Bash',           logoUrl: DI('bash'),               category: 'dev',      color: '#4EAA25' },
-  { id: 'r',            name: 'R',              logoUrl: DI('r'),                  category: 'dev',      color: '#276DC3' },
-  { id: 'lua',          name: 'Lua',            logoUrl: DI('lua'),                category: 'dev',      color: '#000080' },
-  // DEV — FRAMEWORKS
-  { id: 'react',        name: 'React',          logoUrl: DI('react'),              category: 'dev',      color: '#61DAFB' },
-  { id: 'nextjs',       name: 'Next.js',        logoUrl: DI('nextjs'),             category: 'dev',      color: '#C0C0C0' },
-  { id: 'vuejs',        name: 'Vue.js',         logoUrl: DI('vuejs'),              category: 'dev',      color: '#4FC08D' },
-  { id: 'angular',      name: 'Angular',        logoUrl: DI('angular'),            category: 'dev',      color: '#DD0031' },
-  { id: 'svelte',       name: 'Svelte',         logoUrl: DI('svelte'),             category: 'dev',      color: '#FF3E00' },
-  { id: 'flutter',      name: 'Flutter',        logoUrl: DI('flutter'),            category: 'dev',      color: '#54C5F8' },
-  { id: 'nodejs',       name: 'Node.js',        logoUrl: DI('nodejs'),             category: 'dev',      color: '#539E43' },
-  { id: 'express',      name: 'Express',        logoUrl: DI('express'),            category: 'dev',      color: '#C0C0C0' },
-  { id: 'django',       name: 'Django',         logoUrl: DI('django'),             category: 'dev',      color: '#092E20' },
-  { id: 'fastapi',      name: 'FastAPI',        logoUrl: DI('fastapi'),            category: 'dev',      color: '#009688' },
-  { id: 'laravel',      name: 'Laravel',        logoUrl: DI('laravel'),            category: 'dev',      color: '#FF2D20' },
-  { id: 'spring',       name: 'Spring',         logoUrl: DI('spring'),             category: 'dev',      color: '#6DB33F' },
-  { id: 'nestjs',       name: 'NestJS',         logoUrl: DI('nestjs'),             category: 'dev',      color: '#E0234E' },
-  { id: 'graphql',      name: 'GraphQL',        logoUrl: DI('graphql'),            category: 'dev',      color: '#E10098' },
-  { id: 'tailwindcss',  name: 'Tailwind CSS',   logoUrl: DI('tailwindcss'),        category: 'dev',      color: '#38BDF8' },
-  // GIT & DEVOPS
-  { id: 'git',          name: 'Git',            logoUrl: DI('git'),                category: 'dev',      color: '#F1502F' },
-  { id: 'github',       name: 'GitHub',         logoUrl: DI('github'),             category: 'dev',      color: '#C0C0C0' },
-  { id: 'gitlab',       name: 'GitLab',         logoUrl: DI('gitlab'),             category: 'devops',   color: '#FC6D26' },
-  { id: 'docker',       name: 'Docker',         logoUrl: DI('docker'),             category: 'devops',   color: '#2496ED' },
-  { id: 'kubernetes',   name: 'Kubernetes',     logoUrl: DI('kubernetes'),         category: 'devops',   color: '#326CE5' },
-  { id: 'jenkins',      name: 'Jenkins',        logoUrl: DI('jenkins'),            category: 'devops',   color: '#D33833' },
-  { id: 'nginx',        name: 'Nginx',          logoUrl: DI('nginx'),              category: 'devops',   color: '#009900' },
-  { id: 'linux',        name: 'Linux',          logoUrl: DI('linux'),              category: 'devops',   color: '#FCC624' },
-  { id: 'ansible',      name: 'Ansible',        logoUrl: DI('ansible'),            category: 'devops',   color: '#EE0000' },
-  { id: 'terraform',    name: 'Terraform',      logoUrl: DI('terraform'),          category: 'devops',   color: '#7B42BC' },
-  // CLOUD
-  { id: 'amazonwebservices', name: 'AWS',       logoUrl: DI('amazonwebservices','original'), category: 'cloud', color: '#FF9900' },
-  { id: 'azure',        name: 'Azure',          logoUrl: DI('azure'),              category: 'cloud',    color: '#0078D4' },
-  { id: 'googlecloud',  name: 'Google Cloud',   logoUrl: DI('googlecloud'),        category: 'cloud',    color: '#4285F4' },
-  { id: 'vercel',       name: 'Vercel',         logoUrl: DI('vercel'),             category: 'cloud',    color: '#C0C0C0' },
-  // BASES DE DONNÉES
-  { id: 'mysql',        name: 'MySQL',          logoUrl: DI('mysql'),              category: 'database', color: '#00758F' },
-  { id: 'postgresql',   name: 'PostgreSQL',     logoUrl: DI('postgresql'),         category: 'database', color: '#336791' },
-  { id: 'mongodb',      name: 'MongoDB',        logoUrl: DI('mongodb'),            category: 'database', color: '#4DB33D' },
-  { id: 'redis',        name: 'Redis',          logoUrl: DI('redis'),              category: 'database', color: '#DC382D' },
-  { id: 'sqlite',       name: 'SQLite',         logoUrl: DI('sqlite'),             category: 'database', color: '#003B57' },
-  { id: 'firebase',     name: 'Firebase',       logoUrl: DI('firebase'),           category: 'database', color: '#FFCA28' },
-  { id: 'supabase',     name: 'Supabase',       logoUrl: DI('supabase'),           category: 'database', color: '#3ECF8E' },
-  { id: 'elasticsearch',name: 'Elasticsearch',  logoUrl: DI('elasticsearch'),      category: 'database', color: '#FEC514' },
-  // COLLABORATION
-  { id: 'slack',        name: 'Slack',          logoUrl: DI('slack'),              category: 'collab',   color: '#4A154B' },
-  { id: 'jira',         name: 'Jira',           logoUrl: DI('jira'),               category: 'collab',   color: '#0052CC' },
-  { id: 'confluence',   name: 'Confluence',     logoUrl: DI('confluence'),         category: 'collab',   color: '#172B4D' },
-  { id: 'trello',       name: 'Trello',         logoUrl: DI('trello'),             category: 'collab',   color: '#0079BF' },
-  // CMS
-  { id: 'wordpress',    name: 'WordPress',      logoUrl: DI('wordpress'),          category: 'cms',      color: '#21759B' },
-  // ANALYTICS
-  { id: 'grafana',      name: 'Grafana',        logoUrl: DI('grafana'),            category: 'analytics',color: '#F46800' },
-  { id: 'prometheus',   name: 'Prometheus',     logoUrl: DI('prometheus'),         category: 'analytics',color: '#E6522C' },
-  // IA / ML
-  { id: 'tensorflow',   name: 'TensorFlow',     logoUrl: DI('tensorflow'),         category: 'ai',       color: '#FF6F00' },
-  { id: 'pytorch',      name: 'PyTorch',        logoUrl: DI('pytorch'),            category: 'ai',       color: '#EE4C2C' },
-  { id: 'scikitlearn',  name: 'scikit-learn',   logoUrl: DI('scikitlearn'),        category: 'ai',       color: '#F7931E' },
-  { id: 'opencv',       name: 'OpenCV',         logoUrl: DI('opencv'),             category: 'ai',       color: '#5C3EE8' },
-  { id: 'jupyter',      name: 'Jupyter',        logoUrl: DI('jupyter'),            category: 'ai',       color: '#F37626' },
-  { id: 'numpy',        name: 'NumPy',          logoUrl: DI('numpy'),              category: 'ai',       color: '#013243' },
-  { id: 'pandas',       name: 'Pandas',         logoUrl: DI('pandas'),             category: 'ai',       color: '#150458' },
-  // OFFICE & ART
-  { id: 'notion',       name: 'Notion',         logoUrl: DI('notion'),             category: 'office',   color: '#C0C0C0' },
-  { id: 'gimp',         name: 'GIMP',           logoUrl: DI('gimp'),               category: 'art',      color: '#5C5543' },
-  { id: 'inkscape',     name: 'Inkscape',       logoUrl: DI('inkscape'),           category: 'art',      color: '#000000' },
-  { id: 'audacity',     name: 'Audacity',       logoUrl: DI('audacity'),           category: 'audio',    color: '#0000FF' },
-];
-
-// ─────────────────────────────────────────────
 // FALLBACK IMAGE
 // ─────────────────────────────────────────────
-const SoftwareImage: React.FC<{ src: string; alt: string; className: string; color?: string }> = ({
-  src, alt, className, color,
+
+const SoftwareImage: React.FC<{ src: string; alt: string; className: string; color?: string; itemId?: string }> = ({
+  src, alt, className, color, itemId,
 }) => {
   const [imgSrc, setImgSrc] = useState(src);
   const [failed, setFailed] = useState(false);
+  const needsDarkBg = itemId ? WHITE_LOGO_IDS.has(itemId) : false;
 
   const handleError = () => {
-    if (failed) return;
-    const slug = alt.toLowerCase().replace(/[\.\s]/g, '');
-    const variants = [
-      src.replace(/-original|-plain/, ''),
-      `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${slug}/${slug}-original.svg`,
-    ];
-    const idx = variants.findIndex(v => v === imgSrc);
-    if (idx < variants.length - 1) setImgSrc(variants[idx + 1]);
-    else setFailed(true);
+    setFailed(true);
   };
 
   if (failed) {
@@ -174,30 +46,19 @@ const SoftwareImage: React.FC<{ src: string; alt: string; className: string; col
       </div>
     );
   }
-  return <img src={imgSrc} alt={alt} className={className} onError={handleError} draggable={false} />;
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      borderRadius: '8px',
+      background: needsDarkBg ? 'rgba(0,0,0,0.6)' : 'transparent',
+      padding: needsDarkBg ? '12%' : '0',
+      boxSizing: 'border-box',
+    }}>
+      <img src={imgSrc} alt={alt} className={className} onError={handleError} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+    </div>
+  );
 };
-
-// ─────────────────────────────────────────────
-// CATÉGORIES
-// ─────────────────────────────────────────────
-const CATEGORIES = [
-  { key: 'all',       label: 'Tous' },
-  { key: 'dev',       label: 'Dev & Langages' },
-  { key: 'design',    label: 'Design' },
-  { key: 'database',  label: 'Bases de données' },
-  { key: 'devops',    label: 'DevOps' },
-  { key: 'cloud',     label: 'Cloud' },
-  { key: 'ai',        label: 'IA / ML' },
-  { key: 'game',      label: 'Moteurs de jeu' },
-  { key: '3d',        label: '3D' },
-  { key: 'video',     label: 'Vidéo' },
-  { key: 'audio',     label: 'Audio' },
-  { key: 'art',       label: 'Art' },
-  { key: 'collab',    label: 'Collaboration' },
-  { key: 'cms',       label: 'CMS' },
-  { key: 'analytics', label: 'Analytics' },
-  { key: 'office',    label: 'Office' },
-];
 
 // ─────────────────────────────────────────────
 // CANVAS CONSTANTS
@@ -274,15 +135,10 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
 
-  // Pan (mouse)
   const isPanningRef = useRef(false);
   const panStartRef  = useRef({ mx: 0, my: 0, px: 0, py: 0 });
-
-  // Item drag (mouse)
   const draggingItemRef    = useRef<string | null>(null);
   const itemDragStartRef   = useRef({ mx: 0, my: 0, ix: 0, iy: 0 });
-
-  // Item resize (mouse)
   const resizingItemRef    = useRef<string | null>(null);
   const resizeStartRef     = useRef({ startX: 0, startY: 0, startSize: 0 });
 
@@ -290,7 +146,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
   const [draggingId,  setDraggingId]  = useState<string | null>(null);
   const [resizingId,  setResizingId]  = useState<string | null>(null);
 
-  // Touch state
   const touchRef = useRef<{
     mode: 'none' | 'pan' | 'pinch' | 'itemResize';
     lastDist: number; lastZoom: number; lastPan: { x: number; y: number };
@@ -311,7 +166,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
     };
   }, []);
 
-  // ── Fit / center view ─────────────────────────
   const fitView = useCallback(() => {
     if (!containerRef.current) return;
     const { width, height: h } = containerRef.current.getBoundingClientRect();
@@ -319,7 +173,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
     setZoom(z); setPan({ x: panX, y: panY });
   }, [items]);
 
-  // ── Init ──────────────────────────────────────
   useEffect(() => {
     const tryInit = () => {
       if (!containerRef.current) return;
@@ -337,7 +190,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
     tryInit();
   }, [items]);
 
-  // ── Wheel zoom — toward cursor ────────────────
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     if (!containerRef.current) return;
@@ -362,12 +214,9 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
     return () => el.removeEventListener('wheel', handleWheel);
   }, [handleWheel]);
 
-  // ── Touch start ───────────────────────────────
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const tr = touchRef.current;
-
     if (e.touches.length === 2) {
-      // Pinch — cancel any resize
       tr.mode = 'pinch';
       tr.resizeItemId = null;
       if (resizingId) { setResizingId(null); resizingItemRef.current = null; }
@@ -377,14 +226,11 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
       tr.singleStart = null;
       return;
     }
-
     if (e.touches.length === 1) {
       const target = e.target as HTMLElement;
       const handle = target.closest<HTMLElement>('[data-resize]');
       const chipEl = target.closest<HTMLElement>('[data-itemid]');
-
       if (editable && handle && chipEl && onResize) {
-        // Touch-resize: drag finger up → bigger, down → smaller
         e.preventDefault();
         tr.mode = 'itemResize';
         tr.resizeItemId = chipEl.dataset.itemid!;
@@ -395,8 +241,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
         resizingItemRef.current = tr.resizeItemId;
         return;
       }
-
-      // Pan
       tr.mode = 'pan';
       tr.singleStart = { x: e.touches[0].clientX, y: e.touches[0].clientY, px: pan.x, py: pan.y };
     }
@@ -405,15 +249,12 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
   const handleTouchMove = useCallback((e: TouchEvent) => {
     e.preventDefault();
     const tr = touchRef.current;
-
     if (tr.mode === 'itemResize' && tr.resizeItemId && onResize) {
-      // Handle is bottom-right: dragging outward (down/right) = currentY > startY = positive dy → size grows
       const dy = e.touches[0].clientY - tr.resizeStartY;
       const newSize = Math.round(Math.min(MAX_CHIP_SIZE, Math.max(MIN_CHIP_SIZE, tr.resizeStartSize + dy * 0.8)));
       onResize(tr.resizeItemId, newSize);
       return;
     }
-
     if (tr.mode === 'pinch' && e.touches.length === 2) {
       if (!containerRef.current) return;
       const t0 = e.touches[0]; const t1 = e.touches[1];
@@ -429,7 +270,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
       }, newZoom));
       return;
     }
-
     if (tr.mode === 'pan' && tr.singleStart && e.touches.length === 1) {
       const { x, y, px, py } = tr.singleStart;
       const dx = e.touches[0].clientX - x;
@@ -459,16 +299,13 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
     };
   }, [handleTouchMove, handleTouchEnd]);
 
-  // ── Mouse ─────────────────────────────────────
   const onMouseDown = (e: React.MouseEvent) => {
     const chipEl      = (e.target as HTMLElement).closest<HTMLElement>('[data-itemid]');
     const resizeHandle = (e.target as HTMLElement).closest('[data-resize]');
-
     if (chipEl && editable) {
       const id   = chipEl.dataset.itemid!;
       const item = laid.find(i => i.id === id);
       if (!item) return;
-
       if (resizeHandle && onResize) {
         e.stopPropagation();
         resizingItemRef.current = id;
@@ -482,7 +319,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
       setDraggingId(id);
       return;
     }
-
     if ((e.target as HTMLElement).closest('[data-remove]')) return;
     isPanningRef.current = true;
     panStartRef.current  = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y };
@@ -491,7 +327,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
   const onMouseMove = useCallback((e: React.MouseEvent) => {
     if (resizingItemRef.current && onResize) {
       const { startX, startY, startSize } = resizeStartRef.current;
-      // right/down → bigger ; left/up → smaller
       const delta = ((e.clientX - startX) + (e.clientY - startY)) / 2;
       onResize(resizingItemRef.current, Math.round(Math.min(MAX_CHIP_SIZE, Math.max(MIN_CHIP_SIZE, startSize + delta * 0.5))));
       return;
@@ -524,7 +359,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
     return next;
   });
 
-  // ─────────── Empty state ──────────────────────
   if (items.length === 0) {
     return (
       <div className={styles.canvasEmpty} style={{ height }}>
@@ -554,7 +388,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
       onMouseLeave={onMouseUp}
       onTouchStart={handleTouchStart}
     >
-      {/* ── TOP-LEFT: Centrer ── */}
       <div className={styles.topLeftControls}>
         <button
           type="button"
@@ -567,7 +400,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
         </button>
       </div>
 
-      {/* ── TOP-RIGHT: Gérer les logiciels ── */}
       {editable && onManage && (
         <div className={styles.topRightControls}>
           <button
@@ -581,7 +413,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
         </div>
       )}
 
-      {/* ── BOTTOM-RIGHT: zoom ── */}
       <div className={styles.controls}>
         {editable && (
           <>
@@ -596,7 +427,6 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
         </div>
       </div>
 
-      {/* ── Canvas world ── */}
       {ready && (
         <div
           className={styles.canvasWorld}
@@ -641,9 +471,8 @@ export const SoftwareCanvas: React.FC<SoftwareCanvasProps> = ({
                 onMouseEnter={() => !draggingId && !resizingId && setHoveredId(item.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
-                <SoftwareImage src={item.logoUrl} alt={item.name} className={styles.chipImg} color={item.color} />
+                <SoftwareImage src={item.logoUrl} alt={item.name} className={styles.chipImg} color={item.color} itemId={item.id} />
 
-                {/* Resize handle — editable only, always in DOM so touch can target it */}
                 {editable && (
                   <div
                     className={`${styles.resizeHandle} ${isHov || isRes ? styles.resizeHandleVisible : ''}`}
@@ -735,7 +564,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ current, onSave, onClose 
         </div>
 
         <div className={styles.mCats}>
-          {CATEGORIES.map(({ key, label }) => {
+          {SOFTWARE_CATEGORIES.map(({ key, label }) => {
             const count = key === 'all' ? ALL_SOFTWARE.length : ALL_SOFTWARE.filter(s => s.category === key).length;
             return (
               <button key={key} type="button"
@@ -760,7 +589,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ current, onSave, onClose 
                       onClick={() => toggle(item)}
                       style={{ '--glow': item.color || '#c7ff44' } as React.CSSProperties}>
                       {sel && <span className={styles.mCheck}><Check size={10} /></span>}
-                      <SoftwareImage src={item.logoUrl} alt={item.name} className={styles.mCardImg} color={item.color} />
+                      <SoftwareImage src={item.logoUrl} alt={item.name} className={styles.mCardImg} color={item.color} itemId={item.id} />
                       <span className={styles.mCardName}>{item.name}</span>
                     </button>
                   );

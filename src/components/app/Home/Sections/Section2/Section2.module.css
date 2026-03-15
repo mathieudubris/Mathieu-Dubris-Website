@@ -14,6 +14,16 @@
 }
 
 /* ── Label flottant ─────────────────────────────────────────────────────────── */
+.sectionLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  align-self: flex-start;
+  max-width: 1200px;
+  width: 100%;
+}
+
 .sectionLabel {
   display: flex;
   align-items: center;
@@ -23,10 +33,6 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--primary);
-  margin-bottom: 40px;
-  align-self: flex-start;
-  max-width: 1200px;
-  width: 100%;
 }
 
 .labelDot {
@@ -41,6 +47,39 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Bouton "Voir toute l'actualité" */
+.seeAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--light);
+  opacity: 0.5;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.seeAllBtn:hover {
+  opacity: 1;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.seeAllBtn svg {
+  transition: transform 0.25s ease;
+}
+
+.seeAllBtn:hover svg {
+  transform: translateX(3px);
 }
 
 /* ── Wrapper principal ──────────────────────────────────────────────────────── */
@@ -167,33 +206,109 @@
   overflow: hidden;
 }
 
-/* Méta */
-.softwareRow,
+/* ── Software icons — même style que ProjectCard ────────────────────────────── */
+
+.softwareSection {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Conteneur externe : overflow visible pour tooltip */
+.softwareIcon {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  transition: all 0.25s ease;
+  opacity: 0.85;
+  overflow: visible;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.softwareIcon:hover {
+  border-color: var(--primary);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* Wrapper interne qui clippe l'image */
+.swIconInner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  overflow: hidden;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.swIconImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.swIconEmoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.swIconLetter {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.moreSoftware {
+  width: 28px;
+  height: 28px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--light);
+  font-size: 0.52rem;
+  font-weight: 700;
+  opacity: 0.45;
+}
+
+.noSoftware {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--light);
+  opacity: 0.3;
+  font-size: 0.6rem;
+  font-weight: 500;
+}
+
+.noSoftware svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Méta blog ──────────────────────────────────────────────────────────────── */
 .tagsRow,
 .membersRow {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-}
-
-.softwareChip {
-  width: 28px;
-  height: 28px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-}
-
-.softwareMore {
-  font-size: 0.62rem;
-  color: var(--light);
-  opacity: 0.45;
-  font-weight: 700;
 }
 
 .tagChip {
@@ -458,13 +573,8 @@
 
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
 @media (max-width: 1200px) {
-  .carouselWrapper {
-    gap: 16px;
-  }
-  
-  .thumbnails {
-    max-width: 240px;
-  }
+  .carouselWrapper { gap: 16px; }
+  .thumbnails { max-width: 240px; }
 }
 
 @media (max-width: 1024px) {
@@ -504,238 +614,87 @@
     object-fit: cover;
   }
 
-  .thumbTitle {
-    font-size: 0.85rem;
-    -webkit-line-clamp: 2;
-  }
+  .thumbTitle { font-size: 0.85rem; -webkit-line-clamp: 2; }
 }
 
 @media (max-width: 768px) {
-  .section2 {
-    padding: 60px 20px;
-  }
+  .section2 { padding: 60px 20px; }
 
-  .sectionLabel {
-    margin-bottom: 30px;
-    font-size: 0.68rem;
-  }
+  .sectionLabelRow { margin-bottom: 30px; }
+  .sectionLabel { font-size: 0.68rem; }
+  .seeAllBtn { font-size: 0.65rem; padding: 5px 12px; }
 
-  .slideTrack {
-    height: 420px;
-  }
-
-  .slideTitle {
-    font-size: 1.6rem;
-  }
-
-  .slideContent {
-    padding: 24px;
-    gap: 10px;
-  }
-
-  .slideDesc {
-    font-size: 0.82rem;
-    -webkit-line-clamp: 2;
-  }
-
-  .navBtn {
-    width: 36px;
-    height: 36px;
-  }
-
-  .thumb {
-    min-width: 180px;
-  }
-
-  .thumb img {
-    height: 90px;
-  }
-
-  .dots {
-    bottom: 16px;
-  }
+  .slideTrack { height: 420px; }
+  .slideTitle { font-size: 1.6rem; }
+  .slideContent { padding: 24px; gap: 10px; }
+  .slideDesc { font-size: 0.82rem; -webkit-line-clamp: 2; }
+  .navBtn { width: 36px; height: 36px; }
+  .thumb { min-width: 180px; }
+  .thumb img { height: 90px; }
+  .dots { bottom: 16px; }
 }
 
 @media (max-width: 640px) {
-  .slideTrack {
-    height: 380px;
-  }
-
-  .slideTitle {
-    font-size: 1.4rem;
-  }
-
-  .slideContent {
-    padding: 20px;
-  }
-
-  .thumb {
-    min-width: 160px;
-    padding: 10px;
-  }
-
-  .thumb img {
-    height: 80px;
-  }
-
-  .ctaBtn {
-    padding: 8px 18px;
-    font-size: 0.78rem;
-  }
+  .slideTrack { height: 380px; }
+  .slideTitle { font-size: 1.4rem; }
+  .slideContent { padding: 20px; }
+  .thumb { min-width: 160px; padding: 10px; }
+  .thumb img { height: 80px; }
+  .ctaBtn { padding: 8px 18px; font-size: 0.78rem; }
 }
 
 @media (max-width: 480px) {
-  .section2 {
-    padding: 40px 16px;
-  }
+  .section2 { padding: 40px 16px; }
 
-  .sectionLabel {
-    margin-bottom: 24px;
-    font-size: 0.65rem;
-  }
+  .sectionLabelRow { margin-bottom: 24px; flex-wrap: wrap; gap: 10px; }
+  .sectionLabel { font-size: 0.65rem; }
+  .seeAllBtn { font-size: 0.6rem; padding: 4px 10px; }
 
-  .carouselWrapper {
-    gap: 16px;
-  }
-
-  .slideTrack {
-    height: 340px;
-    border-radius: 20px;
-  }
-
-  .slideTitle {
-    font-size: 1.2rem;
-    -webkit-line-clamp: 2;
-  }
-
-  .slideDesc {
-    font-size: 0.75rem;
-    -webkit-line-clamp: 2;
-  }
-
-  .slideContent {
-    padding: 16px;
-    gap: 8px;
-  }
-
-  .typeBadge {
-    padding: 3px 10px;
-    font-size: 0.6rem;
-  }
-
-  .softwareChip {
-    width: 24px;
-    height: 24px;
-    font-size: 0.65rem;
-  }
-
-  .avatar, .avatarMore {
-    width: 22px;
-    height: 22px;
-    font-size: 0.5rem;
-  }
-
-  .progressWrap {
-    gap: 6px;
-  }
-
-  .progressLabel {
-    font-size: 0.6rem;
-  }
-
-  .ctaBtn {
-    padding: 7px 16px;
-    font-size: 0.72rem;
-    gap: 6px;
-  }
-
-  .navBtnLeft, .navBtnRight {
-    display: none;
-  }
-
-  .dots {
-    bottom: 12px;
-    gap: 4px;
-  }
-
-  .dot {
-    width: 4px;
-    height: 4px;
-  }
-
-  .dotActive {
-    width: 20px;
-  }
-
-  .thumbnails {
-    gap: 8px;
-    padding-bottom: 4px;
-  }
-
-  .thumb {
-    min-width: 130px;
-    padding: 8px;
-    border-radius: 12px;
-  }
-
-  .thumb img {
-    height: 70px;
-    border-radius: 6px;
-  }
-
-  .thumbTitle {
-    font-size: 0.7rem;
-    -webkit-line-clamp: 2;
-  }
+  .carouselWrapper { gap: 16px; }
+  .slideTrack { height: 340px; border-radius: 20px; }
+  .slideTitle { font-size: 1.2rem; -webkit-line-clamp: 2; }
+  .slideDesc { font-size: 0.75rem; -webkit-line-clamp: 2; }
+  .slideContent { padding: 16px; gap: 8px; }
+  .typeBadge { padding: 3px 10px; font-size: 0.6rem; }
+  .softwareIcon { width: 24px; height: 24px; }
+  .avatar, .avatarMore { width: 22px; height: 22px; font-size: 0.5rem; }
+  .progressWrap { gap: 6px; }
+  .progressLabel { font-size: 0.6rem; }
+  .ctaBtn { padding: 7px 16px; font-size: 0.72rem; gap: 6px; }
+  .navBtnLeft, .navBtnRight { display: none; }
+  .dots { bottom: 12px; gap: 4px; }
+  .dot { width: 4px; height: 4px; }
+  .dotActive { width: 20px; }
+  .thumbnails { gap: 8px; padding-bottom: 4px; }
+  .thumb { min-width: 130px; padding: 8px; border-radius: 12px; }
+  .thumb img { height: 70px; border-radius: 6px; }
+  .thumbTitle { font-size: 0.7rem; -webkit-line-clamp: 2; }
 }
 
 @media (max-width: 360px) {
-  .slideTrack {
-    height: 300px;
-  }
-
-  .slideTitle {
-    font-size: 1rem;
-  }
-
-  .slideDesc {
-    font-size: 0.7rem;
-    -webkit-line-clamp: 2;
-  }
-
-  .thumb {
-    min-width: 110px;
-  }
-
-  .thumb img {
-    height: 60px;
-  }
-
-  .thumbTitle {
-    font-size: 0.65rem;
-  }
+  .slideTrack { height: 300px; }
+  .slideTitle { font-size: 1rem; }
+  .slideDesc { font-size: 0.7rem; -webkit-line-clamp: 2; }
+  .thumb { min-width: 110px; }
+  .thumb img { height: 60px; }
+  .thumbTitle { font-size: 0.65rem; }
 }
 
-/* Support des écrans très petits et mode paysage */
 @media (max-height: 600px) and (orientation: landscape) {
-  .section2 {
-    min-height: auto;
-    padding: 40px 20px;
-  }
+  .section2 { min-height: auto; padding: 40px 20px; }
+  .slideTrack { height: 280px; }
+  .slideContent { padding: 16px; }
+  .slideTitle { font-size: 1.1rem; }
+}
 
-  .slideTrack {
-    height: 280px;
+/* Support tactile */
+@media (hover: none) and (pointer: coarse) {
+  .navBtn:hover,
+  .thumb:hover {
+    transform: none;
   }
-
-  .slideContent {
-    padding: 16px;
-  }
-
-  .slideTitle {
-    font-size: 1.1rem;
-  }
-
-  .thumbnails {
-    padding-bottom: 4px;
-  }
+  .seeAllBtn:hover { transform: none; }
+  .ctaBtn:hover { transform: none; box-shadow: none; }
+  .closeBtn:active,
+  .ctaBtn:active { transform: scale(0.95); }
 }

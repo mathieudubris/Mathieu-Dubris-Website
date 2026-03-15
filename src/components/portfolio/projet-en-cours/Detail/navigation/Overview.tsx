@@ -2,16 +2,14 @@
 
 import React from 'react';
 import { Calendar, Eye, Tag, Target, Users2, Activity, AlignLeft, Info } from 'lucide-react';
-import { Project as FirebaseProject } from '@/utils/projet-api';
+import { FullProject } from '@/utils/projet-api';
 import styles from './Overview.module.css';
 
 interface OverviewProps {
-  project: FirebaseProject & {
-    projectType?: string;
-    objective?: string;
-    targetAudience?: string;
-    status?: string;
-  };
+  // BUG FIX: était FirebaseProject & { projectType?; objective?; targetAudience?; status? }
+  // — intersection manuelle qui ne couvrait pas description (ligne 104 rouge).
+  // FullProject étend déjà Project avec tous ces champs + description.
+  project: FullProject;
   views: number;
   formatDate: (date: any) => string;
 }

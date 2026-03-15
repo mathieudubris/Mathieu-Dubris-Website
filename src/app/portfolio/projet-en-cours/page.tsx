@@ -1,28 +1,29 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { 
-  auth, 
+import {
+  auth,
   setupAuthListener,
   isAdmin,
   getAllUsers,
 } from '@/utils/firebase-api';
 import {
-  getProjects,
+  getAllProjects,
   deleteProject,
   getProjectTeamMembers,
   hasAccessToProject,
   isUserInProject,
   getUserProjectTeamProfile,
+  getFullProject,
   Project as FirebaseProject,
-  getProjectBySlug
+  ProjectTeamMember,
 } from '@/utils/projet-api';
-import { 
-  Plus, 
+import {
+  Plus,
   Search,
-  Filter
+  Filter,
 } from 'lucide-react';
 import Header from '@/components/app/Header/Header';
 import Login from '@/components/app/Header/Login/Login';
@@ -33,38 +34,48 @@ import ProjectCard from '@/components/portfolio/projet-en-cours/Card/ProjectCard
 import styles from './projet-en-cours.module.css';
 
 type Project = FirebaseProject;
-type ProjectTeamMember = any;
 
 export default function ProjetEnCoursPage() {
   const router = useRouter();
-  
+
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<any[]>([]);
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const [projectTeamMembers, setProjectTeamMembers] = useState<ProjectTeamMember[]>([]);
   const [userTeamProfile, setUserTeamProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [showUserList, setShowUserList] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<any | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'joined'>('all');
-  
+
+  // Profils team indexés par projectId
+  const [teamProfilesMap, setTeamProfilesMap] = useState<Record<string, ProjectTeamMember[]>>({});
+
+  // PERF: cache des projets complets pour éviter les refetch au clic
+  const fullProjectCacheRef = useRef<Record<string, any>>({});
+  // Référence stable pour l'utilisateur courant (évite de re-créer des closures)
+  const currentUserRef = useRef<any>(null);
+
   const isViewingProject = !!selectedProject;
 
   useEffect(() => {
     const unsubscribe = setupAuthListener(async (user) => {
+      currentUserRef.current = user;
       if (user) {
         setCurrentUser(user);
-        await loadProjects();
+        await loadProjects(user);
       } else {
         setCurrentUser(null);
         setSelectedProject(null);
         setProjects([]);
         setFilteredProjects([]);
+        setTeamProfilesMap({});
+        fullProjectCacheRef.current = {};
       }
       setLoading(false);
     });
@@ -72,28 +83,36 @@ export default function ProjetEnCoursPage() {
     return () => unsubscribe();
   }, []);
 
-  // Vérifier si un projet est dans l'URL au chargement - MODIFIÉ POUR SLUGS
+  // Vérifier si un projet est dans l'URL au chargement
   useEffect(() => {
     const checkUrlForProject = async () => {
       const params = new URLSearchParams(window.location.search);
       const projectSlug = params.get('project');
-      
+
       if (projectSlug && currentUser) {
-        // Chercher le projet par slug
-        const project = await getProjectBySlug(projectSlug);
-        if (project && hasAccessToProject(project, currentUser.uid)) {
-          setSelectedProject(project);
-          await loadProjectTeam(project);
+        // Utiliser le cache si disponible
+        const cached = fullProjectCacheRef.current[projectSlug];
+        if (cached) {
+          setSelectedProject(cached);
+          loadProjectTeam(cached); // non-bloquant
+          return;
+        }
+
+        const fullProject = await getFullProject(projectSlug);
+        if (fullProject && hasAccessToProject(fullProject, currentUser.uid)) {
+          fullProjectCacheRef.current[projectSlug] = fullProject;
+          setSelectedProject(fullProject);
+          loadProjectTeam(fullProject); // non-bloquant
         }
       }
     };
-    
+
     if (currentUser) {
       checkUrlForProject();
     }
   }, [currentUser]);
 
-  // Mettre à jour l'URL quand un projet est sélectionné - MODIFIÉ POUR SLUGS
+  // Mettre à jour l'URL quand un projet est sélectionné
   useEffect(() => {
     if (selectedProject?.slug) {
       const url = new URL(window.location.href);
@@ -106,61 +125,82 @@ export default function ProjetEnCoursPage() {
     }
   }, [selectedProject]);
 
-  const loadProjects = async () => {
+  // ─────────────────────────────────────────────
+  // PERF: chargement des projets optimisé
+  // ─────────────────────────────────────────────
+  const loadProjects = async (user?: any) => {
+    const activeUser = user || currentUserRef.current;
     try {
-      let allProjects = await getProjects();
-      
-      // Filtrer les projets selon la visibilité :
-      // - projets "public" (ou sans visibilité) → visibles par tous les utilisateurs connectés
-      // - projets "early_access" → visibles uniquement par les membres
-      if (currentUser) {
-        allProjects = allProjects.filter(project => 
-          hasAccessToProject(project, currentUser.uid)
-        );
-      }
-      
-      // Enrichir avec les données des membres
-      const allUsers = await getAllUsers();
-      allProjects = await Promise.all(allProjects.map(async project => {
-        const members = project.teamMembers?.map(userId => {
-          const user = allUsers.find(u => u.uid === userId);
-          return user ? {
-            userId: user.uid,
-            displayName: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL
-          } : null;
-        }).filter(Boolean) || [];
+      const [allProjectsRaw, allUsers] = await Promise.all([
+        getAllProjects(),
+        getAllUsers(),
+      ]);
 
-        return {
-          ...project,
-          image: project.image || '/default-project.jpg',
-          teamMembers: project.teamMembers || [],
-          members: members,
-          software: project.software || [],
-          carouselImages: project.carouselImages || [],
-          progress: project.progress || 0,
-          views: project.views || 0
-        };
-      }));
-      
-      setProjects(allProjects);
-      setFilteredProjects(allProjects);
+      const accessible = allProjectsRaw.filter((project) =>
+        hasAccessToProject(project, activeUser?.uid ?? null)
+      );
+
+      const enriched = accessible.map((project) => {
+        const members = (project.teamMembers || []).map((userId: string) => {
+          const u = allUsers.find((u: any) => u.uid === userId);
+          return u
+            ? { userId: u.uid, displayName: u.displayName, email: u.email, photoURL: u.photoURL }
+            : null;
+        }).filter(Boolean);
+
+        return { ...project, members };
+      });
+
+      setProjects(enriched);
+      setFilteredProjects(enriched);
+
+      // Pré-remplir le cache fullProject avec les données déjà chargées
+      // (pas complet, mais suffisant pour un affichage instantané)
+      enriched.forEach((p) => {
+        const key = p.slug || p.id;
+        if (key && !fullProjectCacheRef.current[key]) {
+          fullProjectCacheRef.current[key] = p;
+        }
+      });
+
+      loadTeamProfilesBackground(enriched);
+
     } catch (error) {
       console.error('Erreur lors du chargement des projets:', error);
     }
   };
 
-  const loadProjectTeam = async (project: Project) => {
+  const loadTeamProfilesBackground = async (projectList: any[]) => {
+    try {
+      const entries = await Promise.all(
+        projectList
+          .filter((p) => !!p.id)
+          .map(async (p) => {
+            try {
+              const profiles = await getProjectTeamMembers(p.id!);
+              return [p.id!, profiles] as [string, ProjectTeamMember[]];
+            } catch {
+              return [p.id!, []] as [string, ProjectTeamMember[]];
+            }
+          })
+      );
+      const map: Record<string, ProjectTeamMember[]> = {};
+      entries.forEach(([id, profiles]) => { map[id] = profiles; });
+      setTeamProfilesMap(map);
+    } catch (error) {
+      console.error('Erreur chargement team profiles:', error);
+    }
+  };
+
+  const loadProjectTeam = async (project: any) => {
     try {
       if (project.id) {
-        // Charger les membres de l'équipe — accessible à tous les utilisateurs connectés pour les projets publics
         const team = await getProjectTeamMembers(project.id);
         setProjectTeamMembers(team);
-        
-        // Charger le profil d'équipe de l'utilisateur courant uniquement s'il est membre
-        if (currentUser && project.teamMembers?.includes(currentUser.uid)) {
-          const profile = await getUserProjectTeamProfile(currentUser.uid, project.id);
+        setTeamProfilesMap((prev) => ({ ...prev, [project.id!]: team }));
+
+        if (currentUserRef.current && project.teamMembers?.includes(currentUserRef.current.uid)) {
+          const profile = await getUserProjectTeamProfile(currentUserRef.current.uid, project.id);
           setUserTeamProfile(profile);
         } else {
           setUserTeamProfile(null);
@@ -177,83 +217,94 @@ export default function ProjetEnCoursPage() {
   };
 
   useEffect(() => {
-  let filtered = [...projects];
-  
-  // Filtre par recherche
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(project =>
-      project.title.toLowerCase().includes(query) ||
-      project.description.toLowerCase().includes(query)
-    );
-  }
-  
-  // Filtre par type
-  if (currentUser) {
-    if (activeFilter === 'joined') {
-      // CORRECTION : Inclure TOUS les projets où l'utilisateur est membre
-      // (créés par lui OU auxquels il a été ajouté)
-      filtered = filtered.filter(project => 
+    let filtered = [...projects];
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter((project) =>
+        project.title?.toLowerCase().includes(q) ||
+        project.description?.toLowerCase().includes(q)
+      );
+    }
+
+    if (activeFilter === 'joined' && currentUser) {
+      filtered = filtered.filter((project) =>
         isUserInProject(project, currentUser.uid)
       );
     }
-  }
-  
-  setFilteredProjects(filtered);
-}, [projects, searchQuery, activeFilter, currentUser]);
+
+    setFilteredProjects(filtered);
+  }, [searchQuery, activeFilter, projects, currentUser]);
 
   const handleCreateProject = () => {
-    if (!currentUser) {
-      setShowLogin(true);
-      return;
-    }
-    if (!isAdmin(currentUser.email)) {
-      alert('Seul l\'administrateur peut créer des projets');
-      return;
-    }
     setEditingProject(null);
     setShowEditor(true);
   };
 
-  const handleEditProject = (project: Project) => {
-    if (!isAdmin(currentUser?.email)) {
-      alert('Seul l\'administrateur peut modifier des projets');
-      return;
-    }
+  const handleEditProject = (project: any) => {
     setEditingProject(project);
     setShowEditor(true);
   };
 
-  const handleManageTeam = () => {
-    if (selectedProject && isAdmin(currentUser?.email)) {
-      setShowUserList(true);
-    }
-  };
-
   const handleDeleteProject = async (projectId: string) => {
     try {
-      if (!isAdmin(currentUser?.email)) {
-        alert('Seul l\'administrateur peut supprimer des projets');
-        return;
-      }
-      
       await deleteProject(projectId);
-      await loadProjects();
       setDeleteConfirmId(null);
-      
-      // Si on supprime le projet actuellement sélectionné
-      if (selectedProject?.id === projectId) {
-        setSelectedProject(null);
-      }
-    } catch (error) {
+      fullProjectCacheRef.current = {};
+      await loadProjects();
+    } catch (error: any) {
       console.error('Erreur lors de la suppression:', error);
+      alert(error.message || 'Erreur lors de la suppression');
     }
   };
 
-  const handleProjectClick = async (project: Project) => {
+  // ─────────────────────────────────────────────
+  // PERF: Affichage INSTANTANÉ du modal
+  //
+  // Stratégie :
+  // 1. Afficher IMMÉDIATEMENT avec les données partielles du cache (déjà en mémoire)
+  // 2. En parallèle, enrichir avec getFullProject() si nécessaire (sous-collections)
+  // 3. Mettre à jour le modal silencieusement quand les données complètes arrivent
+  // ─────────────────────────────────────────────
+  const handleProjectClick = async (project: any) => {
     if (!project.id) return;
-    setSelectedProject(project);
-    await loadProjectTeam(project);
+
+    const cacheKey = project.slug || project.id;
+
+    // Étape 1 : afficher IMMÉDIATEMENT avec ce qu'on a (données partielles ou cache complet)
+    const immediate = fullProjectCacheRef.current[cacheKey] || project;
+    setSelectedProject(immediate);
+
+    // Lancer team en parallèle, non-bloquant
+    loadProjectTeam(project);
+
+    // Étape 2 : si le cache est déjà complet (a toutes les sous-collections), stop.
+    // On considère "complet" si docLinks ou software est présent (chargés par getFullProject)
+    const isFullyCached = fullProjectCacheRef.current[cacheKey]?.docLinks !== undefined
+      || fullProjectCacheRef.current[cacheKey]?.software !== undefined;
+
+    if (isFullyCached) return;
+
+    // Étape 3 : enrichir en arrière-plan et mettre à jour silencieusement
+    try {
+      const fullProject = await getFullProject(project.id);
+      if (!fullProject) return;
+
+      fullProjectCacheRef.current[cacheKey] = fullProject;
+      if (project.id !== cacheKey) {
+        fullProjectCacheRef.current[project.id] = fullProject;
+      }
+
+      // Mettre à jour seulement si ce projet est toujours ouvert
+      setSelectedProject((current: any) => {
+        if (current?.id === fullProject.id || current?.slug === fullProject.slug) {
+          return fullProject;
+        }
+        return current;
+      });
+    } catch (err) {
+      console.error('getFullProject background error:', err);
+    }
   };
 
   const handleBackToList = () => {
@@ -263,6 +314,7 @@ export default function ProjetEnCoursPage() {
   };
 
   const handleUserAdded = async () => {
+    fullProjectCacheRef.current = {};
     await loadProjects();
     if (selectedProject) {
       await loadProjectTeam(selectedProject);
@@ -271,7 +323,7 @@ export default function ProjetEnCoursPage() {
 
   const handleEditProfile = () => {
     if (selectedProject && currentUser) {
-      router.push(`/portfolio/team?project=${selectedProject.id}`);
+      router.push(`/portfolio/projet-en-cours/team/edit?project=${selectedProject.id}`);
     }
   };
 
@@ -290,7 +342,7 @@ export default function ProjetEnCoursPage() {
   return (
     <div className={styles.mainContainer}>
       <Header />
-      
+
       <main className={styles.content}>
         <div className={styles.pageContainer}>
           {/* Vue DÉTAIL d'un projet en modal plein écran */}
@@ -306,7 +358,6 @@ export default function ProjetEnCoursPage() {
           ) : (
             /* Vue LISTE des projets */
             <>
-              {/* En-tête de page avec tous les éléments sur la même ligne */}
               <div className={styles.pageHeader}>
                 <div className={styles.headerRow}>
                   {/* Filtres à gauche */}
@@ -326,7 +377,7 @@ export default function ProjetEnCoursPage() {
                       </button>
                     )}
                   </div>
-                  
+
                   {/* Barre de recherche au centre */}
                   <div className={styles.searchContainer}>
                     <Search size={18} className={styles.searchIcon} />
@@ -338,7 +389,7 @@ export default function ProjetEnCoursPage() {
                       className={styles.searchInput}
                     />
                   </div>
-                  
+
                   {/* Bouton créer à droite (admin seulement) */}
                   {currentUser && isAdmin(currentUser.email) && (
                     <button
@@ -359,7 +410,7 @@ export default function ProjetEnCoursPage() {
                     {filteredProjects.map((project, index) => {
                       const isMember = currentUser && isUserInProject(project, currentUser.uid);
                       const adminStatus = currentUser && isAdmin(currentUser.email);
-                      
+
                       return (
                         <ProjectCard
                           key={project.id || index}
@@ -368,6 +419,7 @@ export default function ProjetEnCoursPage() {
                           isAdmin={adminStatus}
                           isMember={isMember}
                           isDeleteConfirm={deleteConfirmId === (project.id || '')}
+                          teamProfiles={project.id ? (teamProfilesMap[project.id] || []) : []}
                           onEdit={handleEditProject}
                           onDelete={handleDeleteProject}
                           onDeleteConfirm={setDeleteConfirmId}
@@ -420,6 +472,7 @@ export default function ProjetEnCoursPage() {
               setEditingProject(null);
             }}
             onSave={async () => {
+              fullProjectCacheRef.current = {};
               await loadProjects();
               setShowEditor(false);
               setEditingProject(null);

@@ -50,20 +50,23 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // Initialisation synchrone depuis localStorage pour éviter tout flash
+  // BUG FIX: applyTheme doit être appelé pendant l'initialisation du state (pas dans un useEffect)
+  // pour éviter un flash de contenu non stylisé (FOUC) sur le premier paint.
+  // Le useEffect([], []) s'exécute après le paint — trop tard pour éviter le flash.
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+      const saved = (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+      // Appliquer synchronement pendant l'init pour zéro flash
+      applyTheme(saved);
+      return saved;
     }
     return 'dark';
   });
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
-  // Appliquer le thème dès le premier render (avant tout effet async)
-  useEffect(() => {
-    applyTheme(theme);
-  }, []);
+  // applyTheme est maintenant appelé synchronement dans l'init du state (voir ci-dessus).
+  // Ce useEffect est supprimé pour éviter un double appel inutile.
 
   // Écouter les changements d'authentification
   useEffect(() => {

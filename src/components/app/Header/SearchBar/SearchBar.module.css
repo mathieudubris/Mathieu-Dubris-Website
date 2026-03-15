@@ -1,6 +1,6 @@
 .searchContainer {
   display: flex;
-  justify-content: flex-end; /* Changé de flex-start à flex-end */
+  justify-content: flex-end;
   width: 100%;
 }
 
@@ -11,10 +11,10 @@
   padding: 0 18px;
   border-radius: 50px;
   height: 42px;
-  width: 100%; /* Prend toute la largeur disponible */
-  max-width: 300px; /* Largeur max par défaut */
+  width: 100%;
+  max-width: 300px;
   transition: max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s;
-  margin-left: auto; /* Pousse à droite dans son conteneur */
+  margin-left: auto;
 }
 
 .searchBar:focus-within {
@@ -31,12 +31,34 @@
   font-size: 0.85rem;
 }
 
+/* Curseur clignotant sur le placeholder animé */
+.searchBar input:not(:focus)::placeholder {
+  color: var(--light);
+  opacity: 0.5;
+}
+
+.searchBar input:not(:focus):placeholder-shown::after {
+  content: '|';
+  animation: blink 0.8s step-end infinite;
+}
+
+/* Curseur simulé via le placeholder avec une bordure */
+.searchBar input:not(:focus) {
+  caret-color: transparent;
+}
+
+/* Animation du curseur clignotant dans le placeholder */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
 .searchIcon {
   display: flex;
   color: var(--light);
   opacity: 0.5;
   transition: 0.3s;
-  flex-shrink: 0; /* Empêche l'icône de rétrécir */
+  flex-shrink: 0;
 }
 
 .searchBar:focus-within .searchIcon {
@@ -46,16 +68,16 @@
 
 @media (max-width: 1024px) {
   .searchBar {
-    max-width: 140px; /* Réduit sur mobile/tablette */
+    max-width: 140px;
   }
-  
+
   .searchBar:focus-within {
-    max-width: calc(100vw - 180px); /* S'adapte à l'espace disponible */
+    max-width: calc(100vw - 180px);
   }
 }
 
 @media (max-width: 480px) {
   .searchBar:focus-within {
-    max-width: calc(100vw - 120px); /* Encore plus d'adaptation */
+    max-width: calc(100vw - 120px);
   }
 }

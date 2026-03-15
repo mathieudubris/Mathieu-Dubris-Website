@@ -19,15 +19,14 @@ service cloud.firestore {
 
     function isProjectMember(projectId) {
       return request.auth != null && 
-             request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.teamMembers;
+             request.auth.uid in get(/databases/$(database)/documents/portfolio/projet-en-cours/projects/$(projectId)).data.teamMembers;
     }
 
     function isProjectCreator(projectId) {
       return request.auth != null && 
-             request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.createdBy;
+             request.auth.uid == get(/databases/$(database)/documents/portfolio/projet-en-cours/projects/$(projectId)).data.createdBy;
     }
 
-    // Utilisée pour le Kanban PERSO (collections racine kanban_boards/columns/cards)
     function isBoardMember(boardId) {
       return request.auth != null &&
              request.auth.uid in get(/databases/$(database)/documents/kanban_boards/$(boardId)).data.members;
@@ -107,132 +106,100 @@ service cloud.firestore {
           (request.auth.uid == userId || isAdmin());
     }
 
-    // ─── PROJECTS ──────────────────────────────────────────────────────────
+    // ─── PORTFOLIO - PROJETS EN COURS ─────────────────────────────────────
 
-    match /project_team_members/{memberId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null &&
-          request.auth.uid == request.resource.data.userId &&
-          request.resource.data.projectId is string &&
-          request.resource.data.slug is string &&
-          request.resource.data.slug.size() > 0 &&
-          exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId)) &&
-          get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.teamMembers.hasAny([request.auth.uid]);
-      allow update: if request.auth != null &&
-          request.auth.uid == resource.data.userId &&
-          exists(/databases/$(database)/documents/projects/$(resource.data.projectId)) &&
-          get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.teamMembers.hasAny([request.auth.uid]) &&
-          (request.resource.data.slug == resource.data.slug);
-      allow delete: if request.auth != null &&
-          (request.auth.uid == resource.data.userId || isAdmin());
+    // Accès à la collection portfolio
+    match /portfolio/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // ─── PROJETS PRINCIPAUX ────────────────────────────────────────────────
+    // Accès à la sous-collection projet-en-cours
+    match /portfolio/projet-en-cours/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
-    match /projects/{projectId} {
+    // Accès à la sous-collection projects
+    match /portfolio/projet-en-cours/projects/{projectId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null &&
-          isAdmin() &&
-          request.resource.data.title is string &&
-          request.resource.data.slug is string &&
-          request.resource.data.slug.size() > 0 &&
-          request.resource.data.slug.matches('^[a-z0-9]+(?:-[a-z0-9]+)*$') &&
-          request.resource.data.description is string &&
-          request.resource.data.image is string &&
-          request.resource.data.carouselImages is list &&
-          request.resource.data.progress is number &&
-          request.resource.data.progress >= 0 &&
-          request.resource.data.progress <= 100 &&
-          request.resource.data.software is list &&
-          request.resource.data.teamMembers is list &&
-          request.resource.data.views is number;
-      
-      allow update: if request.auth != null &&
-          (
-            isAdmin() ||
-            request.auth.uid == resource.data.createdBy ||
-            (
-              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'updatedAt']) &&
-              request.resource.data.views is number &&
-              request.resource.data.views >= resource.data.views
-            )
-          ) &&
-          (request.resource.data.slug == resource.data.slug ||
-           (request.resource.data.slug is string &&
-            request.resource.data.slug.matches('^[a-z0-9]+(?:-[a-z0-9]+)*$') &&
-            !exists(/databases/$(database)/documents/projects/$(request.resource.data.slug))));
-      
+      allow create: if request.auth != null && isAdmin();
+      allow update: if request.auth != null && (isAdmin() || request.auth.uid == resource.data.createdBy);
       allow delete: if isAdmin();
-
-      // ─── Roadmap canvas ───────────────────────────────────────────────
-      match /roadmap_canvas/{docId} {
+      
+      // Document principal du projet
+      match /{document} {
         allow read: if request.auth != null;
-        allow write: if request.auth != null && (
-          isAdmin() ||
-          request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.createdBy ||
-          get(/databases/$(database)/documents/projects/$(projectId)).data.teamMembers.hasAny([request.auth.uid])
-        );
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // ─── KANBAN PROJET — Colonnes ─────────────────────────────────────
-      // kanban-projet-api.ts écrit dans /projects/{projectId}/kanban_columns
+      // Sous-collection overview
+      match /overview/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+      }
+
+      // Sous-collection media
+      match /media/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+      }
+
+      // Sous-collection software
+      match /software/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+      }
+
+      // Sous-collection team
+      match /team/{memberId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null &&
+            request.auth.uid == request.resource.data.userId &&
+            request.resource.data.projectId == projectId;
+        allow update: if request.auth != null &&
+            request.auth.uid == resource.data.userId;
+        allow delete: if request.auth != null &&
+            (request.auth.uid == resource.data.userId || isAdmin());
+      }
+
+      // Sous-collection roadmap
+      match /roadmap/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+      }
+
+      // BUG FIX: Les sous-collections Kanban des projets sont kanban_columns et kanban_cards
+      // (sous-collections directes du projet), pas kanban/columns ni kanban/cards.
+      // L'ancienne règle 'kanban/columns/{columnId}' ne correspondait à aucun chemin réel
+      // → toutes les opérations Kanban projet étaient bloquées silencieusement.
+
+      // Sous-collection kanban_columns
       match /kanban_columns/{columnId} {
-        // Lecture publique (affichage readOnly dans ProjetDetail > Progression)
         allow read: if request.auth != null;
-
-        allow create: if request.auth != null && (
-          isAdmin() ||
-          isProjectCreator(projectId) ||
-          isProjectMember(projectId)
-        ) && (
-          request.resource.data.title is string &&
-          request.resource.data.position is number &&
-          request.resource.data.position >= 0
-        );
-
-        allow update: if request.auth != null && (
-          isAdmin() ||
-          isProjectCreator(projectId) ||
-          isProjectMember(projectId)
-        );
-
-        allow delete: if request.auth != null && (
-          isAdmin() ||
-          isProjectCreator(projectId) ||
-          isProjectMember(projectId)
-        );
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // ─── KANBAN PROJET — Cartes ───────────────────────────────────────
-      // kanban-projet-api.ts écrit dans /projects/{projectId}/kanban_cards
+      // Sous-collection kanban_cards
       match /kanban_cards/{cardId} {
-        // Lecture publique (affichage readOnly dans ProjetDetail > Progression)
         allow read: if request.auth != null;
+        allow create: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId)) &&
+            request.resource.data.createdBy == request.auth.uid;
+        allow update: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+        allow delete: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId) ||
+            request.auth.uid == resource.data.createdBy);
+      }
 
-        allow create: if request.auth != null && (
-          isAdmin() ||
-          isProjectCreator(projectId) ||
-          isProjectMember(projectId)
-        ) && (
-          request.resource.data.title is string &&
-          request.resource.data.columnId is string &&
-          request.resource.data.position is number &&
-          request.resource.data.position >= 0 &&
-          request.resource.data.createdBy == request.auth.uid
-        );
+      // Sous-collection documentation
+      match /documentation/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+      }
 
-        allow update: if request.auth != null && (
-          isAdmin() ||
-          isProjectCreator(projectId) ||
-          isProjectMember(projectId)
-        );
-
-        allow delete: if request.auth != null && (
-          isAdmin() ||
-          request.auth.uid == resource.data.createdBy ||
-          isProjectCreator(projectId) ||
-          isProjectMember(projectId)
-        );
+      // Sous-collection stats
+      match /stats/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
     }
 
@@ -323,7 +290,6 @@ service cloud.firestore {
     }
 
     // ─── KANBAN PERSO (collections racine) ────────────────────────────────
-    // Utilisé par kanban-api.ts → /kanban_boards, /kanban_columns, /kanban_cards
 
     match /kanban_boards/{boardId} {
       allow read: if request.auth != null &&

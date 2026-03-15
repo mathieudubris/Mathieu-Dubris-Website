@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { X, User, Check, Search, Users, Mail, Save } from 'lucide-react';
-import { addMemberToProject, removeMemberFromProject, getProject, updateProject } from '@/utils/projet-api';
+import { addMemberToProject, removeMemberFromProject, getFullProject, updateProject } from '@/utils/projet-api';
 import {  getAllUsers } from '@/utils/firebase-api';
 
 import { useUsers } from '@/utils/UserContext';
@@ -66,7 +66,7 @@ const UserList: React.FC<UserListProps> = ({
 
   const loadProjectMembers = async () => {
     try {
-      const project = await getProject(projectId);
+      const project = await getFullProject(projectId);
       if (project) {
         const members = project.teamMembers || [];
         setProjectMembers(members);

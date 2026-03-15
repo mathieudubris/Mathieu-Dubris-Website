@@ -1,11 +1,9 @@
 // roadmap-api.ts
-// Gère la sous-collection roadmap_canvas de chaque projet.
-// Les données "canvas" (positions X/Y, taille, couleur, flèches) sont
-// stockées séparément du document projet principal pour ne pas dépasser
-// les limites de taille Firestore et respecter les règles de sécurité.
+// Gère les documents phases et canvas dans la sous-collection roadmap de chaque projet.
+// Chemin : portfolio/projet-en-cours/projects/{slug}/roadmap/{phases|canvas}
 
-import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
-import { db } from '@/utils/firebase-api';
+import { getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { ROADMAP_PHASES_DOC, ROADMAP_CANVAS_DOC } from '@/utils/projet-api';
 import type { RoadmapArrow, RichPhase } from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor';
 import type { RoadmapPhase } from '@/utils/projet-api';
 
@@ -24,28 +22,48 @@ export interface CanvasPhaseData {
 
 export interface RoadmapCanvasDoc {
   phases:    CanvasPhaseData[];
-  arrows:    RoadmapArrow[];   // contient désormais fromT / toT
+  arrows:    RoadmapArrow[];
+  updatedAt: any;
+}
+
+export interface RoadmapPhasesDoc {
+  phases:    RoadmapPhase[];
   updatedAt: any;
 }
 
 // ─────────────────────────────────────────────
-// Sauvegarde canvas
+// Sauvegarde des phases (données "pures")
 // ─────────────────────────────────────────────
 
-/**
- * Sauvegarde les données canvas dans la sous-collection
- * projects/{projectId}/roadmap_canvas/main
- */
+export const saveRoadmapPhases = async (
+  projectId: string,
+  phases: RoadmapPhase[]
+): Promise<void> => {
+  try {
+    const phasesRef = ROADMAP_PHASES_DOC(projectId);
+    await setDoc(phasesRef, {
+      phases,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('saveRoadmapPhases:', error);
+    throw error;
+  }
+};
+
+// ─────────────────────────────────────────────
+// Sauvegarde du canvas (positions + flèches)
+// ─────────────────────────────────────────────
+
 export const saveRoadmapCanvas = async (
   projectId: string,
   data: { phases: RichPhase[]; arrows: RoadmapArrow[] }
 ): Promise<void> => {
   try {
-    const canvasRef = doc(db, 'projects', projectId, 'roadmap_canvas', 'main');
+    const canvasRef = ROADMAP_CANVAS_DOC(projectId);
 
-    // Extraire seulement les données canvas (pas les données métier)
     const canvasPhases: CanvasPhaseData[] = data.phases.map(p => ({
-      id: p.id,
+      id:      p.id,
       canvasX: p.canvasX ?? 0,
       canvasY: p.canvasY ?? 0,
       nodeW:   p.nodeW,
@@ -65,18 +83,32 @@ export const saveRoadmapCanvas = async (
 };
 
 // ─────────────────────────────────────────────
-// Chargement canvas
+// Chargement des phases
 // ─────────────────────────────────────────────
 
-/**
- * Charge les données canvas depuis la sous-collection.
- * Retourne null si aucune donnée n'existe encore.
- */
+export const loadRoadmapPhases = async (
+  projectId: string
+): Promise<RoadmapPhase[] | null> => {
+  try {
+    const phasesRef = ROADMAP_PHASES_DOC(projectId);
+    const snap = await getDoc(phasesRef);
+    if (!snap.exists()) return null;
+    return snap.data().phases || [];
+  } catch (error) {
+    console.error('loadRoadmapPhases:', error);
+    return null;
+  }
+};
+
+// ─────────────────────────────────────────────
+// Chargement du canvas
+// ─────────────────────────────────────────────
+
 export const loadRoadmapCanvas = async (
   projectId: string
 ): Promise<RoadmapCanvasDoc | null> => {
   try {
-    const canvasRef = doc(db, 'projects', projectId, 'roadmap_canvas', 'main');
+    const canvasRef = ROADMAP_CANVAS_DOC(projectId);
     const snap = await getDoc(canvasRef);
     if (!snap.exists()) return null;
     return snap.data() as RoadmapCanvasDoc;
@@ -90,16 +122,11 @@ export const loadRoadmapCanvas = async (
 // Fusion canvas + phases
 // ─────────────────────────────────────────────
 
-/**
- * Fusionne les données canvas (positions, couleurs) avec les phases métier.
- * Les phases sans position canvas reçoivent une position auto calculée.
- */
 export const mergeCanvasIntoPhases = (
   phases: RoadmapPhase[],
   canvas: RoadmapCanvasDoc | null
 ): RichPhase[] => {
   if (!canvas || !canvas.phases?.length) {
-    // Aucune donnée canvas → init positions en ligne
     return phases.map((p, idx) => ({
       ...p,
       canvasX: 60 + idx * 320,
@@ -108,7 +135,6 @@ export const mergeCanvasIntoPhases = (
     })) as RichPhase[];
   }
 
-  // Map canvas par id pour lookup rapide
   const canvasMap = Object.fromEntries(canvas.phases.map(c => [c.id, c]));
 
   return phases.map((p, idx) => {
@@ -123,7 +149,6 @@ export const mergeCanvasIntoPhases = (
         color:   c.color,
       } as RichPhase;
     }
-    // Phase sans données canvas → position auto à droite des autres
     return {
       ...p,
       canvasX: 60 + idx * 320,
@@ -137,17 +162,13 @@ export const mergeCanvasIntoPhases = (
 // stripCanvasData
 // ─────────────────────────────────────────────
 
-/**
- * Retire les champs canvas des phases avant sauvegarde
- * dans le document projet principal (Firestore a une limite de 1 Mo).
- * Seules les données métier (titre, statut, dates, tâches, ordre) sont conservées.
- */
 export const stripCanvasData = (phases: RichPhase[]): RoadmapPhase[] =>
   phases.map(({ canvasX: _x, canvasY: _y, nodeW: _w, nodeH: _h, color: _c, ...rest }) => rest);
 
 // ─────────────────────────────────────────────
-// Palette par défaut (cohérence Editor ↔ Viewer)
+// Palette par défaut
 // ─────────────────────────────────────────────
+
 export const PALETTE = [
   '#7C3AED','#0EA5E9','#10B981','#F59E0B',
   '#EF4444','#EC4899','#6366F1','#14B8A6',

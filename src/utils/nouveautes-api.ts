@@ -127,24 +127,33 @@ export const upsertNouveaute = async (data: Omit<Nouveaute, 'id' | 'createdAt' |
     const existingDoc = existingSnap.empty ? null : existingSnap.docs[0];
     const posDoc = posSnap.empty ? null : posSnap.docs[0];
 
-    // Si la position est occupée par quelqu'un d'autre → swap
-    if (posDoc && posDoc.id !== existingDoc?.id) {
-      const oldPosition = existingDoc ? existingDoc.data().position : null;
-      // Mettre l'ancien occupant à l'ancienne position (ou le supprimer si nouveau)
-      if (oldPosition !== null) {
-        batch.update(posDoc.ref, { position: oldPosition, updatedAt: now });
-      } else {
-        // Le nouveau n'avait pas de position → l'ancien garde la sienne si on ne force pas
-        // On l'écrase quand même car l'admin a choisi cette position
-        batch.update(posDoc.ref, { position: oldPosition ?? posDoc.data().position, updatedAt: now });
-      }
-    }
+    // La logique de swap est maintenant gérée dans le bloc if/else ci-dessous.
 
     if (existingDoc) {
       // Mise à jour
+      const oldPosition = existingDoc.data().position as number | undefined;
+
+      // Si la position cible est occupée par un autre document → swap
+      if (posDoc && posDoc.id !== existingDoc.id) {
+        // BUG FIX: Si l'item existant avait une ancienne position, l'ancien occupant prend cette position.
+        // Si l'item n'avait pas de position précédente (cas impossible ici car existingDoc existe),
+        // on retire simplement l'ancien occupant de sa position (il gardera la sienne — cas de swap partiel).
+        if (oldPosition !== undefined && oldPosition !== null) {
+          batch.update(posDoc.ref, { position: oldPosition, updatedAt: now });
+        }
+        // Si oldPosition est undefined, l'ancien occupant n'a nulle part où aller : on ne touche pas sa position
+        // (l'admin devra le repositionner manuellement). Ne pas écraser avec undefined.
+      }
+
       batch.update(existingDoc.ref, { ...data, updatedAt: now });
     } else {
-      // Création
+      // Création d'un nouvel item
+      // BUG FIX: Si la position cible est occupée par un autre item, on le déplace hors position (0)
+      // pour éviter la double-occupation. L'admin devra le repositionner.
+      if (posDoc) {
+        batch.update(posDoc.ref, { position: 0, updatedAt: now });
+      }
+
       const newRef = doc(col);
       batch.set(newRef, { ...data, createdAt: now, updatedAt: now });
     }

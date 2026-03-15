@@ -6,12 +6,11 @@ import { useRouter } from 'next/navigation';
 import { X, Users, Map, Menu, Images, Package, Clock, FileText, Eye } from 'lucide-react';
 import {
   isUserInProject,
-  Project as FirebaseProject,
-  incrementProjectViews
+  FullProject,
+  incrementProjectViews,
 } from '@/utils/projet-api';
-import { loadRoadmapCanvas, mergeCanvasIntoPhases } from '@/utils/roadmap-api';
+import { loadRoadmapPhases, loadRoadmapCanvas, mergeCanvasIntoPhases } from '@/utils/roadmap-api';
 import type { RoadmapArrow, RichPhase } from '@/components/portfolio/projet-en-cours/Editor/navigation/RoadmapEditor';
-import { useTheme } from '@/utils/ThemeProvider';
 
 import Overview from './navigation/Overview';
 import Galerie from './navigation/Galerie';
@@ -22,7 +21,7 @@ import Progression from './navigation/Progression';
 import Documentation from './navigation/Documentation';
 import styles from './ProjetDetail.module.css';
 
-type Project = FirebaseProject;
+type Project = FullProject;
 
 type ProjectTeamMember = {
   id?: string;
@@ -60,13 +59,13 @@ interface ProjetDetailProps {
 type TabType = 'overview' | 'galerie' | 'ressources' | 'roadmap' | 'progression' | 'equipe' | 'documentation';
 
 const TABS: { id: TabType; label: string; Icon: React.FC<any> }[] = [
-  { id: 'overview',       label: 'Overview',       Icon: Eye       },
-  { id: 'galerie',        label: 'Galerie',         Icon: Images    },
-  { id: 'ressources',     label: 'Ressources',      Icon: Package   },
-  { id: 'roadmap',        label: 'Roadmap',         Icon: Map       },
-  { id: 'progression',    label: 'Progression',     Icon: Clock     },
-  { id: 'equipe',         label: 'Équipe',          Icon: Users     },
-  { id: 'documentation',  label: 'Documentation',   Icon: FileText  },
+  { id: 'overview',      label: 'Overview',      Icon: Eye      },
+  { id: 'galerie',       label: 'Galerie',        Icon: Images   },
+  { id: 'ressources',    label: 'Ressources',     Icon: Package  },
+  { id: 'roadmap',       label: 'Roadmap',        Icon: Map      },
+  { id: 'progression',   label: 'Progression',    Icon: Clock    },
+  { id: 'equipe',        label: 'Équipe',         Icon: Users    },
+  { id: 'documentation', label: 'Documentation',  Icon: FileText },
 ];
 
 const ProjetDetail: React.FC<ProjetDetailProps> = ({
@@ -75,60 +74,71 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
   currentUser,
   userTeamProfile,
   onBack,
-  onEditProfile
+  onEditProfile,
 }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [menuOpen, setMenuOpen] = useState(false);
   const [isInTeam, setIsInTeam] = useState(false);
-  const [views, setViews] = useState(project.views || 0);
+  const [views, setViews] = useState(0);
   const [hasIncremented, setHasIncremented] = useState(false);
-  // Phases avec positions canvas + flèches (chargés depuis la sous-collection)
-  const [richPhases, setRichPhases]   = useState<RichPhase[]>([]);
+  const [richPhases, setRichPhases] = useState<RichPhase[]>([]);
   const [roadmapArrows, setRoadmapArrows] = useState<RoadmapArrow[]>([]);
+  // PERF: plus besoin de fullProjectData — le projet complet arrive directement via props
+  // depuis page.tsx (qui a déjà appelé getFullProject et mis en cache).
+  // isLoading ne bloque plus sur getFullProject, seulement sur la roadmap.
+  const [roadmapLoaded, setRoadmapLoaded] = useState(false);
+
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const carouselImages: string[] = project.carouselImages || [];
-
   useEffect(() => {
-    if (currentUser && project) {
+    if (!project?.id) return;
+
+    // Incrémenter les vues (fire-and-forget, ne bloque pas l'affichage)
+    if (currentUser && !hasIncremented) {
+      incrementViews(project.id);
+      setHasIncremented(true);
+    }
+
+    // Statut équipe (synchrone, pas de réseau)
+    if (currentUser) {
       setIsInTeam(isUserInProject(project, currentUser.uid));
-      
-      if (!hasIncremented) {
-        incrementViews();
-        setHasIncremented(true);
-      }
     }
-  }, [currentUser, project, hasIncremented]);
 
-  // Charger les données canvas (positions phases + flèches) depuis la sous-collection
-  useEffect(() => {
-    if (!project?.id) {
-      // Pas d'id → init positions simples sans canvas
-      const rawPhases = (project as any).roadmapPhases || [];
-      setRichPhases(mergeCanvasIntoPhases(rawPhases, null));
-      setRoadmapArrows([]);
-      return;
+    // Vues : disponibles directement depuis les props (déjà chargées par getAllProjects)
+    setViews(project.views ?? 0);
+
+    // PERF: roadmap chargée en parallèle, sans bloquer l'affichage du modal.
+    // Le modal s'ouvre immédiatement, la roadmap apparaît dès qu'elle est prête.
+    loadRoadmapData(project.id);
+  }, [project?.id]);
+
+  const loadRoadmapData = async (projectId: string) => {
+    try {
+      // phases + canvas en parallèle
+      const [phases, canvas] = await Promise.all([
+        loadRoadmapPhases(projectId).catch(() => []),
+        loadRoadmapCanvas(projectId).catch(() => null),
+      ]);
+      setRichPhases(mergeCanvasIntoPhases(phases || [], canvas));
+      setRoadmapArrows(canvas?.arrows || []);
+    } catch (error) {
+      console.error('Erreur chargement roadmap:', error);
+    } finally {
+      setRoadmapLoaded(true);
     }
-    let cancelled = false;
-    const load = async () => {
-      const rawPhases = (project as any).roadmapPhases || [];
-      try {
-        const canvas = await loadRoadmapCanvas(project.id!);
-        if (!cancelled) {
-          setRichPhases(mergeCanvasIntoPhases(rawPhases, canvas));
-          setRoadmapArrows(canvas?.arrows || []);
-        }
-      } catch {
-        if (!cancelled) {
-          setRichPhases(mergeCanvasIntoPhases(rawPhases, null));
-          setRoadmapArrows([]);
-        }
+  };
+
+  const incrementViews = async (projectId: string) => {
+    try {
+      await incrementProjectViews(projectId);
+      setViews((prev) => prev + 1);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Erreur lors de l'incrémentation des vues:", error);
       }
-    };
-    load();
-    return () => { cancelled = true; };
-  }, [project]);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -140,19 +150,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
-  const incrementViews = async () => {
-    if (!project.id) return;
-    try {
-      await incrementProjectViews(project.id);
-      setViews((prev) => prev + 1);
-    } catch (error) {
-      // Ne pas afficher l'erreur dans la console en production
-      if (process.env.NODE_ENV === 'development') {
-        console.error("Erreur lors de l'incrémentation des vues:", error);
-      }
-    }
-  };
-
   const formatDate = (date: any) => {
     if (!date) return '—';
     try {
@@ -163,18 +160,22 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
 
   const handleViewAllMembers = () => {
     const key = project.slug || project.id;
-    if (key) router.push(`/portfolio/team/view?project=${key}`);
+    if (key) router.push(`/portfolio/projet-en-cours/team/view?project=${key}`);
   };
 
   const handleEditProfileClick = () => {
     const key = project.slug || project.id;
-    if (key && currentUser) router.push(`/portfolio/team?project=${key}`);
+    if (key && currentUser) router.push(`/portfolio/projet-en-cours/team/edit?project=${key}`);
   };
 
   const selectTab = (tab: TabType) => {
     setActiveTab(tab);
     setMenuOpen(false);
   };
+
+  // PERF: plus de spinner bloquant — le modal s'affiche immédiatement avec les données
+  // déjà disponibles dans les props. La roadmap se charge en arrière-plan.
+  const carouselImages: string[] = project.carouselImages || [];
 
   return (
     <div className={styles.modalOverlay} onClick={onBack}>
@@ -254,17 +255,26 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
           </div>
 
           <div className={`${styles.tabContent} ${activeTab === 'ressources' ? styles.visible : ''}`}>
-            <Ressources software={(project as any).software || []} />
+            <Ressources software={project.software || []} />
           </div>
 
           <div className={`${styles.tabContent} ${activeTab === 'roadmap' ? styles.visible : ''}`}>
-            <Roadmap phases={richPhases} arrows={roadmapArrows} />
+            {/* Afficher la roadmap dès qu'elle est chargée, sinon un loader léger */}
+            {roadmapLoaded
+              ? <Roadmap phases={richPhases} arrows={roadmapArrows} />
+              : (
+                <div className={styles.tabLoadingHint}>
+                  <div className={styles.loadingSpinner} />
+                </div>
+              )
+            }
           </div>
 
           <div className={`${styles.tabContent} ${activeTab === 'progression' ? styles.visible : ''}`}>
             <Progression
               projectId={project.id!}
               projectTitle={project.title}
+              currentUser={currentUser}
             />
           </div>
 
@@ -282,7 +292,7 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
           </div>
 
           <div className={`${styles.tabContent} ${activeTab === 'documentation' ? styles.visible : ''}`}>
-            <Documentation docLinks={(project as any).docLinks || []} />
+            <Documentation docLinks={project.docLinks || []} />
           </div>
         </div>
       </motion.div>

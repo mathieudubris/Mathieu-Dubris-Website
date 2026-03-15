@@ -19,7 +19,7 @@
 
 /* ── TOPBAR ── */
 .modalHeader {
-  height: 52px;
+  height: 50px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--line);
   display: flex;
@@ -221,7 +221,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 4000;
+  z-index: 1;
   opacity: 0.55;
   transition: color 0.2s, opacity 0.2s;
 }

@@ -242,6 +242,8 @@
   font-weight: 400;
 }
 
+/* ── Software icons ───────────────────────────────────────────────────────── */
+
 .softwareSection {
   margin: 0 0 2px;
   display: flex;
@@ -250,10 +252,11 @@
   flex-wrap: wrap;
 }
 
+/* Conteneur externe : overflow visible pour que le tooltip puisse dépasser */
 .softwareIcon {
   width: 26px;
   height: 26px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: flex;
@@ -261,9 +264,10 @@
   justify-content: center;
   font-size: 0.72rem;
   transition: all 0.25s ease;
-  opacity: 0.8;
-  overflow: hidden;
+  opacity: 0.85;
+  overflow: visible;   /* laisse le tooltip sortir */
   flex-shrink: 0;
+  position: relative;
 }
 
 .softwareIcon:hover {
@@ -272,10 +276,23 @@
   transform: translateY(-2px);
 }
 
-/* Real SVG/image icon */
+/* Wrapper interne qui clippe l'image (séparé du tooltip) */
+.softwareIconInner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  overflow: hidden;    /* clip uniquement l'image */
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+/* Image dans le wrapper interne */
 .softwareIconImg {
-  width: 70%;
-  height: 70%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
   pointer-events: none;
@@ -309,6 +326,22 @@
   opacity: 0.45;
 }
 
+.noSoftware {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--light);
+  opacity: 0.25;
+  font-size: 0.6rem;
+  font-weight: 500;
+}
+
+.noSoftware svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
 /* Progression */
 .progressBar {
   width: 100%;
@@ -335,12 +368,12 @@
   align-items: center;
   margin-top: auto;
   padding-top: 8px;
-  border-top: 1px solid var(--line);
-  opacity: 1;
-  border-top-color: rgba(163, 163, 163, 0.12);
+  border-top: 1px solid rgba(163, 163, 163, 0.12);
   position: relative;
   z-index: 5;
 }
+
+/* ── Avatars membres ───────────────────────────────────────────────────────── */
 
 .memberAvatars {
   display: flex;
@@ -357,8 +390,9 @@
   justify-content: center;
   margin-left: -6px;
   transition: transform 0.2s ease;
-  overflow: hidden;
+  overflow: visible;   /* permet au tooltip de dépasser */
   flex-shrink: 0;
+  position: relative;
 }
 
 .memberAvatar:first-child {
@@ -367,13 +401,16 @@
 
 .memberAvatar:hover {
   transform: scale(1.2) translateY(-2px);
-  z-index: 2;
+  z-index: 10;
 }
 
+/* On clip l'image séparément via border-radius + overflow sur l'img elle-même */
 .memberAvatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .avatarPlaceholder {
@@ -386,6 +423,44 @@
   justify-content: center;
   font-size: 0.58rem;
   font-weight: 800;
+  border-radius: 50%;
+}
+
+/* ── Tooltip nom ──────────────────────────────────────────────────────────── */
+
+.avatarTooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--dark);
+  border: 1px solid var(--line);
+  color: var(--light);
+  font-size: 0.62rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.2px;
+  animation: tooltipFadeIn 0.15s ease;
+}
+
+.avatarTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--line);
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .moreMembers {

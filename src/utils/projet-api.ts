@@ -1,23 +1,79 @@
 // projet-api.ts - Toutes les fonctions liées aux projets et à l'équipe projet
+
 import {
   collection,
   query,
   where,
   getDocs,
-  addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   getDoc,
   doc,
   Timestamp,
-  runTransaction,
   writeBatch,
   increment,
+  collectionGroup,
 } from 'firebase/firestore';
 import { db } from '@/utils/firebase-api';
 
 // ─────────────────────────────────────────────
-// Interfaces
+// Types pour l'équipe
+// ─────────────────────────────────────────────
+
+export interface PhoneEntry {
+  model: string;
+  isPublic: boolean;
+}
+
+export interface ComputerEntry {
+  os: 'windows' | 'mac' | 'linux';
+  ram: string;
+  storage: string;
+  gpu?: string;
+  isPublic: boolean;
+}
+
+export interface Contact {
+  type: 'instagram' | 'whatsapp' | 'discord' | 'tiktok' | 'youtube' | 'facebook' | 'twitter' | 'linkedin';
+  value: string;
+  label?: string;
+  isPublic: boolean;
+}
+
+export interface ProjectTeamMember {
+  id?: string;
+  userId: string;
+  projectId: string;
+  slug?: string;
+  image: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  agePublic: boolean;
+  email: string;
+  phone: string;
+  skills?: string;
+  skillsPublic?: boolean;
+  contacts: Contact[];
+  roles: string[];
+  equipment: {
+    internet: 'wifi' | 'mobile' | 'both';
+    phones: PhoneEntry[];
+    computers: ComputerEntry[];
+  };
+  location: {
+    country: string;
+    city: string;
+    district: string;
+    districtPublic: boolean;
+  };
+  createdAt: any;
+  updatedAt: any;
+}
+
+// ─────────────────────────────────────────────
+// Interfaces existantes
 // ─────────────────────────────────────────────
 
 export interface RoadmapPhase {
@@ -50,30 +106,87 @@ export interface Project {
   id?: string;
   title: string;
   slug: string;
-  description: string;
-  image: string;
-  carouselImages?: string[];
-  progress: number;
-  software: any[];
-  members: any[];
   createdBy: string;
   createdAt: any;
   updatedAt: any;
   teamMembers: string[];
-  views: number;
   visibility?: 'public' | 'early_access';
-  // Champs overview
+}
+
+/**
+ * FullProject : type renvoyé par getFullProject() / getAllProjects().
+ * Combine le document principal + toutes les sous-collections (overview, media,
+ * software, stats, documentation, roadmap).
+ * Utilisez ce type dans ProjectCard, ProjetDetail, et tout composant qui
+ * consomme le résultat de getFullProject / getAllProjects.
+ */
+export interface FullProject extends Project {
+  // overview
+  description?: string;
   projectType?: string;
   objective?: string;
   targetAudience?: string;
   status?: string;
   features?: ProjectFeature[];
-  // Roadmap
-  roadmapPhases?: RoadmapPhase[];
-  // Kanban lié
-  kanbanBoardId?: string;
-  // Documentation
+  // media
+  image?: string;
+  carouselImages?: string[];
+  // software
+  software?: SoftwareItem[];
+  // stats
+  views?: number;
+  progress?: number;
+  kanbanBoardId?: string | null;
+  // documentation
   docLinks?: ProjectDocLink[];
+  // roadmap
+  roadmapPhases?: RoadmapPhase[];
+  // membres enrichis (utilisé dans ProjectCard)
+  members?: Array<{
+    userId?: string;
+    uid?: string;
+    displayName?: string;
+    photoURL?: string;
+  }>;
+}
+
+export interface ProjectOverview {
+  description: string;
+  projectType?: string;
+  objective?: string;
+  targetAudience?: string;
+  status?: string;
+  features?: ProjectFeature[];
+}
+
+export interface ProjectMedia {
+  image: string;
+  carouselImages: string[];
+}
+
+export interface ProjectSoftware {
+  items: SoftwareItem[];
+}
+
+export interface ProjectDocumentation {
+  links: ProjectDocLink[];
+}
+
+export interface ProjectStats {
+  views: number;
+  progress: number;
+  kanbanBoardId?: string | null;
+}
+
+export interface SoftwareItem {
+  id: string;
+  name: string;
+  logoUrl: string;
+  category: string;
+  color?: string;
+  posX?: number;
+  posY?: number;
+  size?: number;
 }
 
 export interface ProjectFeature {
@@ -84,50 +197,25 @@ export interface ProjectFeature {
   category: 'main' | 'secondary' | 'system';
 }
 
-export interface ProjectTeamMember {
-  id?: string;
-  userId: string;
-  projectId: string;
-  slug?: string;
-  image: string;
-  firstName: string;
-  lastName: string;
-  age: number;
-  agePublic: boolean;
-  email: string;
-  phone: string;
-  skills?: string;
-  skillsPublic?: boolean;
-  contacts: {
-    type: 'instagram' | 'whatsapp' | 'discord' | 'tiktok' | 'youtube' | 'facebook' | 'twitter' | 'linkedin';
-    value: string;
-    label?: string;
-    isPublic: boolean;
-  }[];
-  roles: string[];
-  equipment: {
-    phone: {
-      model: string;
-      internet: 'wifi' | 'mobile' | 'both';
-      isPublic: boolean;
-    };
-    computer: {
-      os: 'windows' | 'mac' | 'linux';
-      ram: string;
-      storage: string;
-      gpu?: string;
-      isPublic: boolean;
-    };
-  };
-  location: {
-    country: string;
-    city: string;
-    district: string;
-    districtPublic: boolean;
-  };
-  createdAt: any;
-  updatedAt: any;
-}
+// ─────────────────────────────────────────────
+// Chemins Firestore centralisés
+// ─────────────────────────────────────────────
+
+const SECTION_REF = () => doc(db, 'portfolio', 'projet-en-cours');
+const PROJECTS_COL = () => collection(db, 'portfolio', 'projet-en-cours', 'projects');
+const PROJECT_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId);
+
+const OVERVIEW_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'overview', 'main');
+const MEDIA_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'media', 'main');
+const SOFTWARE_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'software', 'items');
+const TEAM_COL = (projectId: string) => collection(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'team');
+const TEAM_MEMBER_DOC = (projectId: string, memberId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'team', memberId);
+const ROADMAP_PHASES_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'roadmap', 'phases');
+const ROADMAP_CANVAS_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'roadmap', 'canvas');
+const KANBAN_COLUMNS_COL = (projectId: string) => collection(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'kanban_columns');
+const KANBAN_CARDS_COL = (projectId: string) => collection(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'kanban_cards');
+const DOC_LINKS_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'documentation', 'links');
+const STATS_DOC = (projectId: string) => doc(db, 'portfolio', 'projet-en-cours', 'projects', projectId, 'stats', 'main');
 
 // ─────────────────────────────────────────────
 // Helpers slug
@@ -143,22 +231,20 @@ export const generateSlug = (title: string): string =>
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 
-export const slugExists = async (slug: string, excludeProjectId?: string): Promise<boolean> => {
+export const slugExists = async (slug: string, excludeSlug?: string): Promise<boolean> => {
   try {
-    const q = query(collection(db, 'projects'), where('slug', '==', slug));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) return false;
-    if (excludeProjectId) return snapshot.docs.some((d) => d.id !== excludeProjectId);
-    return true;
+    if (excludeSlug && slug === excludeSlug) return false;
+    const snap = await getDoc(PROJECT_DOC(slug));
+    return snap.exists();
   } catch {
     return false;
   }
 };
 
-export const generateUniqueSlug = async (title: string, excludeProjectId?: string): Promise<string> => {
+export const generateUniqueSlug = async (title: string, excludeSlug?: string): Promise<string> => {
   let slug = generateSlug(title);
   let counter = 1;
-  while (await slugExists(slug, excludeProjectId)) {
+  while (await slugExists(slug, excludeSlug)) {
     slug = `${generateSlug(title)}-${counter}`;
     counter++;
   }
@@ -172,102 +258,220 @@ export const generateTeamSlug = (projectSlug: string, firstName: string, lastNam
 };
 
 // ─────────────────────────────────────────────
-// Projets — CRUD
+// Construction d'un projet complet
 // ─────────────────────────────────────────────
 
-const normalizeProject = (id: string, data: any): Project => ({
-  id,
-  slug: data.slug || generateSlug(data.title),
-  ...data,
-  carouselImages: data.carouselImages || [],
-  progress: data.progress || 0,
-  software: data.software || [],
-  members: data.members || [],
-  views: data.views || 0,
-  teamMembers: data.teamMembers || [],
-  features: data.features || [],
-  roadmapPhases: data.roadmapPhases || [],
-  docLinks: data.docLinks || [],
-  kanbanBoardId: data.kanbanBoardId || null,
-});
-
-export const getProjects = async (): Promise<Project[]> => {
+export const getFullProject = async (projectId: string): Promise<any | null> => {
   try {
-    const snapshot = await getDocs(collection(db, 'projects'));
-    return snapshot.docs.map((d) => normalizeProject(d.id, d.data()));
-  } catch (error) {
-    console.error('getProjects:', error);
-    return [];
-  }
-};
+    const projectSnap = await getDoc(PROJECT_DOC(projectId));
+    if (!projectSnap.exists()) return null;
 
-export const getProject = async (projectId: string): Promise<Project | null> => {
-  try {
-    const snap = await getDoc(doc(db, 'projects', projectId));
-    if (!snap.exists()) return null;
-    return normalizeProject(snap.id, snap.data());
+    const projectData = projectSnap.data() as Project;
+
+    // PERF: toutes les sous-collections en parallèle
+    const [
+      overviewSnap,
+      mediaSnap,
+      softwareSnap,
+      roadmapPhasesSnap,
+      docLinksSnap,
+      statsSnap,
+    ] = await Promise.all([
+      getDoc(OVERVIEW_DOC(projectId)).catch(() => null),
+      getDoc(MEDIA_DOC(projectId)).catch(() => null),
+      getDoc(SOFTWARE_DOC(projectId)).catch(() => null),
+      getDoc(ROADMAP_PHASES_DOC(projectId)).catch(() => null),
+      getDoc(DOC_LINKS_DOC(projectId)).catch(() => null),
+      getDoc(STATS_DOC(projectId)).catch(() => null),
+    ]);
+
+    return {
+      id: projectId,
+      ...projectData,
+      ...(overviewSnap?.data() || {}),
+      ...(mediaSnap?.data() || { image: '', carouselImages: [] }),
+      software: softwareSnap?.data()?.items || [],
+      roadmapPhases: roadmapPhasesSnap?.data()?.phases || [],
+      docLinks: docLinksSnap?.data()?.links || [],
+      ...(statsSnap?.data() || { views: 0, progress: 0, kanbanBoardId: null }),
+    };
   } catch (error) {
-    console.error('getProject:', error);
+    console.error('getFullProject:', error);
     return null;
   }
 };
 
-export const getProjectBySlug = async (slug: string): Promise<Project | null> => {
-  try {
-    const q = query(collection(db, 'projects'), where('slug', '==', slug));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) return null;
-    const d = snapshot.docs[0];
-    return normalizeProject(d.id, d.data());
-  } catch (error) {
-    console.error('getProjectBySlug:', error);
-    return null;
-  }
-};
+// ─────────────────────────────────────────────
+// PERF: getAllProjects — fetches stats + media + software en parallèle
+// FIX: software était absent → les icônes logiciels n'apparaissaient pas dans les cartes
+// ─────────────────────────────────────────────
 
-export const getUserProjects = async (userId: string): Promise<Project[]> => {
+export const getAllProjects = async (): Promise<any[]> => {
   try {
-    const q = query(collection(db, 'projects'), where('teamMembers', 'array-contains', userId));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((d) => normalizeProject(d.id, d.data()));
+    const snapshot = await getDocs(PROJECTS_COL());
+    if (snapshot.empty) return [];
+
+    const ids = snapshot.docs.map((d) => d.id);
+
+    // Charger stats, media, software ET overview pour tous les projets en parallèle simultanément
+    const [statsSnaps, mediaSnaps, softwareSnaps, overviewSnaps] = await Promise.all([
+      Promise.all(ids.map((id) => getDoc(STATS_DOC(id)).catch(() => null))),
+      Promise.all(ids.map((id) => getDoc(MEDIA_DOC(id)).catch(() => null))),
+      Promise.all(ids.map((id) => getDoc(SOFTWARE_DOC(id)).catch(() => null))),
+      Promise.all(ids.map((id) => getDoc(OVERVIEW_DOC(id)).catch(() => null))),
+    ]);
+
+    return snapshot.docs.map((docSnap, i) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
+      // overview
+      description: overviewSnaps[i]?.data()?.description || '',
+      projectType: overviewSnaps[i]?.data()?.projectType || '',
+      objective: overviewSnaps[i]?.data()?.objective || '',
+      targetAudience: overviewSnaps[i]?.data()?.targetAudience || '',
+      status: overviewSnaps[i]?.data()?.status || '',
+      features: overviewSnaps[i]?.data()?.features || [],
+      // media
+      image: mediaSnaps[i]?.data()?.image || '/default-project.jpg',
+      carouselImages: mediaSnaps[i]?.data()?.carouselImages || [],
+      // stats
+      progress: statsSnaps[i]?.data()?.progress || 0,
+      views: statsSnaps[i]?.data()?.views || 0,
+      kanbanBoardId: statsSnaps[i]?.data()?.kanbanBoardId || null,
+      // software
+      software: softwareSnaps[i]?.data()?.items || [],
+    }));
   } catch (error) {
-    console.error('getUserProjects:', error);
+    console.error('getAllProjects:', error);
     return [];
   }
 };
 
-export const createProject = async (project: Omit<Project, 'id'>): Promise<string> => {
+export const getProjects = getAllProjects;
+export const getProject = getFullProject;
+export const getProjectBySlug = getFullProject;
+
+// ─────────────────────────────────────────────
+// Création d'un projet
+// ─────────────────────────────────────────────
+
+export const createProject = async (projectData: any): Promise<string> => {
   try {
-    const slug = project.slug || (await generateUniqueSlug(project.title));
-    const docRef = await addDoc(collection(db, 'projects'), {
-      ...project,
+    const slug = projectData.slug || await generateUniqueSlug(projectData.title);
+
+    const sectionRef = SECTION_REF();
+    const sectionSnap = await getDoc(sectionRef);
+    if (!sectionSnap.exists()) {
+      await setDoc(sectionRef, {
+        label: 'Projets en cours',
+        createdAt: Timestamp.now(),
+      });
+    }
+
+    const existing = await getDoc(PROJECT_DOC(slug));
+    if (existing.exists()) {
+      throw new Error(`Un projet avec le slug "${slug}" existe déjà.`);
+    }
+
+    const now = Timestamp.now();
+
+    await setDoc(PROJECT_DOC(slug), {
+      title: projectData.title,
       slug,
-      teamMembers: project.teamMembers || [],
-      carouselImages: project.carouselImages || [],
-      progress: project.progress || 0,
-      software: project.software || [],
-      members: project.members || [],
-      features: project.features || [],
-      roadmapPhases: project.roadmapPhases || [],
-      docLinks: project.docLinks || [],
-      kanbanBoardId: project.kanbanBoardId || null,
-      views: 0,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
+      createdBy: projectData.createdBy,
+      createdAt: projectData.createdAt || now,
+      updatedAt: now,
+      teamMembers: projectData.teamMembers || [],
+      visibility: projectData.visibility || 'public',
     });
-    return docRef.id;
+
+    await setDoc(OVERVIEW_DOC(slug), {
+      description: projectData.description || '',
+      projectType: projectData.projectType || '',
+      objective: projectData.objective || '',
+      targetAudience: projectData.targetAudience || '',
+      status: projectData.status || 'in_progress',
+      features: projectData.features || [],
+    });
+
+    await setDoc(MEDIA_DOC(slug), {
+      image: projectData.image || '/default-project.jpg',
+      carouselImages: projectData.carouselImages || [],
+    });
+
+    await setDoc(SOFTWARE_DOC(slug), {
+      items: projectData.software || [],
+    });
+
+    await setDoc(ROADMAP_PHASES_DOC(slug), {
+      phases: projectData.roadmapPhases || [],
+      updatedAt: now,
+    });
+
+    await setDoc(DOC_LINKS_DOC(slug), {
+      links: projectData.docLinks || [],
+    });
+
+    await setDoc(STATS_DOC(slug), {
+      views: projectData.views || 0,
+      progress: projectData.progress || 0,
+      kanbanBoardId: projectData.kanbanBoardId || null,
+    });
+
+    return slug;
   } catch (error) {
     console.error('createProject:', error);
     throw error;
   }
 };
 
-export const updateProject = async (projectId: string, projectData: Partial<Project>): Promise<void> => {
+// ─────────────────────────────────────────────
+// Mise à jour d'un projet
+// ─────────────────────────────────────────────
+
+export const updateProject = async (projectId: string, projectData: any): Promise<void> => {
   try {
-    const projectRef = doc(db, 'projects', projectId);
-    await updateDoc(projectRef, {
-      ...projectData,
-      updatedAt: Timestamp.now(),
+    const now = Timestamp.now();
+
+    await updateDoc(PROJECT_DOC(projectId), {
+      title: projectData.title,
+      slug: projectData.slug,
+      updatedAt: now,
+      teamMembers: projectData.teamMembers,
+      visibility: projectData.visibility,
+    });
+
+    await setDoc(OVERVIEW_DOC(projectId), {
+      description: projectData.description || '',
+      projectType: projectData.projectType || '',
+      objective: projectData.objective || '',
+      targetAudience: projectData.targetAudience || '',
+      status: projectData.status || 'in_progress',
+      features: projectData.features || [],
+    });
+
+    await setDoc(MEDIA_DOC(projectId), {
+      image: projectData.image || '/default-project.jpg',
+      carouselImages: projectData.carouselImages || [],
+    });
+
+    await setDoc(SOFTWARE_DOC(projectId), {
+      items: projectData.software || [],
+    });
+
+    await setDoc(ROADMAP_PHASES_DOC(projectId), {
+      phases: projectData.roadmapPhases || [],
+      updatedAt: now,
+    });
+
+    await setDoc(DOC_LINKS_DOC(projectId), {
+      links: projectData.docLinks || [],
+    });
+
+    await setDoc(STATS_DOC(projectId), {
+      views: projectData.views ?? 0,
+      progress: projectData.progress ?? 0,
+      kanbanBoardId: projectData.kanbanBoardId ?? null,
     });
   } catch (error) {
     console.error('updateProject:', error);
@@ -275,42 +479,88 @@ export const updateProject = async (projectId: string, projectData: Partial<Proj
   }
 };
 
+// ─────────────────────────────────────────────
+// Suppression d'un projet
+// ─────────────────────────────────────────────
+
 export const deleteProject = async (projectId: string): Promise<void> => {
   try {
     const batch = writeBatch(db);
-    batch.delete(doc(db, 'projects', projectId));
 
-    const q = query(
-      collection(db, 'nouveautes'),
-      where('sourceId', '==', projectId),
-      where('type', '==', 'project')
-    );
-    const snapshot = await getDocs(q);
-    snapshot.docs.forEach((d) => batch.delete(d.ref));
+    // Supprimer les sous-collections connues
+    const subDocs = [
+      OVERVIEW_DOC(projectId),
+      MEDIA_DOC(projectId),
+      SOFTWARE_DOC(projectId),
+      ROADMAP_PHASES_DOC(projectId),
+      ROADMAP_CANVAS_DOC(projectId),
+      DOC_LINKS_DOC(projectId),
+      STATS_DOC(projectId),
+    ];
+    subDocs.forEach((ref) => batch.delete(ref));
+
+    // Supprimer les membres de l'équipe
+    try {
+      const teamSnap = await getDocs(TEAM_COL(projectId));
+      teamSnap.docs.forEach((d) => batch.delete(d.ref));
+    } catch (error) {
+      console.log('Collection team non trouvée');
+    }
+
+    // Supprimer les colonnes kanban
+    try {
+      const colSnap = await getDocs(KANBAN_COLUMNS_COL(projectId));
+      colSnap.docs.forEach((d) => batch.delete(d.ref));
+    } catch (error) {
+      console.log('Collection kanban_columns non trouvée');
+    }
+
+    // Supprimer les cartes kanban
+    try {
+      const cardSnap = await getDocs(KANBAN_CARDS_COL(projectId));
+      cardSnap.docs.forEach((d) => batch.delete(d.ref));
+    } catch (error) {
+      console.log('Collection kanban_cards non trouvée');
+    }
+
+    // Supprimer le document principal
+    batch.delete(PROJECT_DOC(projectId));
+
+    // Supprimer les nouveautés liées
+    try {
+      const nouv = query(
+        collection(db, 'nouveautes'),
+        where('sourceId', '==', projectId),
+        where('type', '==', 'project')
+      );
+      const nouvSnap = await getDocs(nouv);
+      nouvSnap.docs.forEach((d) => batch.delete(d.ref));
+    } catch (error) {
+      console.log('Erreur lors de la suppression des nouveautés');
+    }
 
     await batch.commit();
+    console.log(`Projet ${projectId} supprimé avec succès`);
   } catch (error) {
-    console.error('deleteProject:', error);
+    console.error('deleteProject - Erreur détaillée:', error);
+    if (error instanceof Error && 'code' in error && (error as any).code === 'permission-denied') {
+      throw new Error('Permission refusée. Seul l\'administrateur peut supprimer des projets.');
+    }
     throw error;
   }
 };
 
 // ─────────────────────────────────────────────
-// Vues - CORRIGÉ : Utilisation de increment() au lieu de transaction
+// Vues
 // ─────────────────────────────────────────────
 
 export const incrementProjectViews = async (projectId: string): Promise<void> => {
   try {
-    const projectRef = doc(db, 'projects', projectId);
-    // Utilisation de increment() qui est autorisé par les règles Firestore
-    // car il ne modifie que le champ views
-    await updateDoc(projectRef, { 
+    await updateDoc(STATS_DOC(projectId), {
       views: increment(1),
-      updatedAt: Timestamp.now() 
     });
   } catch (error) {
     console.error('incrementProjectViews:', error);
-    // Ne pas throw l'erreur pour ne pas bloquer l'UI
   }
 };
 
@@ -318,62 +568,32 @@ export const incrementProjectViews = async (projectId: string): Promise<void> =>
 // Roadmap
 // ─────────────────────────────────────────────
 
-export const updateProjectRoadmap = async (projectId: string, phases: RoadmapPhase[]): Promise<void> => {
+export const updateProjectRoadmapPhases = async (projectId: string, phases: RoadmapPhase[]): Promise<void> => {
   try {
-    await updateDoc(doc(db, 'projects', projectId), {
-      roadmapPhases: phases,
+    await setDoc(ROADMAP_PHASES_DOC(projectId), {
+      phases,
       updatedAt: Timestamp.now(),
     });
   } catch (error) {
-    console.error('updateProjectRoadmap:', error);
+    console.error('updateProjectRoadmapPhases:', error);
     throw error;
   }
 };
 
 // ─────────────────────────────────────────────
-// Documentation
-// ─────────────────────────────────────────────
-
-export const updateProjectDocLinks = async (projectId: string, docLinks: ProjectDocLink[]): Promise<void> => {
-  try {
-    await updateDoc(doc(db, 'projects', projectId), {
-      docLinks,
-      updatedAt: Timestamp.now(),
-    });
-  } catch (error) {
-    console.error('updateProjectDocLinks:', error);
-    throw error;
-  }
-};
-
-// ─────────────────────────────────────────────
-// Kanban lié au projet
-// ─────────────────────────────────────────────
-
-export const linkKanbanToProject = async (projectId: string, kanbanBoardId: string | null): Promise<void> => {
-  try {
-    await updateDoc(doc(db, 'projects', projectId), {
-      kanbanBoardId,
-      updatedAt: Timestamp.now(),
-    });
-  } catch (error) {
-    console.error('linkKanbanToProject:', error);
-    throw error;
-  }
-};
-
-// ─────────────────────────────────────────────
-// Membres du projet (teamMembers UIDs)
+// Membres du projet
 // ─────────────────────────────────────────────
 
 export const addMemberToProject = async (projectId: string, userId: string): Promise<void> => {
   try {
-    const projectRef = doc(db, 'projects', projectId);
-    const snap = await getDoc(projectRef);
+    const snap = await getDoc(PROJECT_DOC(projectId));
     if (!snap.exists()) return;
     const current: string[] = snap.data().teamMembers || [];
     if (!current.includes(userId)) {
-      await updateDoc(projectRef, { teamMembers: [...current, userId], updatedAt: Timestamp.now() });
+      await updateDoc(PROJECT_DOC(projectId), {
+        teamMembers: [...current, userId],
+        updatedAt: Timestamp.now(),
+      });
     }
   } catch (error) {
     console.error('addMemberToProject:', error);
@@ -383,11 +603,10 @@ export const addMemberToProject = async (projectId: string, userId: string): Pro
 
 export const removeMemberFromProject = async (projectId: string, userId: string): Promise<void> => {
   try {
-    const projectRef = doc(db, 'projects', projectId);
-    const snap = await getDoc(projectRef);
+    const snap = await getDoc(PROJECT_DOC(projectId));
     if (!snap.exists()) return;
     const current: string[] = snap.data().teamMembers || [];
-    await updateDoc(projectRef, {
+    await updateDoc(PROJECT_DOC(projectId), {
       teamMembers: current.filter((id) => id !== userId),
       updatedAt: Timestamp.now(),
     });
@@ -401,13 +620,13 @@ export const removeMemberFromProject = async (projectId: string, userId: string)
 // Accès / rôles
 // ─────────────────────────────────────────────
 
-export const hasAccessToProject = (project: Project, userId: string | null): boolean => {
+export const hasAccessToProject = (project: any, userId: string | null): boolean => {
   if (!userId) return false;
   if (!project.visibility || project.visibility === 'public') return true;
   return (project.teamMembers || []).includes(userId) || project.createdBy === userId;
 };
 
-export const isUserInProject = (project: Project, userId: string | null): boolean => {
+export const isUserInProject = (project: any, userId: string | null): boolean => {
   if (!userId) return false;
   return (project.teamMembers || []).includes(userId) || project.createdBy === userId;
 };
@@ -415,23 +634,56 @@ export const isUserInProject = (project: Project, userId: string | null): boolea
 export const isUserMemberOfProject = isUserInProject;
 
 // ─────────────────────────────────────────────
-// Profils équipe par projet (project_team_members)
+// Profils équipe par projet
 // ─────────────────────────────────────────────
 
 export const getProjectTeamMembers = async (projectId: string): Promise<ProjectTeamMember[]> => {
   try {
-    const q = query(collection(db, 'project_team_members'), where('projectId', '==', projectId));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as ProjectTeamMember));
+    const snapshot = await getDocs(TEAM_COL(projectId));
+    return snapshot.docs.map((d) => {
+      const data = d.data();
+      const equipment = data.equipment || {};
+
+      const internet = equipment.internet || equipment.phone?.internet || 'wifi';
+
+      let phones: PhoneEntry[] = [];
+      if (equipment.phones && Array.isArray(equipment.phones) && equipment.phones.length > 0) {
+        phones = equipment.phones;
+      } else if (equipment.phone?.model) {
+        phones = [{
+          model: equipment.phone.model,
+          isPublic: equipment.phone.isPublic !== undefined ? equipment.phone.isPublic : true,
+        }];
+      }
+
+      let computers: ComputerEntry[] = [];
+      if (equipment.computers && Array.isArray(equipment.computers) && equipment.computers.length > 0) {
+        computers = equipment.computers;
+      } else if (equipment.computer) {
+        computers = [{
+          os: equipment.computer.os || 'windows',
+          ram: equipment.computer.ram || '',
+          storage: equipment.computer.storage || '',
+          gpu: equipment.computer.gpu || '',
+          isPublic: equipment.computer.isPublic !== undefined ? equipment.computer.isPublic : true,
+        }];
+      }
+
+      return {
+        id: d.id,
+        ...data,
+        equipment: { internet, phones, computers },
+      } as ProjectTeamMember;
+    });
   } catch (error) {
     console.error('getProjectTeamMembers:', error);
     return [];
   }
 };
 
-export const getProjectTeamMemberBySlug = async (slug: string): Promise<ProjectTeamMember | null> => {
+export const getProjectTeamMemberBySlug = async (memberSlug: string): Promise<ProjectTeamMember | null> => {
   try {
-    const q = query(collection(db, 'project_team_members'), where('slug', '==', slug));
+    const q = query(collectionGroup(db, 'team'), where('slug', '==', memberSlug));
     const snapshot = await getDocs(q);
     if (snapshot.empty) return null;
     const d = snapshot.docs[0];
@@ -442,24 +694,12 @@ export const getProjectTeamMemberBySlug = async (slug: string): Promise<ProjectT
   }
 };
 
-export const getProjectTeamMembersByProjectSlug = async (projectSlug: string): Promise<ProjectTeamMember[]> => {
+export const getUserProjectTeamProfile = async (
+  userId: string,
+  projectId: string
+): Promise<ProjectTeamMember | null> => {
   try {
-    const project = await getProjectBySlug(projectSlug);
-    if (!project?.id) return [];
-    return getProjectTeamMembers(project.id);
-  } catch (error) {
-    console.error('getProjectTeamMembersByProjectSlug:', error);
-    return [];
-  }
-};
-
-export const getUserProjectTeamProfile = async (userId: string, projectId: string): Promise<ProjectTeamMember | null> => {
-  try {
-    const q = query(
-      collection(db, 'project_team_members'),
-      where('userId', '==', userId),
-      where('projectId', '==', projectId)
-    );
+    const q = query(TEAM_COL(projectId), where('userId', '==', userId));
     const snapshot = await getDocs(q);
     if (snapshot.empty) return null;
     const d = snapshot.docs[0];
@@ -476,27 +716,45 @@ export const saveProjectTeamMember = async (
   data: Partial<ProjectTeamMember>
 ): Promise<void> => {
   try {
-    const project = await getProject(projectId);
-    if (!project) throw new Error('Projet non trouvé');
+    const project = await getDoc(PROJECT_DOC(projectId));
+    if (!project.exists()) throw new Error('Projet non trouvé');
 
-    const teamCollection = collection(db, 'project_team_members');
-    const q = query(teamCollection, where('userId', '==', userId), where('projectId', '==', projectId));
+    const q = query(TEAM_COL(projectId), where('userId', '==', userId));
     const snapshot = await getDocs(q);
 
+    const equipment = data.equipment || {
+      internet: 'wifi',
+      phones: [],
+      computers: [],
+    };
+
+    if (!equipment.phones || !Array.isArray(equipment.phones)) {
+      equipment.phones = [];
+    }
+    if (!equipment.computers || !Array.isArray(equipment.computers)) {
+      equipment.computers = [];
+    }
+
     if (snapshot.empty) {
-      const slug = generateTeamSlug(project.slug, data.firstName || '', data.lastName || '');
-      await addDoc(teamCollection, {
+      const memberSlug = generateTeamSlug(projectId, data.firstName || '', data.lastName || '');
+      const memberRef = TEAM_MEMBER_DOC(projectId, memberSlug);
+      await setDoc(memberRef, {
         ...data,
         userId,
         projectId,
-        slug,
+        slug: memberSlug,
         skills: data.skills || '',
         skillsPublic: data.skillsPublic !== undefined ? data.skillsPublic : true,
+        equipment,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       });
     } else {
-      await updateDoc(snapshot.docs[0].ref, { ...data, updatedAt: Timestamp.now() });
+      await updateDoc(snapshot.docs[0].ref, {
+        ...data,
+        equipment,
+        updatedAt: Timestamp.now(),
+      });
     }
   } catch (error) {
     console.error('saveProjectTeamMember:', error);
@@ -506,9 +764,29 @@ export const saveProjectTeamMember = async (
 
 export const canEditTeamMember = async (
   userId: string,
-  _projectId: string,
+  _projectSlug: string,
   currentUser: any
 ): Promise<boolean> => {
   if (!currentUser) return false;
   return currentUser.uid === userId;
+};
+
+// ─────────────────────────────────────────────
+// Exports des helpers
+// ─────────────────────────────────────────────
+
+export {
+  SECTION_REF,
+  PROJECTS_COL,
+  PROJECT_DOC,
+  TEAM_COL,
+  TEAM_MEMBER_DOC,
+  KANBAN_COLUMNS_COL,
+  KANBAN_CARDS_COL,
+  STATS_DOC,
+  MEDIA_DOC,
+  SOFTWARE_DOC,
+  ROADMAP_PHASES_DOC,
+  ROADMAP_CANVAS_DOC,
+  DOC_LINKS_DOC,
 };

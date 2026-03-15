@@ -56,7 +56,7 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
       title: 'Communauté', 
       links: [
         { label: 'Événements', path: '/security/access' },
-        { label: 'Actualités', path: '/security/access' },
+        { label: 'Actualités', path: '/communaute/actualite' },
         { label: 'Blog', path: '/communaute/blog' },
         { label: 'Entraides', path: '/security/access' }
       ]

@@ -1,56 +1,52 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import KanbanViewer from "@/components/kanban/KanbanViewer";
-import { initializeProjectKanban, projectHasKanban } from "@/utils/kanban-projet-api";
+import dynamic from 'next/dynamic';
+import { subscribeToBoards } from "@/utils/kanban-projet-api";
+import type { KanbanBoard } from "@/utils/kanban-projet-api";
+import ProgressionBoardList from "@/components/kanban/ProgressionBoardList";
 import styles from "./ProgressionEditor.module.css";
+
+// Import dynamique pour éviter les erreurs SSR
+const KanbanViewer = dynamic(
+  () => import('@/components/kanban/KanbanViewer'),
+  { ssr: false }
+);
 
 interface ProgressionEditorProps {
   projectId: string;
   currentUser: any;
-  progress: number;
-  onProgressChange: (progress: number) => void;
+  // progress et onProgressChange retirés — non nécessaires
 }
 
 export default function ProgressionEditor({
   projectId,
   currentUser,
-  progress,
-  onProgressChange,
 }: ProgressionEditorProps) {
-  const [hasKanban, setHasKanban] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [boards, setBoards] = useState<KanbanBoard[]>([]);
+  const [selectedBoard, setSelectedBoard] = useState<KanbanBoard | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
 
   useEffect(() => {
-    if (projectId) {
-      checkKanban();
-    }
+    if (!projectId) return;
+    const unsub = subscribeToBoards(projectId, setBoards);
+    return () => unsub();
   }, [projectId]);
 
-  const checkKanban = async () => {
-    try {
-      setIsLoading(true);
-      const exists = await projectHasKanban(projectId);
-      setHasKanban(exists);
-    } catch (error) {
-      console.error("Error checking kanban:", error);
-      setHasKanban(false);
-    } finally {
-      setIsLoading(false);
+  // Quand les boards changent (ex: rename), mettre à jour selectedBoard
+  useEffect(() => {
+    if (selectedBoard && boards.length > 0) {
+      const updated = boards.find(b => b.id === selectedBoard.id);
+      if (updated && updated.title !== selectedBoard.title) {
+        setSelectedBoard(updated);
+      }
     }
-  };
-
-  const handleCreateKanban = async () => {
-    try {
-      setIsLoading(true);
-      await initializeProjectKanban(projectId);
-      setHasKanban(true);
-    } catch (error) {
-      console.error("Error creating kanban:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [boards]);
 
   if (!projectId) {
     return (
@@ -60,34 +56,34 @@ export default function ProgressionEditor({
     );
   }
 
-  if (isLoading) {
-    return <div className={styles.loading}>Chargement...</div>;
-  }
-
-  if (hasKanban === false) {
+  // Vue Kanban d'un board
+  if (selectedBoard) {
     return (
-      <div className={styles.emptyState}>
-        <p>Aucun tableau Kanban associé à ce projet.</p>
-        <button
-          className={styles.createBtn}
-          onClick={handleCreateKanban}
-          disabled={isLoading}
-        >
-          Créer un tableau Kanban
-        </button>
+      <div className={styles.wrapper}>
+        <KanbanViewer
+          projectId={projectId}
+          board={selectedBoard}
+          currentUser={currentUser}
+          readOnly={false}
+          onBack={() => setSelectedBoard(null)}
+          onToast={showToast}
+        />
+        {toast && <div className={styles.toast}>{toast}</div>}
       </div>
     );
   }
 
+  // Vue liste des boards
   return (
     <div className={styles.wrapper}>
-      <KanbanViewer
+      <ProgressionBoardList
         projectId={projectId}
-        currentUser={currentUser}
+        boards={boards}
         readOnly={false}
-        onBoardUpdated={() => {}}
-        onToast={(msg) => console.log(msg)}
+        onSelectBoard={setSelectedBoard}
+        onToast={showToast}
       />
+      {toast && <div className={styles.toast}>{toast}</div>}
     </div>
   );
 }

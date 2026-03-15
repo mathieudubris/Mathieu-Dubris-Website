@@ -2,9 +2,57 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ExternalLink, Users, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, Users, Tag, ArrowRight, Package } from 'lucide-react';
 import { getNouveautes, Nouveaute } from '@/utils/nouveautes-api';
+import { WHITE_LOGO_IDS } from '@/utils/software';
 import styles from './Section2.module.css';
+
+// ── Software icon (identique à ProjectCard) ───────────────────────────────────
+
+const SoftwareIcon: React.FC<{ software: any }> = ({ software }) => {
+  const [failed, setFailed] = useState(false);
+  const logoUrl: string | undefined = software.logoUrl || software.icon;
+  const needsDarkBg = WHITE_LOGO_IDS.has(software.id || '');
+
+  const isUrl =
+    logoUrl &&
+    (logoUrl.startsWith('http') ||
+      logoUrl.startsWith('data:') ||
+      logoUrl.startsWith('/'));
+
+  if (isUrl && !failed) {
+    return (
+      <div
+        className={styles.swIconInner}
+        style={{ background: needsDarkBg ? 'rgba(0,0,0,0.55)' : 'transparent' }}
+      >
+        <img
+          src={logoUrl}
+          alt={software.name}
+          onError={() => setFailed(true)}
+          draggable={false}
+          className={styles.swIconImg}
+          style={{ filter: needsDarkBg ? 'brightness(0) invert(1)' : 'none' }}
+        />
+      </div>
+    );
+  }
+
+  if (logoUrl && !isUrl) {
+    return <span className={styles.swIconEmoji}>{logoUrl}</span>;
+  }
+
+  return (
+    <span
+      className={styles.swIconLetter}
+      style={{ color: software.color || 'var(--primary)' }}
+    >
+      {software.name?.charAt(0)?.toUpperCase() || '?'}
+    </span>
+  );
+};
+
+// ── Section2 ──────────────────────────────────────────────────────────────────
 
 const Section2: React.FC = () => {
   const [items, setItems] = useState<Nouveaute[]>([]);
@@ -75,12 +123,24 @@ const Section2: React.FC = () => {
     exit: (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
   };
 
+  // Software à afficher (projets)
+  const softwareList: any[] = item.type === 'project' ? (item.software || []) : [];
+  const maxSw = 6;
+  const visibleSw = softwareList.slice(0, maxSw);
+  const remainingSw = softwareList.length - maxSw;
+
   return (
     <section className={styles.section2} id="nouveautes">
       {/* Label flottant */}
-      <div className={styles.sectionLabel}>
-        <span className={styles.labelDot} />
-        Nouveautés
+      <div className={styles.sectionLabelRow}>
+        <div className={styles.sectionLabel}>
+          <span className={styles.labelDot} />
+          Nouveautés
+        </div>
+        <a href="/communaute/actualite" className={styles.seeAllBtn}>
+          Voir toute l&apos;actualité
+          <ArrowRight size={14} />
+        </a>
       </div>
 
       <div className={styles.carouselWrapper}>
@@ -118,21 +178,32 @@ const Section2: React.FC = () => {
                 <h2 className={styles.slideTitle}>{item.title}</h2>
                 <p className={styles.slideDesc}>{item.description}</p>
 
-                {/* Méta projet */}
-                {item.type === 'project' && item.software && item.software.length > 0 && (
-                  <div className={styles.softwareRow}>
-                    {item.software.slice(0, 5).map((s: any, i: number) => (
-                      <span key={i} className={styles.softwareChip} title={s.name}>
-                        {s.icon || '📦'}
-                      </span>
-                    ))}
-                    {item.software.length > 5 && (
-                      <span className={styles.softwareMore}>+{item.software.length - 5}</span>
+                {/* Software icons — style ProjectCard */}
+                {item.type === 'project' && (
+                  <div className={styles.softwareSection}>
+                    {softwareList.length === 0 ? (
+                      <div className={styles.noSoftware}>
+                        <Package size={10} />
+                        <span>Aucun logiciel</span>
+                      </div>
+                    ) : (
+                      <>
+                        {visibleSw.map((sw: any, i: number) => (
+                          <div key={sw.id || i} className={styles.softwareIcon} title={sw.name}>
+                            <SoftwareIcon software={sw} />
+                          </div>
+                        ))}
+                        {remainingSw > 0 && (
+                          <div className={styles.moreSoftware} title={`+${remainingSw} autres`}>
+                            +{remainingSw}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
 
-                {/* Méta blog */}
+                {/* Tags (blogs) */}
                 {item.type === 'blog' && item.tags && item.tags.length > 0 && (
                   <div className={styles.tagsRow}>
                     <Tag size={12} />
