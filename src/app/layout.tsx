@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ThemeProvider } from '@/utils/ThemeProvider';
 import { UsersProvider } from '@/utils/UserContext';
 import Script from 'next/script';
-import CTAWrapper from '@/components/app/CTAwrapper'; // ← adapte le chemin selon où tu places le fichier
+import CTAWrapper from '@/components/app/CTAWrapper/CTAWrapper';
 
 export const metadata: Metadata = {
   title: 'Mathieu Dubris',
