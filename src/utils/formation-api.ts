@@ -1,0 +1,377 @@
+// formation-api.ts - Toutes les fonctions liées aux formations
+
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  getDoc,
+  doc,
+  Timestamp,
+  writeBatch,
+  increment,
+} from 'firebase/firestore';
+import { db } from '@/utils/firebase-api';
+
+// ─────────────────────────────────────────────
+// Chemins Firestore : services > formation > {formationId}
+// ─────────────────────────────────────────────
+
+const SERVICES_DOC        = () => doc(db, 'services', 'formation');
+const FORMATIONS_COL      = () => collection(db, 'services', 'formation', 'formations');
+const FORMATION_DOC       = (id: string) => doc(db, 'services', 'formation', 'formations', id);
+const OVERVIEW_DOC        = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'overview', 'main');
+const MEDIA_DOC           = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'media', 'main');
+const CONTENT_DOC         = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'content', 'main');
+const STATS_DOC           = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'stats', 'main');
+
+// ─────────────────────────────────────────────
+// Interfaces
+// ─────────────────────────────────────────────
+
+export interface FormationModule {
+  id: string;
+  title: string;
+  description?: string;
+  duration?: string; // ex: "2h30"
+  order: number;
+}
+
+export interface Formation {
+  id?: string;
+  title: string;
+  slug: string;
+  category: string;
+  level: 'débutant' | 'intermédiaire' | 'avancé' | 'expert';
+  language: string;
+  duration?: string;
+  price?: number;
+  currency?: string;
+  visibility: 'public' | 'members_only';
+  teamMembers: string[]; // UIDs des membres autorisés
+  createdBy: string;
+  createdAt: any;
+  updatedAt: any;
+}
+
+export interface FullFormation extends Formation {
+  // overview
+  description?: string;
+  objective?: string;
+  targetAudience?: string;
+  prerequisites?: string;
+  // media
+  image?: string;
+  carouselImages?: Array<string | { url: string; type: string; caption?: string }>;
+  // content
+  modules?: FormationModule[];
+  // stats
+  views?: number;
+  // membres enrichis
+  members?: Array<{
+    userId?: string;
+    uid?: string;
+    displayName?: string;
+    photoURL?: string;
+    email?: string;
+  }>;
+}
+
+// ─────────────────────────────────────────────
+// Slug
+// ─────────────────────────────────────────────
+
+export const generateFormationSlug = (title: string): string =>
+  title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+
+export const formationSlugExists = async (slug: string, excludeSlug?: string): Promise<boolean> => {
+  try {
+    if (excludeSlug && slug === excludeSlug) return false;
+    const snap = await getDoc(FORMATION_DOC(slug));
+    return snap.exists();
+  } catch {
+    return false;
+  }
+};
+
+export const generateUniqueFormationSlug = async (title: string, excludeSlug?: string): Promise<string> => {
+  let slug = generateFormationSlug(title);
+  let counter = 1;
+  while (await formationSlugExists(slug, excludeSlug)) {
+    slug = `${generateFormationSlug(title)}-${counter}`;
+    counter++;
+  }
+  return slug;
+};
+
+// ─────────────────────────────────────────────
+// Lecture
+// ─────────────────────────────────────────────
+
+export const getAllFormations = async (): Promise<FullFormation[]> => {
+  try {
+    const snap = await getDocs(FORMATIONS_COL());
+    const formations = snap.docs.map((d) => ({ id: d.id, ...d.data() } as FullFormation));
+
+    // Charger overview + media + stats en parallèle pour chaque formation
+    const enriched = await Promise.all(
+      formations.map(async (f) => {
+        try {
+          const [overviewSnap, mediaSnap, statsSnap] = await Promise.all([
+            getDoc(OVERVIEW_DOC(f.id!)).catch(() => null),
+            getDoc(MEDIA_DOC(f.id!)).catch(() => null),
+            getDoc(STATS_DOC(f.id!)).catch(() => null),
+          ]);
+          return {
+            ...f,
+            ...(overviewSnap?.exists() ? overviewSnap.data() : {}),
+            ...(mediaSnap?.exists() ? mediaSnap.data() : {}),
+            views: statsSnap?.exists() ? (statsSnap.data()?.views ?? 0) : 0,
+          } as FullFormation;
+        } catch {
+          return f;
+        }
+      })
+    );
+    return enriched;
+  } catch (error) {
+    console.error('getAllFormations:', error);
+    return [];
+  }
+};
+
+export const getFullFormation = async (formationId: string): Promise<FullFormation | null> => {
+  try {
+    const mainSnap = await getDoc(FORMATION_DOC(formationId));
+    if (!mainSnap.exists()) return null;
+    const main = { id: mainSnap.id, ...mainSnap.data() } as Formation;
+
+    const [overviewSnap, mediaSnap, contentSnap, statsSnap] = await Promise.all([
+      getDoc(OVERVIEW_DOC(formationId)).catch(() => null),
+      getDoc(MEDIA_DOC(formationId)).catch(() => null),
+      getDoc(CONTENT_DOC(formationId)).catch(() => null),
+      getDoc(STATS_DOC(formationId)).catch(() => null),
+    ]);
+
+    return {
+      ...main,
+      ...(overviewSnap?.exists() ? overviewSnap.data() : {}),
+      ...(mediaSnap?.exists() ? mediaSnap.data() : {}),
+      modules: contentSnap?.exists() ? (contentSnap.data()?.modules ?? []) : [],
+      views: statsSnap?.exists() ? (statsSnap.data()?.views ?? 0) : 0,
+    } as FullFormation;
+  } catch (error) {
+    console.error('getFullFormation:', error);
+    return null;
+  }
+};
+
+// ─────────────────────────────────────────────
+// Écriture
+// ─────────────────────────────────────────────
+
+export interface SaveFormationPayload {
+  // main
+  title: string;
+  slug: string;
+  category: string;
+  level: Formation['level'];
+  language: string;
+  duration?: string;
+  price?: number;
+  currency?: string;
+  visibility: Formation['visibility'];
+  teamMembers: string[];
+  createdBy: string;
+  // overview
+  description?: string;
+  objective?: string;
+  targetAudience?: string;
+  prerequisites?: string;
+  // media
+  image?: string;
+  carouselImages?: any[];
+  // content
+  modules?: FormationModule[];
+  // stats
+  views?: number;
+}
+
+export const saveFormation = async (
+  payload: SaveFormationPayload,
+  existingId?: string
+): Promise<string> => {
+  try {
+    const isNew = !existingId;
+    const id = existingId || payload.slug;
+    const now = Timestamp.now();
+
+    const batch = writeBatch(db);
+
+    // S'assurer que le document services/formation existe
+    batch.set(SERVICES_DOC(), { updatedAt: now }, { merge: true });
+
+    // Document principal
+    const mainData: any = {
+      title: payload.title,
+      slug: payload.slug,
+      category: payload.category,
+      level: payload.level,
+      language: payload.language,
+      duration: payload.duration || '',
+      price: payload.price ?? null,
+      currency: payload.currency || 'EUR',
+      visibility: payload.visibility,
+      teamMembers: payload.teamMembers,
+      createdBy: payload.createdBy,
+      updatedAt: now,
+    };
+    if (isNew) mainData.createdAt = now;
+
+    if (isNew) {
+      batch.set(FORMATION_DOC(id), mainData);
+    } else {
+      batch.update(FORMATION_DOC(id), mainData);
+    }
+
+    // Overview
+    batch.set(OVERVIEW_DOC(id), {
+      description: payload.description || '',
+      objective: payload.objective || '',
+      targetAudience: payload.targetAudience || '',
+      prerequisites: payload.prerequisites || '',
+      updatedAt: now,
+    }, { merge: true });
+
+    // Media
+    batch.set(MEDIA_DOC(id), {
+      image: payload.image || '',
+      carouselImages: payload.carouselImages || [],
+      updatedAt: now,
+    }, { merge: true });
+
+    // Content
+    batch.set(CONTENT_DOC(id), {
+      modules: payload.modules || [],
+      updatedAt: now,
+    }, { merge: true });
+
+    // Stats (uniquement à la création)
+    if (isNew) {
+      batch.set(STATS_DOC(id), {
+        views: payload.views ?? 0,
+        createdAt: now,
+        updatedAt: now,
+      });
+    } else if (payload.views !== undefined) {
+      batch.update(STATS_DOC(id), { views: payload.views, updatedAt: now });
+    }
+
+    await batch.commit();
+    return id;
+  } catch (error) {
+    console.error('saveFormation:', error);
+    throw error;
+  }
+};
+
+export const deleteFormation = async (formationId: string): Promise<void> => {
+  try {
+    const batch = writeBatch(db);
+
+    // Supprimer les sous-collections
+    for (const subDoc of [
+      OVERVIEW_DOC(formationId),
+      MEDIA_DOC(formationId),
+      CONTENT_DOC(formationId),
+      STATS_DOC(formationId),
+    ]) {
+      batch.delete(subDoc);
+    }
+
+    batch.delete(FORMATION_DOC(formationId));
+    await batch.commit();
+  } catch (error) {
+    console.error('deleteFormation:', error);
+    throw error;
+  }
+};
+
+// ─────────────────────────────────────────────
+// Vues
+// ─────────────────────────────────────────────
+
+export const incrementFormationViews = async (formationId: string): Promise<void> => {
+  try {
+    await updateDoc(STATS_DOC(formationId), { views: increment(1) });
+  } catch (error) {
+    console.error('incrementFormationViews:', error);
+  }
+};
+
+// ─────────────────────────────────────────────
+// Membres
+// ─────────────────────────────────────────────
+
+export const hasAccessToFormation = (formation: any, userId: string | null): boolean => {
+  if (!userId) return false;
+  if (formation.visibility === 'public') return true;
+  return (formation.teamMembers || []).includes(userId) || formation.createdBy === userId;
+};
+
+export const isUserInFormation = (formation: any, userId: string | null): boolean => {
+  if (!userId) return false;
+  return (formation.teamMembers || []).includes(userId) || formation.createdBy === userId;
+};
+
+export const addMemberToFormation = async (formationId: string, userId: string): Promise<void> => {
+  try {
+    const snap = await getDoc(FORMATION_DOC(formationId));
+    if (!snap.exists()) return;
+    const current: string[] = snap.data().teamMembers || [];
+    if (!current.includes(userId)) {
+      await updateDoc(FORMATION_DOC(formationId), {
+        teamMembers: [...current, userId],
+        updatedAt: Timestamp.now(),
+      });
+    }
+  } catch (error) {
+    console.error('addMemberToFormation:', error);
+    throw error;
+  }
+};
+
+export const removeMemberFromFormation = async (formationId: string, userId: string): Promise<void> => {
+  try {
+    const snap = await getDoc(FORMATION_DOC(formationId));
+    if (!snap.exists()) return;
+    const current: string[] = snap.data().teamMembers || [];
+    await updateDoc(FORMATION_DOC(formationId), {
+      teamMembers: current.filter((id) => id !== userId),
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('removeMemberFromFormation:', error);
+    throw error;
+  }
+};
+
+export {
+  SERVICES_DOC,
+  FORMATIONS_COL,
+  FORMATION_DOC,
+  OVERVIEW_DOC,
+  MEDIA_DOC,
+  CONTENT_DOC,
+  STATS_DOC,
+};

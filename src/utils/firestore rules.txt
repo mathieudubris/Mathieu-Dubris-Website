@@ -2,8 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ─── FONCTIONS UTILITAIRES ────────────────────────────────────────────
-
     function isAdmin() {
       return request.auth != null &&
              request.auth.token.email == 'mathieudubris@gmail.com';
@@ -32,7 +30,29 @@ service cloud.firestore {
              request.auth.uid in get(/databases/$(database)/documents/kanban_boards/$(boardId)).data.members;
     }
 
-    // ─── BLOGS ────────────────────────────────────────────────────────────
+    function isFormationMember(formationId) {
+      return request.auth != null &&
+             request.auth.uid in get(/databases/$(database)/documents/services/formation/formations/$(formationId)).data.teamMembers;
+    }
+
+    function isFormationCreator(formationId) {
+      return request.auth != null &&
+             request.auth.uid == get(/databases/$(database)/documents/services/formation/formations/$(formationId)).data.createdBy;
+    }
+
+    function isAccompagnementMember(accompagnementId) {
+      return request.auth != null &&
+             request.auth.uid in get(/databases/$(database)/documents/services/accompagnement/accompagnements/$(accompagnementId)).data.teamMembers;
+    }
+
+    function isAccompagnementCreator(accompagnementId) {
+      return request.auth != null &&
+             request.auth.uid == get(/databases/$(database)/documents/services/accompagnement/accompagnements/$(accompagnementId)).data.createdBy;
+    }
+
+    // ─────────────────────────────────────────
+    // BLOGS
+    // ─────────────────────────────────────────
 
     match /blogs/{blogId} {
       allow read: if true;
@@ -43,12 +63,12 @@ service cloud.firestore {
         allow create: if request.auth != null;
         allow update, delete: if request.auth != null;
       }
-      
+
       match /likes/{userId} {
         allow read: if true;
         allow write: if request.auth != null && request.auth.uid == userId;
       }
-      
+
       match /views/{userId} {
         allow read: if true;
         allow write: if request.auth != null;
@@ -62,7 +82,9 @@ service cloud.firestore {
           (request.auth.uid == resource.data.authorId || isAdmin());
     }
 
-    // ─── USERS ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────
+    // USERS
+    // ─────────────────────────────────────────
 
     match /users/{userId} {
       allow read: if true;
@@ -76,27 +98,25 @@ service cloud.firestore {
       }
 
       match /dailyLogs/{date} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated();
+        allow read, write: if isAuthenticated();
       }
 
       match /bodyMetrics/{metricId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated();
+        allow read, write: if isAuthenticated();
       }
 
       match /alerts/{alertId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated();
+        allow read, write: if isAuthenticated();
       }
 
       match /savedPosts/{postId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated();
+        allow read, write: if isAuthenticated();
       }
     }
 
-    // ─── TEAM ──────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────
+    // TEAM
+    // ─────────────────────────────────────────
 
     match /team/{userId} {
       allow read: if true;
@@ -106,52 +126,46 @@ service cloud.firestore {
           (request.auth.uid == userId || isAdmin());
     }
 
-    // ─── PORTFOLIO - PROJETS EN COURS ─────────────────────────────────────
+    // ─────────────────────────────────────────
+    // PORTFOLIO / PROJETS
+    // ─────────────────────────────────────────
 
-    // Accès à la collection portfolio
     match /portfolio/{document} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Accès à la sous-collection projet-en-cours
     match /portfolio/projet-en-cours/{document} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Accès à la sous-collection projects
     match /portfolio/projet-en-cours/projects/{projectId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && isAdmin();
       allow update: if request.auth != null && (isAdmin() || request.auth.uid == resource.data.createdBy);
       allow delete: if isAdmin();
-      
-      // Document principal du projet
+
       match /{document} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // Sous-collection overview
       match /overview/{docId} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // Sous-collection media
       match /media/{docId} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // Sous-collection software
       match /software/{docId} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // Sous-collection team
       match /team/{memberId} {
         allow read: if request.auth != null;
         allow create: if request.auth != null &&
@@ -163,47 +177,47 @@ service cloud.firestore {
             (request.auth.uid == resource.data.userId || isAdmin());
       }
 
-      // Sous-collection roadmap
       match /roadmap/{docId} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // BUG FIX: Les sous-collections Kanban des projets sont kanban_columns et kanban_cards
-      // (sous-collections directes du projet), pas kanban/columns ni kanban/cards.
-      // L'ancienne règle 'kanban/columns/{columnId}' ne correspondait à aucun chemin réel
-      // → toutes les opérations Kanban projet étaient bloquées silencieusement.
-
-      // Sous-collection kanban_columns
-      match /kanban_columns/{columnId} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
-      }
-
-      // Sous-collection kanban_cards
-      match /kanban_cards/{cardId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId)) &&
-            request.resource.data.createdBy == request.auth.uid;
-        allow update: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
-        allow delete: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId) ||
-            request.auth.uid == resource.data.createdBy);
-      }
-
-      // Sous-collection documentation
       match /documentation/{docId} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
 
-      // Sous-collection stats
       match /stats/{docId} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
       }
+
+      match /progression/{boardId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+        allow update: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+        allow delete: if request.auth != null && (isAdmin() || isProjectCreator(projectId));
+
+        match /kanban_columns/{columnId} {
+          allow read: if request.auth != null;
+          allow write: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+        }
+
+        match /kanban_cards/{cardId} {
+          allow read: if request.auth != null;
+          allow create: if request.auth != null &&
+              (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId)) &&
+              request.resource.data.createdBy == request.auth.uid;
+          allow update: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId));
+          allow delete: if request.auth != null && (isAdmin() || isProjectCreator(projectId) || isProjectMember(projectId) ||
+              request.auth.uid == resource.data.createdBy);
+        }
+      }
     }
 
-    // ─── PROJECT INVITATIONS ───────────────────────────────────────────────
+    // ─────────────────────────────────────────
+    // PROJECT INVITATIONS
+    // ─────────────────────────────────────────
 
     match /project_invitations/{invitationId} {
       allow read: if request.auth != null && (
@@ -224,33 +238,39 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ─── LICENCES ──────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────
+    // LICENCES
+    // ─────────────────────────────────────────
 
     match /licences/{licenceId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // ─── VIDEOS ────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────
+    // VIDEOS
+    // ─────────────────────────────────────────
 
     match /videos/{videoId} {
       allow read: if true;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null &&
           (request.auth.uid == resource.data.userId || isAdmin());
-      
+
       match /likes/{userId} {
         allow read: if true;
         allow write: if request.auth != null && request.auth.uid == userId;
       }
-      
+
       match /views/{userId} {
         allow read: if true;
         allow write: if request.auth != null;
       }
     }
 
-    // ─── NOUVEAUTES ────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────
+    // NOUVEAUTÉS
+    // ─────────────────────────────────────────
 
     match /nouveautes/{nouveauteId} {
       allow read: if true;
@@ -269,7 +289,9 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ─── FINANCE ───────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────
+    // FINANCE
+    // ─────────────────────────────────────────
 
     match /finance_transactions/{txId} {
       allow read: if request.auth != null &&
@@ -289,7 +311,9 @@ service cloud.firestore {
                     (request.auth.uid == resource.data.userId || isAdmin());
     }
 
-    // ─── KANBAN PERSO (collections racine) ────────────────────────────────
+    // ─────────────────────────────────────────
+    // KANBAN (boards indépendants)
+    // ─────────────────────────────────────────
 
     match /kanban_boards/{boardId} {
       allow read: if request.auth != null &&
@@ -333,6 +357,125 @@ service cloud.firestore {
           isBoardMember(resource.data.boardId);
       allow delete: if request.auth != null &&
           (request.auth.uid == resource.data.createdBy || isBoardMember(resource.data.boardId) || isAdmin());
+    }
+
+    // ─────────────────────────────────────────
+    // SERVICES > FORMATION
+    // Structure : services/formation/formations/{formationId}
+    // ─────────────────────────────────────────
+
+    match /services/formation/formations/{formationId} {
+      allow read: if request.auth != null && (
+        isAdmin() ||
+        request.auth.uid == resource.data.createdBy ||
+        request.auth.uid in resource.data.teamMembers
+      );
+      allow create: if isAdmin() &&
+          request.resource.data.title is string &&
+          request.resource.data.title.size() > 0 &&
+          request.resource.data.slug is string &&
+          request.resource.data.createdBy == request.auth.uid &&
+          request.resource.data.visibility in ['public', 'members_only'];
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+
+      match /overview/{docId} {
+        allow read: if request.auth != null && (isAdmin() || isFormationCreator(formationId) || isFormationMember(formationId));
+        allow write: if isAdmin();
+      }
+
+      match /media/{docId} {
+        allow read: if request.auth != null && (isAdmin() || isFormationCreator(formationId) || isFormationMember(formationId));
+        allow write: if isAdmin();
+      }
+
+      match /content/{docId} {
+        allow read: if request.auth != null && (isAdmin() || isFormationCreator(formationId) || isFormationMember(formationId));
+        allow write: if isAdmin();
+      }
+
+      match /stats/{docId} {
+        allow read: if request.auth != null && (isAdmin() || isFormationCreator(formationId) || isFormationMember(formationId));
+        allow update: if request.auth != null && (isAdmin() || isFormationCreator(formationId) || isFormationMember(formationId));
+        allow create: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ─────────────────────────────────────────
+    // SERVICES > ACCOMPAGNEMENT
+    // Structure : services/accompagnement/accompagnements/{accompagnementId}
+    // ─────────────────────────────────────────
+
+    match /services/{serviceDoc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /services/accompagnement/accompagnements/{accompagnementId} {
+      // Lecture : admin, créateur, ou bénéficiaire autorisé
+      allow read: if request.auth != null && (
+        isAdmin() ||
+        request.auth.uid == resource.data.createdBy ||
+        request.auth.uid in resource.data.teamMembers
+      );
+      // Création : admin uniquement
+      allow create: if isAdmin() &&
+          request.resource.data.title is string &&
+          request.resource.data.title.size() > 0 &&
+          request.resource.data.slug is string &&
+          request.resource.data.createdBy == request.auth.uid &&
+          request.resource.data.visibility in ['public', 'members_only'];
+      // Mise à jour : admin uniquement
+      allow update: if isAdmin();
+      // Suppression : admin uniquement
+      allow delete: if isAdmin();
+
+      // Sous-collection overview
+      match /overview/{docId} {
+        allow read: if request.auth != null && (
+          isAdmin() ||
+          isAccompagnementCreator(accompagnementId) ||
+          isAccompagnementMember(accompagnementId)
+        );
+        allow write: if isAdmin();
+      }
+
+      // Sous-collection media
+      match /media/{docId} {
+        allow read: if request.auth != null && (
+          isAdmin() ||
+          isAccompagnementCreator(accompagnementId) ||
+          isAccompagnementMember(accompagnementId)
+        );
+        allow write: if isAdmin();
+      }
+
+      // Sous-collection content (étapes)
+      match /content/{docId} {
+        allow read: if request.auth != null && (
+          isAdmin() ||
+          isAccompagnementCreator(accompagnementId) ||
+          isAccompagnementMember(accompagnementId)
+        );
+        allow write: if isAdmin();
+      }
+
+      // Sous-collection stats (vues)
+      match /stats/{docId} {
+        allow read: if request.auth != null && (
+          isAdmin() ||
+          isAccompagnementCreator(accompagnementId) ||
+          isAccompagnementMember(accompagnementId)
+        );
+        allow update: if request.auth != null && (
+          isAdmin() ||
+          isAccompagnementCreator(accompagnementId) ||
+          isAccompagnementMember(accompagnementId)
+        );
+        allow create: if isAdmin();
+        allow delete: if isAdmin();
+      }
     }
 
   }

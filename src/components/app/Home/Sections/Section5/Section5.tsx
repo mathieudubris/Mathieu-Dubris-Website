@@ -2,43 +2,41 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Chrome, 
-  Flame, 
-  Figma, 
-  Slack, 
-  PhoneCall, 
-  Music, 
-  Satellite, 
-  Smartphone, 
-  Cpu,
-  Building2,
-  University,
-  Gamepad2,
-  Palette,
-  HeartPulse,
-  GitBranch,
-  Briefcase
-} from 'lucide-react';
 import styles from './Section5.module.css';
 
 const Section4 = () => {
-  const partners = [
-    { name: "Microsoft", Icon: Building2, url: "https://www.microsoft.com" },
-    { name: "GitHub", Icon: GitBranch, url: "https://github.com" },
-    { name: "Nvidia", Icon: Cpu, url: "https://www.nvidia.com" },
-    { name: "Orange Madagascar", Icon: PhoneCall, url: "https://www.orange.mg" },
-    { name: "Université Grenoble", Icon: University, url: "https://www.univ-grenoble-alpes.fr" },
-    { name: "Ubisoft", Icon: Gamepad2, url: "https://www.ubisoft.com" },
-    { name: "Rubika", Icon: Palette, url: "https://www.rubika-edu.com" },
-    { name: "Harmonie Mutuelle", Icon: HeartPulse, url: "https://www.harmonie-mutuelle.fr" },
-    { name: "Google", Icon: Chrome, url: "https://www.google.com" },
-    { name: "Adobe", Icon: Figma, url: "https://www.adobe.com" },
-    { name: "Slack", Icon: Slack, url: "https://slack.com" },
-    { name: "Spotify", Icon: Music, url: "https://www.spotify.com" },
-  ];
+const partners = [
+  // Big Tech / Infrastructure
+  { name: "Microsoft", logo: "/assets/partenaire/images/png/microsoft.png", url: "https://www.microsoft.com" },
+  { name: "Google", logo: "/assets/partenaire/images/png/google.png", url: "https://www.google.com" },
+  { name: "Nvidia", logo: "/assets/partenaire/images/png/nvidia.png", url: "https://www.nvidia.com" },
 
-  // Triplé pour garantir une boucle infinie sans saccade
+  // Development & Cloud Tools
+  { name: "GitHub", logo: "/assets/partenaire/images/png/github.png", url: "https://github.com" },
+  { name: "Firebase", logo: "/assets/partenaire/images/png/firebase.png", url: "https://firebase.google.com" },
+  { name: "Cloudinary", logo: "/assets/partenaire/images/png/cloudinary.png", url: "https://cloudinary.com/" },
+
+  // Creative & Design Tools
+  { name: "Adobe", logo: "/assets/partenaire/images/png/adobe.png", url: "https://www.adobe.com" },
+
+  // Collaboration / Communication
+  { name: "Slack", logo: "/assets/partenaire/images/png/slack.png", url: "https://slack.com" },
+
+  // Gaming Industry
+  { name: "Ubisoft", logo: "/assets/partenaire/images/png/ubisoft.png", url: "https://www.ubisoft.com" },
+
+  // Education / Schools
+  { name: "Rubika", logo: "/assets/partenaire/images/png/rubika.png", url: "https://www.rubika-edu.com" },
+  { name: "Université Grenoble", logo: "/assets/partenaire/images/png/uga.png", url: "https://www.univ-grenoble-alpes.fr" },
+
+  // Telecom / Local Infrastructure
+  { name: "Orange Madagascar", logo: "/assets/partenaire/images/png/orange.png", url: "https://www.orange.mg" },
+
+  // Other Brands
+  { name: "Spotify", logo: "/assets/partenaire/images/png/spotify.png", url: "https://www.spotify.com" },
+  { name: "Harmonie Mutuelle", logo: "/assets/partenaire/images/png/harmonie.png", url: "https://www.harmonie-mutuelle.fr" },
+];
+
   const duplicatedPartners = [...partners, ...partners, ...partners];
 
   return (
@@ -46,7 +44,7 @@ const Section4 = () => {
       <div className={styles.container}>
         <div className={styles.header}>
           <p className={styles.tagline}>Confiance & Constance</p>
-          <h2 className={styles.title}>Propulser par les meilleur des industries</h2>
+          <h2 className={styles.title}>Propulsé par les meilleurs des industries</h2>
         </div>
 
         <div className={styles.marqueeWrapper}>
@@ -55,11 +53,9 @@ const Section4 = () => {
           
           <motion.div 
             className={styles.marqueeContent}
-            animate={{
-              x: ["0%", "-33.333%"]
-            }}
+            animate={{ x: ["0%", "-33.333%"] }}
             transition={{
-              duration: 45, // Vitesse légèrement réduite pour plus d'élégance
+              duration: 45,
               ease: "linear",
               repeat: Infinity,
               repeatType: "loop"
@@ -74,8 +70,14 @@ const Section4 = () => {
                 className={styles.partnerCard}
                 aria-label={`Visiter ${partner.name}`}
               >
-                <partner.Icon size={20} className={styles.partnerIcon} />
-                <span className={styles.partnerName}>{partner.name}</span>
+                <div className={styles.imageWrapper}>
+                  {/* ✅ <img> classique au lieu de <Image /> de Next.js */}
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className={styles.partnerImage}
+                  />
+                </div>
               </a>
             ))}
           </motion.div>

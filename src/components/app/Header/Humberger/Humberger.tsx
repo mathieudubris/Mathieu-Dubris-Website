@@ -39,7 +39,8 @@ const Humberger: React.FC<Props> = ({ user, onRequireLogin, onProfileClick }) =>
         { label: '3D Designer', path: '/services/pending' },
         { label: 'UI/UX Designer', path: '/services/pending' },
         { label: 'Content Creation', path: '/services/pending' },
-        { label: 'Formation', path: '/services/pending' }
+        { label: 'Formation', path: '/services/formation' },
+        { label: 'Accompagnement', path: '/services/accompagnement' }
       ]
     },
     { 

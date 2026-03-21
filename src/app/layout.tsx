@@ -3,12 +3,10 @@ import type { Metadata } from 'next';
 import { ThemeProvider } from '@/utils/ThemeProvider';
 import { UsersProvider } from '@/utils/UserContext';
 import Script from 'next/script';
+import CTAWrapper from '@/components/app/CTAwrapper'; // ← adapte le chemin selon où tu places le fichier
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Mathieu Dubris - Développeur Full Stack Freelance',
-    template: '%s | Mathieu Dubris',
-  },
+  title: 'Mathieu Dubris',
   description: 'Mathieu Dubris : développeur full stack freelance. Création de sites web, applications, formations et outils SaaS. Transformez vos idées en réalité digitale.',
   keywords: [
     'Mathieu Dubris',
@@ -29,7 +27,7 @@ export const metadata: Metadata = {
   creator: 'Mathieu Dubris',
   publisher: 'Mathieu Dubris',
   openGraph: {
-    title: 'Mathieu Dubris - Écosystème Digital Complet',
+    title: 'Mathieu Dubris',
     description: 'Développeur full stack freelance - Transformez vos idées en réalité digitale',
     url: 'https://mathieu-dubris.web.app',
     siteName: 'Mathieu Dubris',
@@ -38,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Mathieu Dubris - Développeur Full Stack',
+    title: 'Mathieu Dubris',
     description: 'Transformez vos idées en réalité digitale',
     creator: '@mathieudubris',
   },
@@ -103,9 +101,7 @@ export default function RootLayout({
               "name": "Mathieu Dubris",
               "alternateName": "MathieuDubris",
               "url": "https://mathieu-dubris.web.app",
-              "sameAs": [
-                // Ajoutez vos réseaux sociaux ici
-              ],
+              "sameAs": [],
               "jobTitle": "Développeur Full Stack Freelance",
               "worksFor": {
                 "@type": "Organization",
@@ -119,6 +115,8 @@ export default function RootLayout({
         <ThemeProvider>
           <UsersProvider>
             <div className="app-wrapper">{children}</div>
+            {/* CTA global — visible sur toutes les pages sauf "/" */}
+            <CTAWrapper />
           </UsersProvider>
         </ThemeProvider>
         <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>

@@ -36,14 +36,15 @@
   width: 100%;
   display: flex;
   overflow: hidden;
-  padding: 30px 0;
+  padding: 20px 0;
 }
 
 .marqueeContent {
   display: flex;
-  gap: 30px;
+  gap: 40px;
   white-space: nowrap;
   will-change: transform;
+  align-items: center;
 }
 
 .fadeLeft, .fadeRight {
@@ -68,37 +69,45 @@
 .partnerCard {
   display: flex;
   align-items: center;
-  gap: 14px;
-  background-color: var(--dark);
-  border: 1px solid var(--light);
-  padding: 14px 28px;
-  border-radius: 16px;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 12px;
   text-decoration: none;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.3s ease;
 }
 
 .partnerCard:hover {
-  background-color: var(--dark);
-  border-color: var(--primary);
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px -10px var(--dark);
+  opacity: 0.9;
 }
 
-.partnerIcon {
-  color: var(--primary);
-  opacity: 0.8;
+.imageWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.partnerCard:hover .imageWrapper {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.partnerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   transition: transform 0.3s ease;
 }
 
-.partnerCard:hover .partnerIcon {
+.partnerCard:hover .partnerImage {
   transform: scale(1.1);
-}
-
-.partnerName {
-  color: var(--light);
-  font-weight: 600;
-  font-size: 17px;
-  letter-spacing: -0.3px;
 }
 
 .statsRow {
@@ -157,6 +166,11 @@
   .fadeLeft, .fadeRight {
     width: 100px;
   }
+
+  .imageWrapper {
+    width: 60px;
+    height: 60px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -168,7 +182,13 @@
     font-size: 32px;
   }
 
-  .partnerCard {
-    padding: 10px 20px;
+  .imageWrapper {
+    width: 50px;
+    height: 50px;
+    padding: 8px;
+  }
+
+  .marqueeContent {
+    gap: 25px;
   }
 }

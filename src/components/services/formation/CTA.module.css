@@ -1,0 +1,223 @@
+/* CTA.module.css — Floating CTA component */
+
+/* ── Wrapper ─────────────────────────────────────────────────── */
+
+.ctaWrapper {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 800;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* ── Action buttons (revealed on expand) ────────────────────── */
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.actions.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.actionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.actionLabel {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: color 0.18s ease, border-color 0.18s ease;
+  letter-spacing: 0.2px;
+}
+
+.actionItem:hover .actionLabel {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Individual action icon buttons */
+
+.actionIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.22s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.22s ease, background 0.22s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.actionIcon:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Calendar / rendez-vous */
+.actionCalendar .actionIcon {
+  background: #1a1a2e;
+  border-color: rgba(199, 255, 68, 0.2);
+  color: var(--primary);
+}
+
+.actionCalendar:hover .actionIcon {
+  background: rgba(199, 255, 68, 0.12);
+  border-color: rgba(199, 255, 68, 0.4);
+  box-shadow: 0 8px 24px rgba(199, 255, 68, 0.15);
+}
+
+/* WhatsApp */
+.actionWhatsapp .actionIcon {
+  background: #0d1f0d;
+  border-color: rgba(37, 211, 102, 0.2);
+  color: #25d366;
+}
+
+.actionWhatsapp:hover .actionIcon {
+  background: rgba(37, 211, 102, 0.12);
+  border-color: rgba(37, 211, 102, 0.4);
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.2);
+}
+
+/* ── Main FAB button ─────────────────────────────────────────── */
+
+.fab {
+  width: 54px;
+  height: 54px;
+  background: var(--primary);
+  border: none;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.28s ease;
+  box-shadow: 0 6px 24px rgba(199, 255, 68, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.fab:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 12px 36px rgba(199, 255, 68, 0.4), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.fab:active { transform: scale(0.97); }
+
+/* Icon inside FAB - rotates when open */
+.fabIcon {
+  color: #0d0d0d;
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fabIcon.rotated { transform: rotate(45deg); }
+
+/* Pulse ring */
+.fabPulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 20px;
+  border: 2px solid var(--primary);
+  opacity: 0;
+  animation: pulseRing 2.5s ease-out infinite;
+}
+
+@keyframes pulseRing {
+  0%   { opacity: 0.5; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* Stop pulsing when open */
+.fab.open .fabPulse { animation: none; opacity: 0; }
+
+/* ── Tooltip on FAB ──────────────────────────────────────────── */
+
+.fabTooltip {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 7px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.fabTooltip::after {
+  content: '';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: rgba(255, 255, 255, 0.1);
+}
+
+.fab:hover .fabTooltip { opacity: 1; }
+.fab.open .fabTooltip { opacity: 0; }
+
+/* ── Backdrop (subtle click-away area) ──────────────────────── */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .ctaWrapper {
+    bottom: 20px;
+    right: 16px;
+  }
+
+  .fab {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+  }
+
+  .fabTooltip { display: none; }
+}
