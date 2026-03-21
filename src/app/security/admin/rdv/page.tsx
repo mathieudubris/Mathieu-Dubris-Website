@@ -1,127 +1,131 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Calendar,
   Clock,
   User,
   Mail,
   Users,
-  CheckCircle,
-  XCircle,
-  Eye,
+  FileText,
+  Video,
   ChevronDown,
   ChevronUp,
   RefreshCw,
+  Loader2,
+  CalendarX,
   Trash2,
-  Ban,
-  AlertCircle
+  XCircle,
+  CheckCircle2,
+  TrendingUp,
+  AlertCircle,
 } from 'lucide-react';
-import { auth } from '@/utils/firebase-api';
 import {
   getAllBookings,
+  getBookingStats,
   cancelBooking,
   deleteBooking,
-  getBookingStats,
-  Booking
+  type Booking,
 } from '@/utils/booking-api';
 import styles from './rdv.module.css';
 
-export default function AdminRdvPage() {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatDateFR(d: Date) {
+  if (!d) return '—';
+  return d.toLocaleDateString('fr-FR', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatTimeFR(d: Date) {
+  if (!d) return '—';
+  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function getStatus(booking: Booking): 'upcoming' | 'past' | 'cancelled' {
+  if (booking.status === 'cancelled') return 'cancelled';
+  return booking.startTime > new Date() ? 'upcoming' : 'past';
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function RdvPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'cancelled'>('upcoming');
   const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0, cancelled: 0 });
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [showConfirmModal, setShowConfirmModal] = useState<{ id: string; action: 'cancel' | 'delete' } | null>(null);
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'cancelled'>('all');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadBookings();
-  }, []);
+  // Modal
+  const [modal, setModal] = useState<{ type: 'cancel' | 'delete'; id: string } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const loadBookings = async () => {
+  // ── Fetch ──────────────────────────────────────────────────────────────────
+
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [allBookings, bookingStats] = await Promise.all([
-        getAllBookings(),
-        getBookingStats()
-      ]);
-      setBookings(allBookings);
-      setStats(bookingStats);
-    } catch (error) {
-      console.error('Erreur lors du chargement des rendez-vous:', error);
+      const [all, s] = await Promise.all([getAllBookings(), getBookingStats()]);
+      setBookings(all);
+      setStats(s);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleCancelBooking = async (bookingId: string) => {
-    setActionLoading(bookingId);
-    try {
-      await cancelBooking(bookingId);
-      await loadBookings();
-      setShowConfirmModal(null);
-    } catch (error) {
-      console.error('Erreur lors de l\'annulation:', error);
-      alert('Erreur lors de l\'annulation du rendez-vous');
-    } finally {
-      setActionLoading(null);
-    }
-  };
+  useEffect(() => { load(); }, [load]);
 
-  const handleDeleteBooking = async (bookingId: string) => {
-    setActionLoading(bookingId);
-    try {
-      await deleteBooking(bookingId);
-      await loadBookings();
-      setShowConfirmModal(null);
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-      alert('Erreur lors de la suppression du rendez-vous');
-    } finally {
-      setActionLoading(null);
-    }
-  };
+  // ── Filter ─────────────────────────────────────────────────────────────────
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const isUpcoming = (booking: Booking) => {
-    return booking.startTime > new Date() && booking.status === 'confirmed';
-  };
-
-  const isPast = (booking: Booking) => {
-    return booking.startTime <= new Date() && booking.status === 'confirmed';
-  };
-
-  const filteredBookings = bookings.filter(booking => {
-    if (filter === 'upcoming') return isUpcoming(booking);
-    if (filter === 'past') return isPast(booking);
-    if (filter === 'cancelled') return booking.status === 'cancelled';
-    return true;
+  const filtered = bookings.filter((b) => {
+    if (filter === 'all') return true;
+    return getStatus(b) === filter;
   });
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+
+  const handleCancel = async () => {
+    if (!modal) return;
+    setActionLoading(true);
+    try {
+      await cancelBooking(modal.id);
+      setModal(null);
+      await load();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!modal) return;
+    setActionLoading(true);
+    try {
+      await deleteBooking(modal.id);
+      setModal(null);
+      await load();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
       <div className={styles.adminContainer}>
         <div className={styles.loadingSpinner}>
-          <RefreshCw size={32} className={styles.spin} />
-          <p>Chargement des rendez-vous...</p>
+          <Loader2 size={28} className={styles.spin} />
+          <span style={{ color: 'var(--line)', fontSize: '0.85rem' }}>Chargement des rendez-vous…</span>
         </div>
       </div>
     );
@@ -129,184 +133,120 @@ export default function AdminRdvPage() {
 
   return (
     <div className={styles.adminContainer}>
+
+      {/* ── Header ── */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <div className={styles.headerTag}>Admin</div>
-          <h1 className={styles.headerTitle}>Gestion des rendez-vous</h1>
+          <h1 className={styles.headerTitle}>Rendez-vous</h1>
           <p className={styles.headerSub}>
-            Consultez, annulez ou supprimez les rendez-vous pris par les clients.
+            Agenda complet de toutes les réservations effectuées via le système de booking.
           </p>
         </div>
-        <div className={styles.headerRight}>
-          <button className={styles.refreshBtn} onClick={loadBookings}>
-            <RefreshCw size={16} />
-            Actualiser
-          </button>
-        </div>
+        <button className={styles.refreshBtn} onClick={load}>
+          <RefreshCw size={14} />
+          Actualiser
+        </button>
       </header>
 
+      {/* ── Stats ── */}
       <div className={styles.statsRow}>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon}>
-            <Calendar size={18} />
-          </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{stats.total}</span>
-            <span className={styles.statLabel}>Total</span>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon}>
-            <CheckCircle size={18} />
-          </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{stats.upcoming}</span>
-            <span className={styles.statLabel}>À venir</span>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon}>
-            <XCircle size={18} />
-          </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{stats.past}</span>
-            <span className={styles.statLabel}>Passés</span>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon}>
-            <Ban size={18} />
-          </div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{stats.cancelled}</span>
-            <span className={styles.statLabel}>Annulés</span>
-          </div>
-        </div>
+        <StatCard icon={<TrendingUp size={18} />} value={stats.total} label="Total" />
+        <StatCard icon={<CheckCircle2 size={18} />} value={stats.upcoming} label="À venir" accent />
+        <StatCard icon={<Clock size={18} />} value={stats.past} label="Passés" />
+        <StatCard icon={<XCircle size={18} />} value={stats.cancelled} label="Annulés" warn={stats.cancelled > 0} />
       </div>
 
+      {/* ── Filters ── */}
       <div className={styles.filterBar}>
-        <button
-          className={`${styles.filterBtn} ${filter === 'upcoming' ? styles.active : ''}`}
-          onClick={() => setFilter('upcoming')}
-        >
-          À venir
-        </button>
-        <button
-          className={`${styles.filterBtn} ${filter === 'past' ? styles.active : ''}`}
-          onClick={() => setFilter('past')}
-        >
-          Passés
-        </button>
-        <button
-          className={`${styles.filterBtn} ${filter === 'cancelled' ? styles.active : ''}`}
-          onClick={() => setFilter('cancelled')}
-        >
-          Annulés
-        </button>
-        <button
-          className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          Tous
-        </button>
+        {(['all', 'upcoming', 'past', 'cancelled'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
+          >
+            {f === 'all' ? 'Tous' : f === 'upcoming' ? 'À venir' : f === 'past' ? 'Passés' : 'Annulés'}
+            <span className={styles.filterCount}>
+              {f === 'all' ? bookings.length
+                : f === 'upcoming' ? stats.upcoming
+                : f === 'past' ? stats.past
+                : stats.cancelled}
+            </span>
+          </button>
+        ))}
       </div>
 
-      <div className={styles.bookingsList}>
-        {filteredBookings.length === 0 ? (
-          <div className={styles.emptyState}>
-            <Calendar size={48} />
-            <h3>Aucun rendez-vous</h3>
-            <p>
-              Aucun rendez-vous {filter === 'upcoming' ? 'à venir' : 
-                filter === 'past' ? 'passé' : 
-                filter === 'cancelled' ? 'annulé' : ''} pour le moment.
-            </p>
-          </div>
-        ) : (
-          filteredBookings.map((booking) => (
-            <motion.div
-              key={booking.id}
-              className={`${styles.bookingCard} ${booking.status === 'cancelled' ? styles.cancelled : ''}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
+      {/* ── List ── */}
+      {filtered.length === 0 ? (
+        <div className={styles.emptyState}>
+          <CalendarX size={36} />
+          <h3>Aucun rendez-vous</h3>
+          <p>Il n&rsquo;y a pas encore de rendez-vous dans cette catégorie.</p>
+        </div>
+      ) : (
+        <div className={styles.bookingsList}>
+          {filtered.map((booking) => {
+            const status = getStatus(booking);
+            const expanded = expandedId === booking.id;
+
+            return (
               <div
-                className={styles.bookingHeader}
-                onClick={() => setExpandedId(expandedId === booking.id ? null : booking.id)}
+                key={booking.id}
+                className={`${styles.bookingCard} ${status === 'cancelled' ? styles.cancelled : ''}`}
               >
-                <div className={styles.bookingInfo}>
-                  <div className={styles.bookingDate}>
-                    <Calendar size={14} />
-                    <span>{formatDate(booking.startTime)}</span>
-                  </div>
-                  <div className={styles.bookingTime}>
-                    <Clock size={14} />
-                    <span>{formatTime(booking.startTime)}</span>
-                  </div>
-                  <div className={styles.bookingUser}>
-                    <User size={14} />
-                    <span>{booking.userName}</span>
-                  </div>
-                </div>
-                <div className={styles.bookingStatus}>
-                  <span className={`${styles.statusBadge} 
-                    ${booking.status === 'cancelled' ? styles.statusCancelled : 
-                      isUpcoming(booking) ? styles.statusUpcoming : styles.statusPast}`}>
-                    {booking.status === 'cancelled' ? 'Annulé' : 
-                      isUpcoming(booking) ? 'À venir' : 'Passé'}
-                  </span>
-                  {expandedId === booking.id ? (
-                    <ChevronUp size={18} />
-                  ) : (
-                    <ChevronDown size={18} />
-                  )}
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {expandedId === booking.id && (
-                  <motion.div
-                    className={styles.bookingDetails}
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className={styles.detailRow}>
-                      <Mail size={14} className={styles.detailIcon} />
-                      <span className={styles.detailLabel}>Email :</span>
-                      <a href={`mailto:${booking.userEmail}`} className={styles.detailValue}>
-                        {booking.userEmail}
-                      </a>
+                {/* Card header */}
+                <div
+                  className={styles.bookingHeader}
+                  onClick={() => setExpandedId(expanded ? null : booking.id)}
+                >
+                  <div className={styles.bookingInfo}>
+                    <div className={styles.bookingDate}>
+                      <Calendar size={13} />
+                      {formatDateFR(booking.startTime)}
                     </div>
+                    <div className={styles.bookingTime}>
+                      <Clock size={13} />
+                      {formatTimeFR(booking.startTime)}
+                    </div>
+                    <div className={styles.bookingUser}>
+                      <User size={13} />
+                      {booking.userName}
+                    </div>
+                  </div>
+                  <div className={styles.bookingStatus}>
+                    <span className={`${styles.statusBadge} ${
+                      status === 'upcoming' ? styles.statusUpcoming
+                        : status === 'past' ? styles.statusPast
+                        : styles.statusCancelled
+                    }`}>
+                      {status === 'upcoming' ? 'À venir' : status === 'past' ? 'Passé' : 'Annulé'}
+                    </span>
+                    {expanded ? <ChevronUp size={14} color="var(--line)" /> : <ChevronDown size={14} color="var(--line)" />}
+                  </div>
+                </div>
 
+                {/* Expanded details */}
+                {expanded && (
+                  <div className={styles.bookingDetails}>
+                    <DetailRow icon={<Mail size={13} />} label="Email" value={booking.userEmail} />
                     {booking.note && (
-                      <div className={styles.detailRow}>
-                        <AlertCircle size={14} className={styles.detailIcon} />
-                        <span className={styles.detailLabel}>Note :</span>
-                        <span className={styles.detailValue}>{booking.note}</span>
-                      </div>
+                      <DetailRow icon={<FileText size={13} />} label="Note" value={booking.note} />
                     )}
-
                     {booking.invitedEmails && booking.invitedEmails.length > 0 && (
                       <div className={styles.detailRow}>
-                        <Users size={14} className={styles.detailIcon} />
-                        <span className={styles.detailLabel}>Invités :</span>
+                        <span className={styles.detailIcon}><Users size={13} /></span>
+                        <span className={styles.detailLabel}>Invités</span>
                         <div className={styles.invitedList}>
-                          {booking.invitedEmails.map(email => (
-                            <span key={email} className={styles.invitedEmail}>
-                              {email}
-                            </span>
+                          {booking.invitedEmails.map((e) => (
+                            <span key={e} className={styles.invitedEmail}>{e}</span>
                           ))}
                         </div>
                       </div>
                     )}
-
                     {booking.meetLink && (
                       <div className={styles.detailRow}>
-                        <Eye size={14} className={styles.detailIcon} />
-                        <span className={styles.detailLabel}>Lien Meet :</span>
+                        <span className={styles.detailIcon}><Video size={13} /></span>
+                        <span className={styles.detailLabel}>Meet</span>
                         <a
                           href={booking.meetLink}
                           target="_blank"
@@ -317,108 +257,137 @@ export default function AdminRdvPage() {
                         </a>
                       </div>
                     )}
+                    <DetailRow
+                      icon={<Clock size={13} />}
+                      label="Réservé le"
+                      value={booking.createdAt ? formatDateFR(booking.createdAt) + ' à ' + formatTimeFR(booking.createdAt) : '—'}
+                    />
 
-                    <div className={styles.detailRow}>
-                      <Clock size={14} className={styles.detailIcon} />
-                      <span className={styles.detailLabel}>Réservé le :</span>
-                      <span className={styles.detailValue}>
-                        {formatDate(booking.createdAt)} à {formatTime(booking.createdAt)}
-                      </span>
-                    </div>
-
-                    {booking.status !== 'cancelled' && isUpcoming(booking) && (
+                    {/* Actions */}
+                    {status !== 'cancelled' && (
                       <div className={styles.actionButtons}>
-                        <button
-                          className={styles.cancelBtn}
-                          onClick={() => setShowConfirmModal({ id: booking.id, action: 'cancel' })}
-                          disabled={actionLoading === booking.id}
-                        >
-                          {actionLoading === booking.id ? (
-                            <RefreshCw size={14} className={styles.spin} />
-                          ) : (
-                            <Ban size={14} />
-                          )}
-                          Annuler le rendez-vous
-                        </button>
+                        {status === 'upcoming' && (
+                          <button
+                            className={styles.cancelBtn}
+                            onClick={() => setModal({ type: 'cancel', id: booking.id })}
+                          >
+                            <XCircle size={13} /> Annuler
+                          </button>
+                        )}
                         <button
                           className={styles.deleteBtn}
-                          onClick={() => setShowConfirmModal({ id: booking.id, action: 'delete' })}
-                          disabled={actionLoading === booking.id}
+                          onClick={() => setModal({ type: 'delete', id: booking.id })}
                         >
-                          {actionLoading === booking.id ? (
-                            <RefreshCw size={14} className={styles.spin} />
-                          ) : (
-                            <Trash2 size={14} />
-                          )}
-                          Supprimer
+                          <Trash2 size={13} /> Supprimer
                         </button>
                       </div>
                     )}
-                    
-                    {booking.status !== 'cancelled' && !isUpcoming(booking) && (
+                    {status === 'cancelled' && (
                       <div className={styles.actionButtons}>
                         <button
                           className={styles.deleteBtn}
-                          onClick={() => setShowConfirmModal({ id: booking.id, action: 'delete' })}
-                          disabled={actionLoading === booking.id}
+                          onClick={() => setModal({ type: 'delete', id: booking.id })}
                         >
-                          {actionLoading === booking.id ? (
-                            <RefreshCw size={14} className={styles.spin} />
-                          ) : (
-                            <Trash2 size={14} />
-                          )}
-                          Supprimer
+                          <Trash2 size={13} /> Supprimer définitivement
                         </button>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
-            </motion.div>
-          ))
-        )}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Modal de confirmation */}
-      {showConfirmModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+      {/* ── Modal ── */}
+      {modal && (
+        <div className={styles.modalOverlay} onClick={() => setModal(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3>Confirmation</h3>
-              <button onClick={() => setShowConfirmModal(null)}>&times;</button>
+              <h3>
+                {modal.type === 'cancel' ? 'Annuler le rendez-vous' : 'Supprimer le rendez-vous'}
+              </h3>
+              <button onClick={() => setModal(null)}>×</button>
             </div>
             <div className={styles.modalBody}>
-              <p>
-                {showConfirmModal.action === 'cancel'
-                  ? 'Êtes-vous sûr de vouloir annuler ce rendez-vous ?'
-                  : 'Êtes-vous sûr de vouloir supprimer définitivement ce rendez-vous ?'}
-              </p>
-              <p className={styles.modalWarning}>
-                {showConfirmModal.action === 'delete'
-                  ? 'Cette action est irréversible.'
-                  : 'Le client sera notifié par email.'}
-              </p>
+              {modal.type === 'cancel' ? (
+                <>
+                  <p>Êtes-vous sûr de vouloir annuler ce rendez-vous ?</p>
+                  <p className={styles.modalWarning}>
+                    Le créneau sera libéré et redeviendra disponible pour d&rsquo;autres utilisateurs.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>Êtes-vous sûr de vouloir supprimer définitivement ce rendez-vous ?</p>
+                  <p className={styles.modalWarning}>Cette action est irréversible.</p>
+                </>
+              )}
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.modalCancelBtn} onClick={() => setShowConfirmModal(null)}>
+              <button className={styles.modalCancelBtn} onClick={() => setModal(null)} disabled={actionLoading}>
                 Annuler
               </button>
-              <button
-                className={showConfirmModal.action === 'cancel' ? styles.modalConfirmCancelBtn : styles.modalConfirmDeleteBtn}
-                onClick={() => {
-                  if (showConfirmModal.action === 'cancel') {
-                    handleCancelBooking(showConfirmModal.id);
-                  } else {
-                    handleDeleteBooking(showConfirmModal.id);
-                  }
-                }}
-              >
-                {showConfirmModal.action === 'cancel' ? 'Annuler le rendez-vous' : 'Supprimer définitivement'}
-              </button>
+              {modal.type === 'cancel' ? (
+                <button className={styles.modalConfirmCancelBtn} onClick={handleCancel} disabled={actionLoading}>
+                  {actionLoading ? <Loader2 size={13} className={styles.spin} /> : 'Confirmer l\'annulation'}
+                </button>
+              ) : (
+                <button className={styles.modalConfirmDeleteBtn} onClick={handleDelete} disabled={actionLoading}>
+                  {actionLoading ? <Loader2 size={13} className={styles.spin} /> : 'Supprimer'}
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function StatCard({
+  icon,
+  value,
+  label,
+  accent,
+  warn,
+}: {
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+  accent?: boolean;
+  warn?: boolean;
+}) {
+  return (
+    <div className={styles.statCard}>
+      <div className={`${styles.statIcon} ${accent ? styles.statIconAccent : warn ? styles.statIconWarn : ''}`}>
+        {icon}
+      </div>
+      <div className={styles.statInfo}>
+        <span className={styles.statValue}>{value}</span>
+        <span className={styles.statLabel}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className={styles.detailRow}>
+      <span className={styles.detailIcon}>{icon}</span>
+      <span className={styles.detailLabel}>{label}</span>
+      <span className={styles.detailValue}>{value}</span>
     </div>
   );
 }

@@ -413,20 +413,25 @@ service cloud.firestore {
     }
 
     match /services/accompagnement/accompagnements/{accompagnementId} {
+      // Lecture : admin, créateur, ou bénéficiaire autorisé
       allow read: if request.auth != null && (
         isAdmin() ||
         request.auth.uid == resource.data.createdBy ||
         request.auth.uid in resource.data.teamMembers
       );
+      // Création : admin uniquement
       allow create: if isAdmin() &&
           request.resource.data.title is string &&
           request.resource.data.title.size() > 0 &&
           request.resource.data.slug is string &&
           request.resource.data.createdBy == request.auth.uid &&
           request.resource.data.visibility in ['public', 'members_only'];
+      // Mise à jour : admin uniquement
       allow update: if isAdmin();
+      // Suppression : admin uniquement
       allow delete: if isAdmin();
 
+      // Sous-collection overview
       match /overview/{docId} {
         allow read: if request.auth != null && (
           isAdmin() ||
@@ -436,6 +441,7 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
+      // Sous-collection media
       match /media/{docId} {
         allow read: if request.auth != null && (
           isAdmin() ||
@@ -445,6 +451,7 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
+      // Sous-collection content (étapes)
       match /content/{docId} {
         allow read: if request.auth != null && (
           isAdmin() ||
@@ -454,6 +461,7 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
+      // Sous-collection stats (vues)
       match /stats/{docId} {
         allow read: if request.auth != null && (
           isAdmin() ||
@@ -468,39 +476,6 @@ service cloud.firestore {
         allow create: if isAdmin();
         allow delete: if isAdmin();
       }
-    }
-
-    // ─────────────────────────────────────────
-    // RDV (Rendez-vous)
-    // Structure : rdv/{date_time}
-    // Exemple : rdv/2024-01-15_14:30
-    // ─────────────────────────────────────────
-
-    match /rdv/{bookingId} {
-      // Lecture : admin ou l'utilisateur concerné
-      allow read: if request.auth != null && (
-        isAdmin() ||
-        request.auth.uid == resource.data.userId
-      );
-      
-      // Création : utilisateur authentifié
-      allow create: if request.auth != null &&
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.date is string &&
-        request.resource.data.time is string &&
-        request.resource.data.userEmail is string &&
-        request.resource.data.userName is string &&
-        request.resource.data.status == 'confirmed';
-      
-      // Mise à jour : admin ou l'utilisateur concerné (pour annulation)
-      allow update: if request.auth != null && (
-        isAdmin() ||
-        (request.auth.uid == resource.data.userId && 
-         request.resource.data.status == 'cancelled')
-      );
-      
-      // Suppression : admin uniquement
-      allow delete: if isAdmin();
     }
 
   }
