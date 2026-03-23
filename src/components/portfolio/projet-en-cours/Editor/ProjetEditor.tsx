@@ -23,7 +23,7 @@ import RoadmapEditor from './navigation/RoadmapEditor';
 import type { RoadmapArrow, RichPhase } from './navigation/RoadmapEditor';
 import ProgressionEditor from './navigation/ProgressionEditor';
 import DocumentationEditor from './navigation/DocumentationEditor';
-import NouveauteModal from '@/components/NouveauteModal/NouveauteModal';
+import NouveauteModal from '@/components/app/Home/Sections/Section2/news/News';
 
 import styles from './ProjetEditor.module.css';
 

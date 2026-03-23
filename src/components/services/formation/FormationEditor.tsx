@@ -4,22 +4,36 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   X, Save, Info, Tag, Target, Users2, Clock, DollarSign,
-  Globe, Lock, Plus, Trash2, ChevronUp, ChevronDown, Image as ImageIcon,
-  Search, Check, UserPlus, UserMinus, Mail,
+  Globe, Plus, Trash2, ChevronUp, ChevronDown, Image as ImageIcon,
+  Search, Check, Mail, BookOpen, FileText, Link as LinkIcon,
+  HelpCircle, StickyNote, Video, ChevronRight,
 } from 'lucide-react';
 import {
   FullFormation,
   FormationModule,
+  FormationLesson,
+  LessonType,
+  LessonResource,
+  QuizQuestion,
   saveFormation,
   generateUniqueFormationSlug,
   generateFormationSlug,
 } from '@/utils/formation-api';
-import { Timestamp } from 'firebase/firestore';
 import styles from './FormationEditor.module.css';
 
 const CATEGORIES = ['Développement', 'Design', 'Marketing', 'Business', 'Data', 'Autre'];
 const LEVELS = ['débutant', 'intermédiaire', 'avancé', 'expert'] as const;
 const CURRENCIES = ['EUR', 'USD', 'GBP'];
+const LESSON_TYPES: { value: LessonType; label: string }[] = [
+  { value: 'introduction', label: 'Introduction' },
+  { value: 'developpement', label: 'Développement' },
+  { value: 'lecon', label: 'Leçon' },
+  { value: 'pratique', label: 'Pratique' },
+  { value: 'conclusion', label: 'Conclusion' },
+  { value: 'autre', label: 'Autre' },
+];
+const RESOURCE_TYPES = ['pdf', 'link', 'zip', 'doc', 'video', 'autre'] as const;
+
 const TABS = ['Informations', 'Médias', 'Modules', 'Équipe'] as const;
 type Tab = typeof TABS[number];
 
@@ -40,12 +54,11 @@ function detectType(url: string): string {
 const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, onClose, onSave }) => {
   const isNew = !formation?.id;
 
-  // ── State ──────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>('Informations');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Informations
+  // ── Info fields ──
   const [title, setTitle] = useState(formation?.title || '');
   const [slug, setSlug] = useState(formation?.slug || '');
   const [editingSlug, setEditingSlug] = useState(false);
@@ -55,13 +68,12 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
   const [duration, setDuration] = useState(formation?.duration || '');
   const [price, setPrice] = useState<number | ''>(formation?.price ?? '');
   const [currency, setCurrency] = useState(formation?.currency || 'EUR');
-  const [visibility, setVisibility] = useState<FullFormation['visibility']>(formation?.visibility || 'members_only');
   const [description, setDescription] = useState(formation?.description || '');
   const [objective, setObjective] = useState(formation?.objective || '');
   const [targetAudience, setTargetAudience] = useState(formation?.targetAudience || '');
   const [prerequisites, setPrerequisites] = useState(formation?.prerequisites || '');
 
-  // Médias
+  // ── Media ──
   const [mainImage, setMainImage] = useState(formation?.image || '');
   const [carouselImages, setCarouselImages] = useState<any[]>(
     (formation?.carouselImages || []).map((i) =>
@@ -69,21 +81,21 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
     )
   );
 
-  // Modules
+  // ── Modules ──
   const [modules, setModules] = useState<FormationModule[]>(formation?.modules || []);
+  const [expandedModuleIdx, setExpandedModuleIdx] = useState<number | null>(null);
+  const [expandedLessonIdx, setExpandedLessonIdx] = useState<{ mod: number; les: number } | null>(null);
 
-  // Équipe
+  // ── Team ──
   const [teamMembers, setTeamMembers] = useState<string[]>(formation?.teamMembers || []);
   const [memberSearch, setMemberSearch] = useState('');
 
-  // ── Slug auto ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (isNew && title && !editingSlug) {
       setSlug(generateFormationSlug(title));
     }
   }, [title, isNew, editingSlug]);
 
-  // ── Cloudinary upload ──────────────────────────────────────────────────────
   const openCloudinary = (onSuccess: (url: string) => void, multiple = false) => {
     if (typeof window === 'undefined' || !(window as any).cloudinary) return;
     (window as any).cloudinary.createUploadWidget(
@@ -94,16 +106,22 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
     ).open();
   };
 
-  // ── Modules helpers ────────────────────────────────────────────────────────
+  // ── Module helpers ──
   const addModule = () => {
-    setModules([...modules, { id: Date.now().toString(), title: '', description: '', duration: '', order: modules.length }]);
+    const idx = modules.length;
+    setModules([...modules, { id: Date.now().toString(), title: '', description: '', duration: '', order: idx, lessons: [] }]);
+    setExpandedModuleIdx(idx);
   };
 
   const updateModule = (i: number, field: keyof FormationModule, val: any) => {
     setModules(modules.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
   };
 
-  const removeModule = (i: number) => setModules(modules.filter((_, idx) => idx !== i));
+  const removeModule = (i: number) => {
+    setModules(modules.filter((_, idx) => idx !== i).map((m, idx) => ({ ...m, order: idx })));
+    setExpandedModuleIdx(null);
+    setExpandedLessonIdx(null);
+  };
 
   const moveModule = (i: number, dir: 'up' | 'down') => {
     const arr = [...modules];
@@ -113,7 +131,116 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
     setModules(arr.map((m, idx) => ({ ...m, order: idx })));
   };
 
-  // ── Team helpers ───────────────────────────────────────────────────────────
+  // ── Lesson helpers ──
+  const addLesson = (modIdx: number) => {
+    const mod = modules[modIdx];
+    const lessons = mod.lessons || [];
+    const newLesson: FormationLesson = {
+      id: Date.now().toString(),
+      title: '',
+      type: 'lecon',
+      duration: '',
+      videoUrl: '',
+      notes: '',
+      resources: [],
+      quiz: [],
+      order: lessons.length,
+    };
+    const updated = [...modules];
+    updated[modIdx] = { ...mod, lessons: [...lessons, newLesson] };
+    setModules(updated);
+    setExpandedLessonIdx({ mod: modIdx, les: lessons.length });
+  };
+
+  const updateLesson = (modIdx: number, lesIdx: number, field: keyof FormationLesson, val: any) => {
+    const updated = [...modules];
+    const lessons = [...(updated[modIdx].lessons || [])];
+    lessons[lesIdx] = { ...lessons[lesIdx], [field]: val };
+    updated[modIdx] = { ...updated[modIdx], lessons };
+    setModules(updated);
+  };
+
+  const removeLesson = (modIdx: number, lesIdx: number) => {
+    const updated = [...modules];
+    const lessons = (updated[modIdx].lessons || []).filter((_, i) => i !== lesIdx).map((l, i) => ({ ...l, order: i }));
+    updated[modIdx] = { ...updated[modIdx], lessons };
+    setModules(updated);
+    setExpandedLessonIdx(null);
+  };
+
+  const moveLessonUp = (modIdx: number, lesIdx: number) => {
+    if (lesIdx === 0) return;
+    const updated = [...modules];
+    const lessons = [...(updated[modIdx].lessons || [])];
+    [lessons[lesIdx - 1], lessons[lesIdx]] = [lessons[lesIdx], lessons[lesIdx - 1]];
+    updated[modIdx] = { ...updated[modIdx], lessons: lessons.map((l, i) => ({ ...l, order: i })) };
+    setModules(updated);
+  };
+
+  const moveLessonDown = (modIdx: number, lesIdx: number) => {
+    const lessons = modules[modIdx].lessons || [];
+    if (lesIdx >= lessons.length - 1) return;
+    const updated = [...modules];
+    const les = [...lessons];
+    [les[lesIdx], les[lesIdx + 1]] = [les[lesIdx + 1], les[lesIdx]];
+    updated[modIdx] = { ...updated[modIdx], lessons: les.map((l, i) => ({ ...l, order: i })) };
+    setModules(updated);
+  };
+
+  // ── Resource helpers ──
+  const addResource = (modIdx: number, lesIdx: number) => {
+    const newRes: LessonResource = { id: Date.now().toString(), name: '', url: '', type: 'link' };
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'resources', [...(lesson.resources || []), newRes]);
+  };
+
+  const updateResource = (modIdx: number, lesIdx: number, resIdx: number, field: keyof LessonResource, val: any) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    const resources = [...(lesson.resources || [])];
+    resources[resIdx] = { ...resources[resIdx], [field]: val };
+    updateLesson(modIdx, lesIdx, 'resources', resources);
+  };
+
+  const removeResource = (modIdx: number, lesIdx: number, resIdx: number) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'resources', (lesson.resources || []).filter((_, i) => i !== resIdx));
+  };
+
+  // ── Quiz helpers ──
+  const addQuizQuestion = (modIdx: number, lesIdx: number) => {
+    const newQ: QuizQuestion = {
+      id: Date.now().toString(),
+      question: '',
+      options: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
+      correctIndex: 0,
+      explanation: '',
+    };
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'quiz', [...(lesson.quiz || []), newQ]);
+  };
+
+  const updateQuizQuestion = (modIdx: number, lesIdx: number, qIdx: number, field: keyof QuizQuestion, val: any) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    const quiz = [...(lesson.quiz || [])];
+    quiz[qIdx] = { ...quiz[qIdx], [field]: val };
+    updateLesson(modIdx, lesIdx, 'quiz', quiz);
+  };
+
+  const updateQuizOption = (modIdx: number, lesIdx: number, qIdx: number, oIdx: number, text: string) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    const quiz = [...(lesson.quiz || [])];
+    const options = [...quiz[qIdx].options];
+    options[oIdx] = { text };
+    quiz[qIdx] = { ...quiz[qIdx], options };
+    updateLesson(modIdx, lesIdx, 'quiz', quiz);
+  };
+
+  const removeQuizQuestion = (modIdx: number, lesIdx: number, qIdx: number) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'quiz', (lesson.quiz || []).filter((_, i) => i !== qIdx));
+  };
+
+  // ── Team ──
   const filteredUsers = useMemo(() => {
     if (!memberSearch.trim()) return allUsers;
     const q = memberSearch.toLowerCase();
@@ -128,7 +255,7 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
     );
   };
 
-  // ── Save ───────────────────────────────────────────────────────────────────
+  // ── Save ──
   const handleSave = async () => {
     if (!title.trim()) { setError('Le titre est obligatoire'); return; }
     if (!category) { setError('La catégorie est obligatoire'); return; }
@@ -149,7 +276,7 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
           duration,
           price: price === '' ? undefined : Number(price),
           currency,
-          visibility,
+          visibility: 'public',
           teamMembers,
           createdBy: currentUser.uid,
           description,
@@ -179,7 +306,8 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
       transition={{ duration: 0.2 }}
     >
       <div className={styles.modal}>
-        {/* Header */}
+
+        {/* ── Header ── */}
         <div className={styles.header}>
           <h2 className={styles.headerTitle}>{isNew ? 'Nouvelle formation' : 'Modifier la formation'}</h2>
           <div className={styles.headerActions}>
@@ -193,7 +321,7 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
 
         {error && <div className={styles.errorBanner}>{error}</div>}
 
-        {/* Tabs */}
+        {/* ── Tabs ── */}
         <div className={styles.tabs}>
           {TABS.map((t) => (
             <button key={t} className={`${styles.tab} ${activeTab === t ? styles.tabActive : ''}`} onClick={() => setActiveTab(t)}>
@@ -202,13 +330,11 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
           ))}
         </div>
 
-        {/* Content */}
         <div className={styles.body}>
 
-          {/* ── TAB: Informations ── */}
+          {/* ────────────────── TAB: Informations ────────────────── */}
           {activeTab === 'Informations' && (
             <div className={styles.section}>
-
               <div className={styles.field}>
                 <label className={styles.label}><Info size={14} /> Titre</label>
                 <input className={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Formation React avancé" />
@@ -235,7 +361,6 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                     {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-
                 <div className={styles.field}>
                   <label className={styles.label}><Target size={14} /> Niveau</label>
                   <select className={styles.select} value={level} onChange={(e) => setLevel(e.target.value as any)}>
@@ -249,7 +374,6 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                   <label className={styles.label}><Globe size={14} /> Langue</label>
                   <input className={styles.input} value={language} onChange={(e) => setLanguage(e.target.value)} placeholder="Français" />
                 </div>
-
                 <div className={styles.field}>
                   <label className={styles.label}><Clock size={14} /> Durée</label>
                   <input className={styles.input} value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="Ex: 6h30" />
@@ -266,26 +390,6 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                   <select className={styles.select} value={currency} onChange={(e) => setCurrency(e.target.value)}>
                     {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
-                </div>
-              </div>
-
-              <div className={styles.field}>
-                <label className={styles.label}>Visibilité</label>
-                <div className={styles.visibilityToggle}>
-                  <button
-                    type="button"
-                    className={`${styles.visBtn} ${visibility === 'public' ? styles.visBtnActive : ''}`}
-                    onClick={() => setVisibility('public')}
-                  >
-                    <Globe size={13} /> Public
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.visBtn} ${visibility === 'members_only' ? styles.visBtnActive : ''}`}
-                    onClick={() => setVisibility('members_only')}
-                  >
-                    <Lock size={13} /> Membres uniquement
-                  </button>
                 </div>
               </div>
 
@@ -312,7 +416,7 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
             </div>
           )}
 
-          {/* ── TAB: Médias ── */}
+          {/* ────────────────── TAB: Médias ────────────────── */}
           {activeTab === 'Médias' && (
             <div className={styles.section}>
               <div className={styles.field}>
@@ -349,11 +453,7 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                     {carouselImages.map((item, i) => (
                       <div key={i} className={styles.galleryItem}>
                         <img src={item.url || item} alt="" className={styles.galleryThumb} />
-                        <button
-                          type="button"
-                          className={styles.galleryRemove}
-                          onClick={() => setCarouselImages(carouselImages.filter((_, idx) => idx !== i))}
-                        >
+                        <button type="button" className={styles.galleryRemove} onClick={() => setCarouselImages(carouselImages.filter((_, idx) => idx !== i))}>
                           <X size={10} />
                         </button>
                       </div>
@@ -364,7 +464,7 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
             </div>
           )}
 
-          {/* ── TAB: Modules ── */}
+          {/* ────────────────── TAB: Modules ────────────────── */}
           {activeTab === 'Modules' && (
             <div className={styles.section}>
               <div className={styles.modulesHeader}>
@@ -381,48 +481,221 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                 </div>
               ) : (
                 <div className={styles.modulesList}>
-                  {modules.map((mod, i) => (
-                    <div key={mod.id} className={styles.moduleCard}>
-                      <div className={styles.moduleIndex}>{i + 1}</div>
-                      <div className={styles.moduleFields}>
-                        <input
-                          className={styles.moduleInput}
-                          value={mod.title}
-                          onChange={(e) => updateModule(i, 'title', e.target.value)}
-                          placeholder="Titre du module…"
-                        />
-                        <input
-                          className={`${styles.moduleInput} ${styles.moduleSmall}`}
-                          value={mod.duration || ''}
-                          onChange={(e) => updateModule(i, 'duration', e.target.value)}
-                          placeholder="Durée (ex: 45min)"
-                        />
-                        <input
-                          className={`${styles.moduleInput} ${styles.moduleDesc}`}
-                          value={mod.description || ''}
-                          onChange={(e) => updateModule(i, 'description', e.target.value)}
-                          placeholder="Description optionnelle…"
-                        />
+                  {modules.map((mod, mIdx) => {
+                    const isExpanded = expandedModuleIdx === mIdx;
+                    const lessons = mod.lessons || [];
+                    return (
+                      <div key={mod.id} className={styles.moduleCard}>
+                        {/* Module header row */}
+                        <div className={styles.moduleCardHeader}>
+                          <div className={styles.moduleIndex}>{mIdx + 1}</div>
+                          <div className={styles.moduleFieldsRow} onClick={() => setExpandedModuleIdx(isExpanded ? null : mIdx)}>
+                            <input
+                              className={styles.moduleInput}
+                              value={mod.title}
+                              onChange={(e) => updateModule(mIdx, 'title', e.target.value)}
+                              placeholder="Titre du module…"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <div className={styles.moduleMeta}>
+                              <span className={styles.moduleMetaText}>{lessons.length} leçon{lessons.length !== 1 ? 's' : ''}</span>
+                              <ChevronDown size={13} className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ''}`} />
+                            </div>
+                          </div>
+                          <div className={styles.moduleActions}>
+                            <button type="button" onClick={() => moveModule(mIdx, 'up')} disabled={mIdx === 0} className={styles.moduleBtn}><ChevronUp size={13} /></button>
+                            <button type="button" onClick={() => moveModule(mIdx, 'down')} disabled={mIdx === modules.length - 1} className={styles.moduleBtn}><ChevronDown size={13} /></button>
+                            <button type="button" onClick={() => removeModule(mIdx)} className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`}><Trash2 size={13} /></button>
+                          </div>
+                        </div>
+
+                        {/* Module expanded content */}
+                        {isExpanded && (
+                          <div className={styles.moduleExpanded}>
+                            <div className={styles.row2}>
+                              <div className={styles.field}>
+                                <label className={styles.label}><Clock size={12} /> Durée du module</label>
+                                <input className={styles.input} value={mod.duration || ''} onChange={(e) => updateModule(mIdx, 'duration', e.target.value)} placeholder="Ex: 1h30" />
+                              </div>
+                              <div className={styles.field}>
+                                <label className={styles.label}>Description</label>
+                                <input className={styles.input} value={mod.description || ''} onChange={(e) => updateModule(mIdx, 'description', e.target.value)} placeholder="Description du module…" />
+                              </div>
+                            </div>
+
+                            {/* Lessons */}
+                            <div className={styles.lessonsSection}>
+                              <div className={styles.lessonsSectionHeader}>
+                                <span className={styles.lessonsSectionTitle}>Étapes / Leçons</span>
+                                <button type="button" className={styles.addSmallBtn} onClick={() => addLesson(mIdx)}>
+                                  <Plus size={11} /> Ajouter une leçon
+                                </button>
+                              </div>
+
+                              {lessons.length === 0 ? (
+                                <div className={styles.emptyLessons} onClick={() => addLesson(mIdx)}>
+                                  <BookOpen size={18} />
+                                  <span>Ajouter la première leçon</span>
+                                </div>
+                              ) : (
+                                <div className={styles.lessonsList}>
+                                  {lessons.map((les, lIdx) => {
+                                    const isLesExpanded = expandedLessonIdx?.mod === mIdx && expandedLessonIdx?.les === lIdx;
+                                    return (
+                                      <div key={les.id} className={`${styles.lessonCard} ${isLesExpanded ? styles.lessonCardExpanded : ''}`}>
+                                        {/* Lesson header */}
+                                        <div
+                                          className={styles.lessonCardHeader}
+                                          onClick={() => setExpandedLessonIdx(isLesExpanded ? null : { mod: mIdx, les: lIdx })}
+                                        >
+                                          <div className={styles.lessonTypePill}>
+                                            {LESSON_TYPES.find(t => t.value === les.type)?.label || 'Leçon'}
+                                          </div>
+                                          <span className={styles.lessonCardTitle}>
+                                            {les.title || `Leçon ${lIdx + 1}`}
+                                          </span>
+                                          <div className={styles.lessonCardActions}>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); moveLessonUp(mIdx, lIdx); }} disabled={lIdx === 0} className={styles.moduleBtn}><ChevronUp size={11} /></button>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); moveLessonDown(mIdx, lIdx); }} disabled={lIdx === lessons.length - 1} className={styles.moduleBtn}><ChevronDown size={11} /></button>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); removeLesson(mIdx, lIdx); }} className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`}><Trash2 size={11} /></button>
+                                          </div>
+                                        </div>
+
+                                        {/* Lesson expanded */}
+                                        {isLesExpanded && (
+                                          <div className={styles.lessonExpanded}>
+                                            <div className={styles.row2}>
+                                              <div className={styles.field}>
+                                                <label className={styles.label}>Titre de la leçon</label>
+                                                <input className={styles.input} value={les.title} onChange={(e) => updateLesson(mIdx, lIdx, 'title', e.target.value)} placeholder="Ex: Introduction aux hooks" />
+                                              </div>
+                                              <div className={styles.field}>
+                                                <label className={styles.label}>Type</label>
+                                                <select className={styles.select} value={les.type} onChange={(e) => updateLesson(mIdx, lIdx, 'type', e.target.value as LessonType)}>
+                                                  {LESSON_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                                                </select>
+                                              </div>
+                                            </div>
+
+                                            <div className={styles.field}>
+                                              <label className={styles.label}><Clock size={12} /> Durée</label>
+                                              <input className={styles.input} value={les.duration || ''} onChange={(e) => updateLesson(mIdx, lIdx, 'duration', e.target.value)} placeholder="Ex: 12min" />
+                                            </div>
+
+                                            {/* Video URL */}
+                                            <div className={styles.field}>
+                                              <div className={styles.labelRow}>
+                                                <label className={styles.label}><Video size={12} /> Vidéo (Cloudinary)</label>
+                                                <button type="button" className={styles.addSmallBtn} onClick={() => openCloudinary((url) => updateLesson(mIdx, lIdx, 'videoUrl', url))}>
+                                                  <Plus size={11} /> Uploader
+                                                </button>
+                                              </div>
+                                              <input className={styles.input} value={les.videoUrl || ''} onChange={(e) => updateLesson(mIdx, lIdx, 'videoUrl', e.target.value)} placeholder="URL Cloudinary ou coller un lien vidéo" />
+                                              {les.videoUrl && (
+                                                <p className={styles.hint} style={{ color: '#34d399', opacity: 1 }}>✓ Vidéo définie</p>
+                                              )}
+                                            </div>
+
+                                            {/* Notes admin */}
+                                            <div className={styles.field}>
+                                              <label className={styles.label}><StickyNote size={12} /> Notes de la leçon (visibles par les membres)</label>
+                                              <textarea className={styles.textarea} rows={4} value={les.notes || ''} onChange={(e) => updateLesson(mIdx, lIdx, 'notes', e.target.value)} placeholder="Notes, points clés, résumé de la leçon…" />
+                                            </div>
+
+                                            {/* Resources */}
+                                            <div className={styles.field}>
+                                              <div className={styles.labelRow}>
+                                                <label className={styles.label}><FileText size={12} /> Ressources</label>
+                                                <button type="button" className={styles.addSmallBtn} onClick={() => addResource(mIdx, lIdx)}>
+                                                  <Plus size={11} /> Ajouter
+                                                </button>
+                                              </div>
+                                              {(les.resources || []).length === 0 ? (
+                                                <p className={styles.hint}>Aucune ressource pour cette leçon</p>
+                                              ) : (
+                                                <div className={styles.resourcesEditorList}>
+                                                  {(les.resources || []).map((res, rIdx) => (
+                                                    <div key={res.id} className={styles.resourceEditorRow}>
+                                                      <select className={styles.resourceTypeSelect} value={res.type} onChange={(e) => updateResource(mIdx, lIdx, rIdx, 'type', e.target.value)}>
+                                                        {RESOURCE_TYPES.map((t) => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+                                                      </select>
+                                                      <input className={styles.input} value={res.name} onChange={(e) => updateResource(mIdx, lIdx, rIdx, 'name', e.target.value)} placeholder="Nom de la ressource" style={{ flex: 1 }} />
+                                                      <input className={styles.input} value={res.url} onChange={(e) => updateResource(mIdx, lIdx, rIdx, 'url', e.target.value)} placeholder="URL (Google Doc, PDF, ZIP…)" style={{ flex: 2 }} />
+                                                      <button type="button" className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`} onClick={() => removeResource(mIdx, lIdx, rIdx)}><Trash2 size={11} /></button>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+
+                                            {/* Quiz */}
+                                            <div className={styles.field}>
+                                              <div className={styles.labelRow}>
+                                                <label className={styles.label}><HelpCircle size={12} /> Quiz</label>
+                                                <button type="button" className={styles.addSmallBtn} onClick={() => addQuizQuestion(mIdx, lIdx)}>
+                                                  <Plus size={11} /> Ajouter une question
+                                                </button>
+                                              </div>
+                                              {(les.quiz || []).length === 0 ? (
+                                                <p className={styles.hint}>Aucune question pour cette leçon</p>
+                                              ) : (
+                                                <div className={styles.quizEditorList}>
+                                                  {(les.quiz || []).map((q, qIdx) => (
+                                                    <div key={q.id} className={styles.quizEditorCard}>
+                                                      <div className={styles.quizEditorHeader}>
+                                                        <span className={styles.quizEditorNum}>Q{qIdx + 1}</span>
+                                                        <input className={styles.input} value={q.question} onChange={(e) => updateQuizQuestion(mIdx, lIdx, qIdx, 'question', e.target.value)} placeholder="Question…" style={{ flex: 1 }} />
+                                                        <button type="button" className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`} onClick={() => removeQuizQuestion(mIdx, lIdx, qIdx)}><Trash2 size={11} /></button>
+                                                      </div>
+                                                      <div className={styles.quizEditorOptions}>
+                                                        {q.options.map((opt, oIdx) => (
+                                                          <div key={oIdx} className={styles.quizEditorOption}>
+                                                            <button
+                                                              type="button"
+                                                              className={`${styles.quizCorrectBtn} ${q.correctIndex === oIdx ? styles.quizCorrectBtnActive : ''}`}
+                                                              onClick={() => updateQuizQuestion(mIdx, lIdx, qIdx, 'correctIndex', oIdx)}
+                                                              title="Marquer comme bonne réponse"
+                                                            >
+                                                              <Check size={10} />
+                                                            </button>
+                                                            <input
+                                                              className={styles.input}
+                                                              value={opt.text}
+                                                              onChange={(e) => updateQuizOption(mIdx, lIdx, qIdx, oIdx, e.target.value)}
+                                                              placeholder={`Option ${oIdx + 1}`}
+                                                              style={{ flex: 1 }}
+                                                            />
+                                                          </div>
+                                                        ))}
+                                                      </div>
+                                                      <div className={styles.field}>
+                                                        <input className={styles.input} value={q.explanation || ''} onChange={(e) => updateQuizQuestion(mIdx, lIdx, qIdx, 'explanation', e.target.value)} placeholder="Explication de la bonne réponse (optionnel)" />
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className={styles.moduleActions}>
-                        <button type="button" onClick={() => moveModule(i, 'up')} disabled={i === 0} className={styles.moduleBtn}>
-                          <ChevronUp size={13} />
-                        </button>
-                        <button type="button" onClick={() => moveModule(i, 'down')} disabled={i === modules.length - 1} className={styles.moduleBtn}>
-                          <ChevronDown size={13} />
-                        </button>
-                        <button type="button" onClick={() => removeModule(i)} className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`}>
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
-          {/* ── TAB: Équipe ── */}
+          {/* ────────────────── TAB: Équipe ────────────────── */}
           {activeTab === 'Équipe' && (
             <div className={styles.section}>
               <div className={styles.statsRow}>
@@ -430,7 +703,6 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                 <span className={styles.statChip}>{allUsers.length} utilisateurs</span>
               </div>
 
-              {/* Membres sélectionnés */}
               {teamMembers.length > 0 && (
                 <div className={styles.selectedSection}>
                   <span className={styles.selectedLabel}>Membres inscrits</span>
@@ -449,7 +721,6 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                 </div>
               )}
 
-              {/* Recherche */}
               <div className={styles.memberSearchWrap}>
                 <Search size={14} className={styles.memberSearchIcon} />
                 <input
@@ -464,7 +735,6 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
                 )}
               </div>
 
-              {/* Liste */}
               <div className={styles.userList}>
                 {filteredUsers.map((user) => {
                   const selected = teamMembers.includes(user.uid);
@@ -497,6 +767,7 @@ const FormationEditor: React.FC<Props> = ({ formation, currentUser, allUsers, on
               </div>
             </div>
           )}
+
         </div>
       </div>
     </motion.div>

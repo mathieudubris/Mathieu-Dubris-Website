@@ -2,7 +2,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Lock, GraduationCap, Clock, BookOpen, ArrowRight, CalendarDays } from 'lucide-react';
+import {
+  Edit2, Trash2, Clock, BookOpen, ArrowRight,
+  MoreVertical, CheckCircle2, PlayCircle, Circle,
+} from 'lucide-react';
 import { FullFormation } from '@/utils/formation-api';
 import styles from './FormationCard.module.css';
 
@@ -16,6 +19,8 @@ interface FormationCardProps {
   onDelete: (id: string) => void;
   onDeleteConfirm: (id: string | null) => void;
   onClick: (f: FullFormation) => void;
+  progress?: number;
+  variant?: 'default' | 'progress';
 }
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -32,12 +37,18 @@ const LEVEL_LABELS: Record<string, string> = {
   expert:        'Expert',
 };
 
-const formatDateShort = (date: any): string => {
-  if (!date) return '—';
-  try {
-    const d = date.toDate ? date.toDate() : new Date(date);
-    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
-  } catch { return '—'; }
+const getStatusInfo = (progress: number, isMember: boolean) => {
+  if (progress === 100) return { label: 'Terminé', cls: styles.statusTermine };
+  if (progress > 0) return { label: 'En cours', cls: styles.statusEnCours };
+  if (isMember) return { label: 'À commencer', cls: styles.statusACommencer };
+  return { label: 'Catalogue', cls: styles.statusGris };
+};
+
+const getActionBtn = (progress: number, isMember: boolean) => {
+  if (progress === 100) return { label: 'Voir le certificat', cls: styles.cardActionBtnOutline };
+  if (progress > 0) return { label: 'Continuer', cls: styles.cardActionBtnPrimary };
+  if (isMember) return { label: 'Commencer', cls: styles.cardActionBtnPrimary };
+  return null;
 };
 
 const FormationCard: React.FC<FormationCardProps> = ({
@@ -50,17 +61,18 @@ const FormationCard: React.FC<FormationCardProps> = ({
   onDelete,
   onDeleteConfirm,
   onClick,
+  progress = 0,
+  variant = 'default',
 }) => {
-  const isLocked = formation.visibility === 'members_only' && !isMember && !isAdmin;
-  const levelColor = LEVEL_COLORS[formation.level] || 'var(--primary)';
+  const levelColor = LEVEL_COLORS[formation.level] || '#34d399';
   const levelLabel = LEVEL_LABELS[formation.level] || formation.level;
+  const status = getStatusInfo(progress, isMember);
+  const actionBtn = getActionBtn(progress, isMember);
 
-  const views = formation.views ?? 0;
-  const purchases = formation.teamMembers?.length ?? 0;
   const moduleCount = formation.modules?.length ?? 0;
 
   const handleClick = () => {
-    if (!currentUser || isLocked) {
+    if (!currentUser) {
       window.location.href = '/security/access';
       return;
     }
@@ -70,8 +82,8 @@ const FormationCard: React.FC<FormationCardProps> = ({
   if (isDeleteConfirm && formation.id) {
     return (
       <motion.div
-        className={styles.card}
-        style={{ minHeight: 340 }}
+        className={variant === 'progress' ? styles.progressCard : styles.card}
+        style={{ minHeight: 220 }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -80,7 +92,7 @@ const FormationCard: React.FC<FormationCardProps> = ({
           <div className={styles.deleteContent}>
             <div className={styles.deleteEmoji}>🗑️</div>
             <h4 className={styles.deleteTitle}>Supprimer la formation ?</h4>
-            <p className={styles.deleteMsg}>Cette action est irréversible et supprimera<br />tous les modules et données associés.</p>
+            <p className={styles.deleteMsg}>Cette action est irréversible.</p>
             <div className={styles.deleteActions}>
               <button
                 onClick={(e) => { e.stopPropagation(); if (formation.id) onDelete(formation.id); }}
@@ -101,114 +113,155 @@ const FormationCard: React.FC<FormationCardProps> = ({
     );
   }
 
+  /* ── PROGRESS CARD (in-progress section) ── */
+  if (variant === 'progress') {
+    return (
+      <motion.div
+        className={styles.progressCard}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+        onClick={handleClick}
+      >
+        <img
+          src={formation.image || '/default-formation.jpg'}
+          alt={formation.title}
+          className={styles.progressThumb}
+          onError={(e) => { e.currentTarget.src = '/default-formation.jpg'; }}
+        />
+        <div className={styles.progressBody}>
+          <div className={styles.progressTop}>
+            <h3 className={styles.progressTitle}>{formation.title}</h3>
+            {isAdmin && (
+              <button
+                className={styles.progressMenuBtn}
+                onClick={(e) => { e.stopPropagation(); onEdit(formation); }}
+              >
+                <MoreVertical size={14} />
+              </button>
+            )}
+          </div>
+
+          <div className={styles.progressMeta}>
+            <span className={styles.progressPercent}>Progrès : {progress}%</span>
+            <span className={styles.progressStatus}>Statut : En cours</span>
+          </div>
+
+          <div className={styles.progressBar}>
+            <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+          </div>
+
+          <button
+            className={styles.continueBtn}
+            onClick={(e) => { e.stopPropagation(); handleClick(); }}
+          >
+            Continuer
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  /* ── DEFAULT CARD ── */
   return (
     <motion.div
       className={styles.card}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
       onClick={handleClick}
     >
-      {/* ── COVER carré ── */}
+      {/* Cover */}
       <div className={styles.coverWrap}>
         <img
           src={formation.image || '/default-formation.jpg'}
           alt={formation.title}
-          className={`${styles.coverImg} ${isLocked ? styles.blurred : ''}`}
+          className={styles.coverImg}
           onError={(e) => { e.currentTarget.src = '/default-formation.jpg'; }}
         />
         <div className={styles.coverGradient} />
 
-        {/* Header: badges + admin actions */}
-        <div className={styles.cardHeader}>
-          <div className={styles.badgesLeft}>
-            {isMember && (
-              <div className={styles.memberBadge}>
-                <GraduationCap size={9} />
-                <span>Inscrit</span>
-              </div>
-            )}
-            {isLocked && (
-              <div className={styles.lockedBadge}>
-                <Lock size={9} />
-                <span>Restreint</span>
-              </div>
-            )}
-          </div>
+        {/* Status badge */}
+        <div className={`${styles.statusBadge} ${status.cls}`}>
+          {status.label}
+        </div>
 
-          {isAdmin && (
-            <div className={styles.adminActions}>
-              <button
-                className={styles.actionBtn}
-                onClick={(e) => { e.stopPropagation(); onEdit(formation); }}
-                title="Modifier"
-              >
-                <Edit2 size={11} />
-              </button>
-              <button
-                className={styles.actionBtn}
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteConfirm(formation.id || ''); }}
-                title="Supprimer"
-              >
-                <Trash2 size={11} />
-              </button>
+        {/* Admin actions */}
+        {isAdmin && (
+          <div className={styles.adminActions}>
+            <button
+              className={styles.actionBtn}
+              onClick={(e) => { e.stopPropagation(); onEdit(formation); }}
+              title="Modifier"
+            >
+              <Edit2 size={10} />
+            </button>
+            <button
+              className={styles.actionBtn}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteConfirm(formation.id || ''); }}
+              title="Supprimer"
+            >
+              <Trash2 size={10} />
+            </button>
+          </div>
+        )}
+
+        {/* Level badge */}
+        <span className={styles.levelBadge} style={{ color: levelColor, borderColor: levelColor }}>
+          {levelLabel}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className={styles.cardBody}>
+        <span className={styles.category}>{formation.category || 'Non catégorisé'}</span>
+        <h3 className={styles.cardTitle}>{formation.title}</h3>
+        <p className={styles.description}>
+          {formation.description || 'Aucune description disponible.'}
+        </p>
+
+        {/* Mini progress bar if member with progress */}
+        {isMember && progress > 0 && (
+          <div className={styles.miniProgressWrap}>
+            <div className={styles.miniProgressMeta}>
+              <span className={styles.miniProgressPct}>{progress}%</span>
+              <span className={styles.miniProgressLabel}>
+                {progress === 100 ? 'Terminé' : 'En cours'}
+              </span>
+            </div>
+            <div className={styles.miniBar}>
+              <div className={styles.miniBarFill} style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        )}
+
+        {/* Meta */}
+        <div className={styles.metaRow}>
+          {formation.duration && (
+            <div className={styles.metaItem}>
+              <Clock size={10} />
+              {formation.duration}
+            </div>
+          )}
+          {moduleCount > 0 && (
+            <div className={styles.metaItem}>
+              <BookOpen size={10} />
+              {moduleCount} module{moduleCount > 1 ? 's' : ''}
             </div>
           )}
         </div>
 
-        {/* Footer cover: niveau + durée */}
-        <div className={styles.coverFooter}>
-          <span className={styles.levelBadge} style={{ color: levelColor, borderColor: levelColor }}>
-            {levelLabel}
-          </span>
-          {formation.duration && (
-            <span className={styles.durationChip}>
-              <Clock size={9} />
-              {formation.duration}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* ── BODY ── */}
-      <div className={styles.cardBody}>
-        <div className={`${styles.bodyContent} ${isLocked ? styles.bodyBlurred : ''}`}>
-          <div className={styles.topRow}>
-            <span className={styles.category}>{formation.category || 'Non catégorisé'}</span>
-          </div>
-          <h3 className={styles.title}>{formation.title}</h3>
-          <p className={styles.description}>
-            {formation.description || 'Aucune description disponible.'}
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className={styles.statsRow}>
-          <div className={styles.statItem}>
-            <span className={styles.statValue}>{views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}</span>
-            <span className={styles.statLabel}>Vues</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statValue}>{purchases}</span>
-            <span className={styles.statLabel}>Inscrits</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statValue}>{moduleCount}</span>
-            <span className={styles.statLabel}>Modules</span>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className={styles.cardFooter}>
-          <div className={styles.dateItem}>
-            <CalendarDays size={9} />
-            <span>{formatDateShort(formation.createdAt)}</span>
-          </div>
-          <div className={styles.openHint}>
-            Ouvrir <ArrowRight size={11} />
-          </div>
-        </div>
+        {/* Action button */}
+        {actionBtn && (
+          <button
+            className={`${styles.cardActionBtn} ${actionBtn.cls}`}
+            onClick={(e) => { e.stopPropagation(); handleClick(); }}
+          >
+            {actionBtn.label}
+          </button>
+        )}
       </div>
     </motion.div>
   );

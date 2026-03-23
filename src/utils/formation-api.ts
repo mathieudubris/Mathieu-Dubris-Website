@@ -20,24 +20,64 @@ import { db } from '@/utils/firebase-api';
 // Chemins Firestore : services > formation > {formationId}
 // ─────────────────────────────────────────────
 
-const SERVICES_DOC        = () => doc(db, 'services', 'formation');
-const FORMATIONS_COL      = () => collection(db, 'services', 'formation', 'formations');
-const FORMATION_DOC       = (id: string) => doc(db, 'services', 'formation', 'formations', id);
-const OVERVIEW_DOC        = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'overview', 'main');
-const MEDIA_DOC           = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'media', 'main');
-const CONTENT_DOC         = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'content', 'main');
-const STATS_DOC           = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'stats', 'main');
+const SERVICES_DOC   = () => doc(db, 'services', 'formation');
+const FORMATIONS_COL = () => collection(db, 'services', 'formation', 'formations');
+const FORMATION_DOC  = (id: string) => doc(db, 'services', 'formation', 'formations', id);
+const OVERVIEW_DOC   = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'overview', 'main');
+const MEDIA_DOC      = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'media', 'main');
+const CONTENT_DOC    = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'content', 'main');
+const STATS_DOC      = (id: string) => doc(db, 'services', 'formation', 'formations', id, 'stats', 'main');
 
 // ─────────────────────────────────────────────
 // Interfaces
 // ─────────────────────────────────────────────
 
+export type LessonType =
+  | 'introduction'
+  | 'developpement'
+  | 'lecon'
+  | 'pratique'
+  | 'conclusion'
+  | 'autre';
+
+export interface QuizOption {
+  text: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: QuizOption[];
+  correctIndex: number;
+  explanation?: string;
+}
+
+export interface LessonResource {
+  id: string;
+  name: string;
+  url: string;
+  type: 'pdf' | 'link' | 'zip' | 'doc' | 'video' | 'autre';
+}
+
+export interface FormationLesson {
+  id: string;
+  title: string;
+  type: LessonType;
+  duration?: string;
+  videoUrl?: string;   // URL Cloudinary
+  notes?: string;      // Notes admin visibles par les membres
+  resources?: LessonResource[];
+  quiz?: QuizQuestion[];
+  order: number;
+}
+
 export interface FormationModule {
   id: string;
   title: string;
   description?: string;
-  duration?: string; // ex: "2h30"
+  duration?: string;
   order: number;
+  lessons?: FormationLesson[];
 }
 
 export interface Formation {
@@ -51,26 +91,21 @@ export interface Formation {
   price?: number;
   currency?: string;
   visibility: 'public' | 'members_only';
-  teamMembers: string[]; // UIDs des membres autorisés
+  teamMembers: string[];
   createdBy: string;
   createdAt: any;
   updatedAt: any;
 }
 
 export interface FullFormation extends Formation {
-  // overview
   description?: string;
   objective?: string;
   targetAudience?: string;
   prerequisites?: string;
-  // media
   image?: string;
   carouselImages?: Array<string | { url: string; type: string; caption?: string }>;
-  // content
   modules?: FormationModule[];
-  // stats
   views?: number;
-  // membres enrichis
   members?: Array<{
     userId?: string;
     uid?: string;
@@ -118,12 +153,36 @@ export const generateUniqueFormationSlug = async (title: string, excludeSlug?: s
 // Lecture
 // ─────────────────────────────────────────────
 
-export const getAllFormations = async (): Promise<FullFormation[]> => {
+export const getAllFormations = async (userId?: string | null): Promise<FullFormation[]> => {
   try {
-    const snap = await getDocs(FORMATIONS_COL());
-    const formations = snap.docs.map((d) => ({ id: d.id, ...d.data() } as FullFormation));
+    const col = FORMATIONS_COL();
 
-    // Charger overview + media + stats en parallèle pour chaque formation
+    const publicQuery = query(col, where('visibility', '==', 'public'));
+
+    const memberQueries = userId
+      ? [
+          query(col, where('visibility', '==', 'members_only'), where('teamMembers', 'array-contains', userId)),
+          query(col, where('visibility', '==', 'members_only'), where('createdBy', '==', userId)),
+        ]
+      : [];
+
+    const [publicSnap, ...memberSnaps] = await Promise.all([
+      getDocs(publicQuery),
+      ...memberQueries.map((q) => getDocs(q)),
+    ]);
+
+    const docsById = new Map<string, FullFormation>();
+
+    for (const snap of [publicSnap, ...memberSnaps]) {
+      for (const d of snap.docs) {
+        if (!docsById.has(d.id)) {
+          docsById.set(d.id, { id: d.id, ...d.data() } as FullFormation);
+        }
+      }
+    }
+
+    const formations = Array.from(docsById.values());
+
     const enriched = await Promise.all(
       formations.map(async (f) => {
         try {
@@ -143,6 +202,7 @@ export const getAllFormations = async (): Promise<FullFormation[]> => {
         }
       })
     );
+
     return enriched;
   } catch (error) {
     console.error('getAllFormations:', error);
@@ -181,7 +241,6 @@ export const getFullFormation = async (formationId: string): Promise<FullFormati
 // ─────────────────────────────────────────────
 
 export interface SaveFormationPayload {
-  // main
   title: string;
   slug: string;
   category: string;
@@ -193,17 +252,13 @@ export interface SaveFormationPayload {
   visibility: Formation['visibility'];
   teamMembers: string[];
   createdBy: string;
-  // overview
   description?: string;
   objective?: string;
   targetAudience?: string;
   prerequisites?: string;
-  // media
   image?: string;
   carouselImages?: any[];
-  // content
   modules?: FormationModule[];
-  // stats
   views?: number;
 }
 
@@ -218,10 +273,8 @@ export const saveFormation = async (
 
     const batch = writeBatch(db);
 
-    // S'assurer que le document services/formation existe
     batch.set(SERVICES_DOC(), { updatedAt: now }, { merge: true });
 
-    // Document principal
     const mainData: any = {
       title: payload.title,
       slug: payload.slug,
@@ -244,7 +297,6 @@ export const saveFormation = async (
       batch.update(FORMATION_DOC(id), mainData);
     }
 
-    // Overview
     batch.set(OVERVIEW_DOC(id), {
       description: payload.description || '',
       objective: payload.objective || '',
@@ -253,20 +305,17 @@ export const saveFormation = async (
       updatedAt: now,
     }, { merge: true });
 
-    // Media
     batch.set(MEDIA_DOC(id), {
       image: payload.image || '',
       carouselImages: payload.carouselImages || [],
       updatedAt: now,
     }, { merge: true });
 
-    // Content
     batch.set(CONTENT_DOC(id), {
       modules: payload.modules || [],
       updatedAt: now,
     }, { merge: true });
 
-    // Stats (uniquement à la création)
     if (isNew) {
       batch.set(STATS_DOC(id), {
         views: payload.views ?? 0,
@@ -288,8 +337,6 @@ export const saveFormation = async (
 export const deleteFormation = async (formationId: string): Promise<void> => {
   try {
     const batch = writeBatch(db);
-
-    // Supprimer les sous-collections
     for (const subDoc of [
       OVERVIEW_DOC(formationId),
       MEDIA_DOC(formationId),
@@ -298,7 +345,6 @@ export const deleteFormation = async (formationId: string): Promise<void> => {
     ]) {
       batch.delete(subDoc);
     }
-
     batch.delete(FORMATION_DOC(formationId));
     await batch.commit();
   } catch (error) {

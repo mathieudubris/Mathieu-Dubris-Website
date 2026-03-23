@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Send, X, Image as ImageIcon, Video, Plus, Maximize2, Square, Star } from 'lucide-react';
 import styles from './BlogEditor.module.css';
-import NouveauteModal from '@/components/NouveauteModal/NouveauteModal';
+import NouveauteModal from '@/components/app/Home/Sections/Section2/news/News';
 
 interface BlogEditorProps {
     blogId?: string | null;

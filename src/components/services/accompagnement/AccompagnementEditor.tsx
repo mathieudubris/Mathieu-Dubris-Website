@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   X, Save, Info, Tag, Target, Users2, Clock, DollarSign,
-  Globe, Lock, Plus, Trash2, ChevronUp, ChevronDown, Image as ImageIcon,
+  Globe, Plus, Trash2, ChevronUp, ChevronDown, Image as ImageIcon,
   Search, Check, Mail,
 } from 'lucide-react';
 import {
@@ -52,7 +52,6 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
   const [duration, setDuration] = useState(accompagnement?.duration || '');
   const [price, setPrice] = useState<number | ''>(accompagnement?.price ?? '');
   const [currency, setCurrency] = useState(accompagnement?.currency || 'EUR');
-  const [visibility, setVisibility] = useState<FullAccompagnement['visibility']>(accompagnement?.visibility || 'members_only');
   const [description, setDescription] = useState(accompagnement?.description || '');
   const [objective, setObjective] = useState(accompagnement?.objective || '');
   const [targetAudience, setTargetAudience] = useState(accompagnement?.targetAudience || '');
@@ -137,7 +136,7 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
           duration,
           price: price === '' ? undefined : Number(price),
           currency,
-          visibility,
+          visibility: 'public',
           teamMembers,
           createdBy: currentUser.uid,
           description,
@@ -257,18 +256,6 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
                   <select className={styles.select} value={currency} onChange={(e) => setCurrency(e.target.value)}>
                     {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
-                </div>
-              </div>
-
-              <div className={styles.field}>
-                <label className={styles.label}>Visibilité</label>
-                <div className={styles.visibilityToggle}>
-                  <button type="button" className={`${styles.visBtn} ${visibility === 'public' ? styles.visBtnActive : ''}`} onClick={() => setVisibility('public')}>
-                    <Globe size={13} /> Public
-                  </button>
-                  <button type="button" className={`${styles.visBtn} ${visibility === 'members_only' ? styles.visBtnActive : ''}`} onClick={() => setVisibility('members_only')}>
-                    <Lock size={13} /> Bénéficiaires uniquement
-                  </button>
                 </div>
               </div>
 

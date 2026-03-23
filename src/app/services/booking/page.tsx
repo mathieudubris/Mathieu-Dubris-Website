@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, Clock, Calendar, Video,
-  Check, ArrowRight, User, Mail, X, Download, Copy, ExternalLink
+  Check, ArrowRight, User, Mail, X, Copy, ExternalLink, Plus
 } from 'lucide-react';
 import styles from './booking.module.css';
+
+// Firestore
+import { db } from '@/utils/firebase-api';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  Timestamp,
+} from 'firebase/firestore';
+import Image from 'next/image';
 
 // ─────────────────────────────────────────────
 // Constants
@@ -19,52 +31,116 @@ const MONTHS_FR = [
 
 const DAYS_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 
-const TIME_SLOTS = [
-  '09:00','09:30','10:00','10:30','11:00','11:30',
-  '12:00','12:30','13:00','13:30','14:00','14:30',
-  '15:00','15:30','16:00','16:30','17:00','17:30',
+/**
+ * Slots horaires : heures entières de 08h à 21h.
+ * Le dernier meeting (21h) se termine à 22h → fin de journée.
+ */
+const ALL_TIME_SLOTS = [
+  '08:00','09:00','10:00','11:00','12:00','13:00',
+  '14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00',
 ];
 
-// Slots aléatoirement "occupés" (simulation) — en prod, fetch depuis Firestore/Calendar API
-const FAKE_BOOKED: Record<string, string[]> = {};
+// Fin de journée (heure à partir de laquelle plus aucun meeting ne peut commencer)
+const DAY_END_HOUR = 22; // un meeting à 21h finit à 22h → OK
 
 const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
+
+/**
+ * Un jour est "passé" si sa date calendaire est strictement avant aujourd'hui.
+ * On ne bloque PAS le jour même ici — la logique "même jour" est gérée
+ * dans le filtrage des slots.
+ */
 const isPast = (d: Date) => {
   const today = new Date(); today.setHours(0,0,0,0);
-  return d < today;
+  const day   = new Date(d); day.setHours(0,0,0,0);
+  return day < today;
 };
 
-// ─────────────────────────────────────────────
-// Generate .ics + Meet link
-// ─────────────────────────────────────────────
+/**
+ * Retourne les slots disponibles pour un jour donné, en tenant compte :
+ * 1. Des slots déjà réservés dans Firestore (bookedSlots).
+ * 2. Si c'est aujourd'hui :
+ *    - slot disponible seulement si slotHour >= currentHour + 1
+ *    - ET slotHour + 1 <= DAY_END_HOUR  (le meeting doit finir avant/à 22h)
+ */
+const getAvailableSlots = (
+  date: Date,
+  bookedSlots: string[],
+): { slot: string; disabled: boolean; reason: 'booked' | 'past' | 'too-late' | null }[] => {
+  const now     = new Date();
+  const isToday = date.toDateString() === now.toDateString();
 
-const generateMeetLink = () => {
-  // En production : appeler votre API route /api/create-meet
-  // qui utilise Google Calendar API pour créer un event avec conferenceData
-  // Ici on génère un identifiant unique pour simuler
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  const rand = (n: number) => Array.from({length: n}, () => chars[Math.floor(Math.random()*26)]).join('');
-  return `https://meet.google.com/${rand(3)}-${rand(4)}-${rand(3)}`;
+  return ALL_TIME_SLOTS.map((slot) => {
+    const [slotHour] = slot.split(':').map(Number);
+
+    // Slot déjà pris
+    if (bookedSlots.includes(slot)) {
+      return { slot, disabled: true, reason: 'booked' };
+    }
+
+    // Logique same-day
+    if (isToday) {
+      const currentHour = now.getHours(); // ex: 19 si 19h30
+
+      // Il faut au moins 1h d'avance : slot >= currentHour + 1
+      if (slotHour < currentHour + 1) {
+        return { slot, disabled: true, reason: 'past' };
+      }
+
+      // Le meeting doit se terminer au plus tard à 22h : slotHour + 1 <= 22
+      if (slotHour + 1 > DAY_END_HOUR) {
+        return { slot, disabled: true, reason: 'too-late' };
+      }
+    }
+
+    return { slot, disabled: false, reason: null };
+  });
 };
+
+/**
+ * Un jour est entièrement indisponible si tous ses slots sont désactivés
+ * (utilisé pour griser les jours dans le calendrier — optionnel).
+ */
+const isDayFullyBooked = (date: Date, bookedByDay: Record<string, string[]>): boolean => {
+  const key = toDateKey(date);
+  const booked = bookedByDay[key] ?? [];
+  return getAvailableSlots(date, booked).every(s => s.disabled);
+};
+
+// Clé unique par jour : "YYYY-MM-DD"
+const toDateKey = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const isValidEmail = (email: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+// ─────────────────────────────────────────────
+// Generate .ics
+// ─────────────────────────────────────────────
 
 const generateICS = (
   date: Date,
   time: string,
   name: string,
-  email: string,
+  emails: string[],
   meetLink: string
 ): string => {
   const [h, m] = time.split(':').map(Number);
   const start = new Date(date);
   start.setHours(h, m, 0, 0);
   const end = new Date(start);
-  end.setMinutes(end.getMinutes() + 30);
+  end.setMinutes(end.getMinutes() + 60); // durée 1h
 
   const pad = (n: number) => String(n).padStart(2, '0');
   const fmt = (d: Date) =>
     `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
 
   const uid = `${Date.now()}-booking@mathieu-dubris.com`;
+  const now = fmt(new Date());
+
+  const attendees = emails.map(e =>
+    `ATTENDEE;CN=${name};RSVP=TRUE;PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT:mailto:${e.trim()}`
+  ).join('\r\n');
 
   return [
     'BEGIN:VCALENDAR',
@@ -74,13 +150,14 @@ const generateICS = (
     'METHOD:REQUEST',
     'BEGIN:VEVENT',
     `UID:${uid}`,
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
+    `DTSTAMP:${now}Z`,
+    `DTSTART;TZID=Indian/Antananarivo:${fmt(start)}`,
+    `DTEND;TZID=Indian/Antananarivo:${fmt(end)}`,
     `SUMMARY:Rendez-vous avec Mathieu Dubris`,
     `DESCRIPTION:Rejoignez la réunion Google Meet :\\n${meetLink}`,
     `LOCATION:${meetLink}`,
     `ORGANIZER;CN=Mathieu Dubris:mailto:mathieudubris@gmail.com`,
-    `ATTENDEE;CN=${name};RSVP=TRUE:mailto:${email}`,
+    attendees,
     `URL:${meetLink}`,
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
@@ -103,13 +180,67 @@ const downloadICS = (ics: string, filename: string) => {
 };
 
 // ─────────────────────────────────────────────
+// Firestore helpers
+// ─────────────────────────────────────────────
+
+/**
+ * Charge tous les slots réservés pour un mois donné depuis Firestore.
+ * Collection : bookings / { date: "YYYY-MM-DD", time: "HH:00", ... }
+ * Retourne un dict { "YYYY-MM-DD": ["08:00", "10:00", ...] }
+ */
+const fetchBookedSlotsForMonth = async (
+  year: number,
+  month: number // 0-indexed
+): Promise<Record<string, string[]>> => {
+  try {
+    const firstDay = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const lastDay  = `${year}-${String(month + 1).padStart(2, '0')}-${new Date(year, month + 1, 0).getDate().toString().padStart(2, '0')}`;
+
+    const q = query(
+      collection(db, 'bookings'),
+      where('date', '>=', firstDay),
+      where('date', '<=', lastDay),
+    );
+    const snap = await getDocs(q);
+
+    const result: Record<string, string[]> = {};
+    snap.docs.forEach(d => {
+      const { date, time } = d.data() as { date: string; time: string };
+      if (!result[date]) result[date] = [];
+      if (!result[date].includes(time)) result[date].push(time);
+    });
+    return result;
+  } catch (err) {
+    console.error('fetchBookedSlotsForMonth:', err);
+    return {};
+  }
+};
+
+/**
+ * Enregistre un booking dans Firestore après confirmation Google Meet.
+ */
+const saveBooking = async (params: {
+  date: string;       // "YYYY-MM-DD"
+  time: string;       // "HH:00"
+  name: string;
+  emails: string[];
+  meetLink: string;
+  eventId: string;
+  note?: string;
+}): Promise<void> => {
+  await addDoc(collection(db, 'bookings'), {
+    ...params,
+    createdAt: Timestamp.now(),
+  });
+};
+
+// ─────────────────────────────────────────────
 // Calendar grid
 // ─────────────────────────────────────────────
 
 const getCalendarDays = (year: number, month: number) => {
   const first = new Date(year, month, 1);
   const last = new Date(year, month + 1, 0);
-  // Start on Monday (0=Mon … 6=Sun)
   let startDay = first.getDay() - 1;
   if (startDay < 0) startDay = 6;
   const days: (Date | null)[] = Array(startDay).fill(null);
@@ -128,7 +259,7 @@ interface BookingState {
   date: Date | null;
   time: string | null;
   name: string;
-  email: string;
+  emails: string[];
   note: string;
   meetLink: string;
   ics: string;
@@ -145,11 +276,28 @@ export default function BookingPage() {
   const [step, setStep] = useState<Step>('calendar');
   const [copied, setCopied] = useState(false);
 
+  // Slots réservés chargés depuis Firestore { "YYYY-MM-DD": ["08:00", ...] }
+  const [bookedByDay, setBookedByDay] = useState<Record<string, string[]>>({});
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Multi-email state
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
+
   const [booking, setBooking] = useState<BookingState>({
-    date: null, time: null, name: '', email: '', note: '', meetLink: '', ics: ''
+    date: null, time: null, name: '', emails: [], note: '', meetLink: '', ics: ''
   });
 
   const calDays = useMemo(() => getCalendarDays(viewYear, viewMonth), [viewYear, viewMonth]);
+
+  // Charger les slots réservés à chaque changement de mois (et au montage)
+  useEffect(() => {
+    setLoadingSlots(true);
+    fetchBookedSlotsForMonth(viewYear, viewMonth).then(data => {
+      setBookedByDay(data);
+      setLoadingSlots(false);
+    });
+  }, [viewYear, viewMonth]);
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
@@ -171,30 +319,87 @@ export default function BookingPage() {
     setStep('form');
   };
 
+  // Slots disponibles pour la date sélectionnée
+  const availableSlots = useMemo(() => {
+    if (!booking.date) return [];
+    const key = toDateKey(booking.date);
+    return getAvailableSlots(booking.date, bookedByDay[key] ?? []);
+  }, [booking.date, bookedByDay]);
+
+  // ── Multi-email handlers ──
+  const addEmail = () => {
+    const val = emailInput.trim();
+    if (!val) return;
+    if (!isValidEmail(val)) {
+      setEmailError('Adresse e-mail invalide.');
+      return;
+    }
+    const normalized = val.toLowerCase();
+    if (booking.emails.map(e => e.toLowerCase()).includes(normalized)) {
+      setEmailError('Cette adresse est déjà ajoutée.');
+      return;
+    }
+    setBooking(b => ({ ...b, emails: [...b.emails, val] }));
+    setEmailInput('');
+    setEmailError('');
+  };
+
+  const removeEmail = (idx: number) => {
+    setBooking(b => ({ ...b, emails: b.emails.filter((_, i) => i !== idx) }));
+  };
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addEmail();
+    }
+  };
+
+  // ── Confirm ──
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState('');
 
   const handleConfirm = async () => {
-    if (!booking.date || !booking.time || !booking.name || !booking.email) return;
+    if (!booking.date || !booking.time || !booking.name || booking.emails.length === 0) return;
     setConfirming(true);
     setConfirmError('');
     try {
-      // APRÈS — remplace par ton URL Vercel exacte
-const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
+      const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date: booking.date.toISOString(),
           time: booking.time,
           name: booking.name,
-          email: booking.email,
+          email: booking.emails[0],
+          extraEmails: booking.emails.slice(1),
           note: booking.note,
         }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Erreur serveur');
+
       const meetLink = data.meetLink;
-      const ics = generateICS(booking.date, booking.time, booking.name, booking.email, meetLink);
+      const ics = generateICS(booking.date, booking.time, booking.name, booking.emails, meetLink);
+
+      // Sauvegarder dans Firestore pour bloquer ce créneau
+      const dateKey = toDateKey(booking.date);
+      await saveBooking({
+        date: dateKey,
+        time: booking.time,
+        name: booking.name,
+        emails: booking.emails,
+        meetLink,
+        eventId: data.eventId ?? '',
+        note: booking.note,
+      });
+
+      // Mettre à jour le cache local des slots réservés
+      setBookedByDay(prev => ({
+        ...prev,
+        [dateKey]: [...(prev[dateKey] ?? []), booking.time!],
+      }));
+
       setBooking(b => ({ ...b, meetLink, ics }));
       setStep('confirm');
     } catch (err: any) {
@@ -204,7 +409,6 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
       setConfirming(false);
     }
   };
-
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(booking.meetLink);
@@ -216,6 +420,8 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
     d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   const ease = [0.23, 1, 0.32, 1] as [number,number,number,number];
+
+  const canConfirm = booking.name && booking.emails.length > 0 && !confirming;
 
   return (
     <div className={styles.page}>
@@ -231,7 +437,17 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
         {/* ── LEFT PANEL ── */}
         <div className={styles.leftPanel}>
           <div className={styles.hostCard}>
-            <div className={styles.hostAvatar}>MD</div>
+            {/* Image de profil modifiée */}
+            <div className={styles.hostAvatar}>
+              <Image 
+                src="/assets/mathieu/images/png/profil.png" 
+                alt="Mathieu Dubris"
+                width={92}
+                height={92}
+                quality={100}
+                style={{ objectFit: 'cover', borderRadius: '50%', width: '46px', height: '46px' }}
+              />
+            </div>
             <div>
               <p className={styles.hostLabel}>Réserver un créneau avec</p>
               <h1 className={styles.hostName}>Mathieu Dubris</h1>
@@ -241,24 +457,24 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
           <div className={styles.infos}>
             <div className={styles.infoItem}>
               <Clock size={14} className={styles.infoIcon} />
-              <span>30 minutes</span>
+              <span>60 minutes</span>
             </div>
             <div className={styles.infoItem}>
               <Video size={14} className={styles.infoIcon} />
-              <span>Google Meet (lien auto-généré)</span>
+              <span>Google Meet</span>
             </div>
             <div className={styles.infoItem}>
               <Calendar size={14} className={styles.infoIcon} />
-              <span>Lundi → Vendredi, 09h – 18h</span>
+              <span>Lundi → Vendredi, 08h – 22h</span>
             </div>
           </div>
 
-          <p className={styles.leftDesc}>
-            Choisissez un créneau disponible. Vous recevrez un lien Google Meet unique
-            ainsi qu'un fichier <strong>.ics</strong> pour l'ajouter directement à votre agenda.
-          </p>
+        </div>
 
-          {/* Step indicator */}
+        {/* ── RIGHT PANEL ── */}
+        <div className={styles.rightPanel}>
+
+          {/* Step indicator — barre horizontale en haut du panel droit */}
           <div className={styles.stepIndicator}>
             {(['calendar','time','form','confirm'] as Step[]).map((s, i) => {
               const labels = ['Date','Horaire','Infos','Confirmé'];
@@ -266,20 +482,19 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
               const done = i < idx;
               const active = s === step;
               return (
-                <div key={s} className={styles.stepItem}>
-                  <div className={`${styles.stepDot} ${active ? styles.stepDotActive : ''} ${done ? styles.stepDotDone : ''}`}>
-                    {done ? <Check size={10} /> : i + 1}
+                <React.Fragment key={s}>
+                  <div className={styles.stepItem}>
+                    <div className={`${styles.stepDot} ${active ? styles.stepDotActive : ''} ${done ? styles.stepDotDone : ''}`}>
+                      {done ? <Check size={10} /> : i + 1}
+                    </div>
+                    <span className={`${styles.stepLabel} ${active ? styles.stepLabelActive : ''}`}>{labels[i]}</span>
                   </div>
-                  <span className={`${styles.stepLabel} ${active ? styles.stepLabelActive : ''}`}>{labels[i]}</span>
-                  {i < 3 && <div className={`${styles.stepLine} ${done ? styles.stepLineDone : ''}`} />}
-                </div>
+                  {i < 3 && <div className={`${styles.stepConnector} ${done ? styles.stepConnectorDone : ''}`} />}
+                </React.Fragment>
               );
             })}
           </div>
-        </div>
 
-        {/* ── RIGHT PANEL ── */}
-        <div className={styles.rightPanel}>
           <AnimatePresence mode="wait">
 
             {/* ── STEP 1: CALENDAR ── */}
@@ -302,33 +517,47 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                   <button className={styles.calNavBtn} onClick={nextMonth}><ChevronRight size={16} /></button>
                 </div>
 
+                {loadingSlots ? (
+                  <div className={styles.calSkeleton}>
+                    <div className={styles.calSkeletonGrid}>
+                      {Array.from({ length: 42 }).map((_, i) => (
+                        <div key={i} className={styles.calSkeletonCell} />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
                 <div className={styles.calGrid}>
                   {DAYS_FR.map(d => (
                     <div key={d} className={styles.calDayName}>{d}</div>
                   ))}
                   {calDays.map((d, i) => {
                     if (!d) return <div key={i} className={styles.calEmpty} />;
-                    const weekend = isWeekend(d);
-                    const past = isPast(d);
-                    const isToday = d.toDateString() === today.toDateString();
+                    const weekend  = isWeekend(d);
+                    const past     = isPast(d);
+                    const isToday  = d.toDateString() === today.toDateString();
                     const selected = booking.date?.toDateString() === d.toDateString();
-                    const disabled = weekend || past;
+                    const key = toDateKey(d);
+                    const booked = bookedByDay[key] ?? [];
+                    const isCompletelyUnavailable = weekend || past || getAvailableSlots(d, booked).every(s => s.disabled);
+                    
                     return (
                       <button
                         key={i}
                         className={`${styles.calDay}
-                          ${disabled ? styles.calDayDisabled : styles.calDayAvailable}
+                          ${(weekend || past) ? styles.calDayDisabled : styles.calDayAvailable}
                           ${isToday ? styles.calDayToday : ''}
                           ${selected ? styles.calDaySelected : ''}
+                          ${isCompletelyUnavailable && !weekend && !past ? styles.calDayStrikethrough : ''}
                         `}
-                        onClick={() => !disabled && selectDate(d)}
-                        disabled={disabled}
+                        onClick={() => !weekend && !past && selectDate(d)}
+                        disabled={weekend || past || isCompletelyUnavailable}
                       >
                         {d.getDate()}
                       </button>
                     );
                   })}
                 </div>
+                )}
               </motion.div>
             )}
 
@@ -347,25 +576,33 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                 <h2 className={styles.stepTitle}>Choisissez un horaire</h2>
                 <p className={styles.stepSub}>{formatDateLong(booking.date)}</p>
 
-                <div className={styles.timeGrid}>
-                  {TIME_SLOTS.map(t => {
-                    const dateKey = booking.date!.toDateString();
-                    const booked = FAKE_BOOKED[dateKey]?.includes(t);
-                    return (
+                {availableSlots.every(s => s.disabled) ? (
+                  <p style={{ color: '#f87171', fontSize: '0.82rem', textAlign: 'center', marginTop: '24px' }}>
+                    Aucun créneau disponible pour ce jour. Veuillez choisir une autre date.
+                  </p>
+                ) : (
+                  <div className={styles.timeGrid}>
+                    {availableSlots.map(({ slot, disabled, reason }) => (
                       <button
-                        key={t}
-                        className={`${styles.timeSlot} ${booked ? styles.timeSlotBooked : styles.timeSlotAvail}`}
-                        onClick={() => !booked && selectTime(t)}
-                        disabled={booked}
+                        key={slot}
+                        className={`${styles.timeSlot} ${disabled ? styles.timeSlotBooked : styles.timeSlotAvail}`}
+                        onClick={() => !disabled && selectTime(slot)}
+                        disabled={disabled}
+                        title={
+                          reason === 'booked'   ? 'Créneau déjà réservé' :
+                          reason === 'past'     ? 'Créneau dépassé' :
+                          reason === 'too-late' ? 'Trop tard dans la journée' :
+                          undefined
+                        }
                       >
                         <Clock size={11} />
-                        {t}
+                        {slot}
                       </button>
-                    );
-                  })}
-                </div>
+                    ))}
+                  </div>
+                )}
 
-                <p className={styles.timeNote}>Tous les créneaux sont en heure locale (Paris) · durée 30 min</p>
+                <p className={styles.timeNote}>Tous les créneaux sont en heure locale · durée 1h</p>
               </motion.div>
             )}
 
@@ -405,17 +642,53 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                     />
                   </div>
 
+                  {/* ── MULTI-EMAIL FIELD ── */}
                   <div className={styles.field}>
                     <label className={styles.fieldLabel}>
-                      <Mail size={12} /> Email *
+                      <Mail size={12} /> Adresses e-mail * <span className={styles.fieldLabelHint}>(invitation agenda envoyée à chacune)</span>
                     </label>
-                    <input
-                      type="email"
-                      className={styles.fieldInput}
-                      placeholder="jean@exemple.com"
-                      value={booking.email}
-                      onChange={e => setBooking(b => ({ ...b, email: e.target.value }))}
-                    />
+
+                    {/* Tags */}
+                    {booking.emails.length > 0 && (
+                      <div className={styles.emailTags}>
+                        {booking.emails.map((e, i) => (
+                          <span key={i} className={styles.emailTag}>
+                            {e}
+                            <button
+                              className={styles.emailTagRemove}
+                              onClick={() => removeEmail(i)}
+                              type="button"
+                              aria-label="Supprimer"
+                            >
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className={styles.emailInputRow}>
+                      <input
+                        type="email"
+                        className={`${styles.fieldInput} ${styles.emailInputFlex}`}
+                        placeholder="jean@exemple.com"
+                        value={emailInput}
+                        onChange={e => { setEmailInput(e.target.value); setEmailError(''); }}
+                        onKeyDown={handleEmailKeyDown}
+                      />
+                      <button
+                        type="button"
+                        className={styles.emailAddBtn}
+                        onClick={addEmail}
+                        disabled={!emailInput.trim()}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                    {emailError && (
+                      <p className={styles.emailErrorMsg}>{emailError}</p>
+                    )}
+                    <p className={styles.emailHint}>Appuyez sur Entrée ou cliquez + pour ajouter plusieurs adresses</p>
                   </div>
 
                   <div className={styles.field}>
@@ -425,7 +698,7 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                       placeholder="Sujet de la réunion, questions..."
                       value={booking.note}
                       onChange={e => setBooking(b => ({ ...b, note: e.target.value }))}
-                      rows={3}
+                      rows={2}
                     />
                   </div>
 
@@ -438,7 +711,7 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                   <button
                     className={styles.confirmBtn}
                     onClick={handleConfirm}
-                    disabled={!booking.name || !booking.email || confirming}
+                    disabled={!canConfirm}
                   >
                     {confirming ? 'Création du lien Meet…' : <>Confirmer le rendez-vous <ArrowRight size={15} /></>}
                   </button>
@@ -468,6 +741,9 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                 <p className={styles.confirmSub}>
                   {formatDateLong(booking.date)} à <strong>{booking.time}</strong>
                 </p>
+                <p className={styles.confirmEmailsSent}>
+                  Invitation envoyée à : {booking.emails.join(', ')}
+                </p>
 
                 {/* Meet link card */}
                 <div className={styles.meetCard}>
@@ -493,28 +769,7 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                   </a>
                 </div>
 
-                {/* ICS download */}
-                <div className={styles.icsCard}>
-                  <div className={styles.icsCardLeft}>
-                    <Calendar size={16} className={styles.icsIcon} />
-                    <div>
-                      <p className={styles.icsTitle}>Ajouter à votre agenda</p>
-                      <p className={styles.icsSub}>Compatible Google Calendar, Apple Calendar, Outlook…</p>
-                    </div>
-                  </div>
-                  <button
-                    className={styles.icsBtn}
-                    onClick={() => downloadICS(
-                      booking.ics,
-                      `rdv-mathieu-${booking.date!.toISOString().split('T')[0]}.ics`
-                    )}
-                  >
-                    <Download size={14} />
-                    .ics
-                  </button>
-                </div>
-
-                {/* Direct Google Calendar link */}
+                {/* Google Calendar deeplink */}
                 <a
                   href={buildGoogleCalendarLink(booking)}
                   target="_blank"
@@ -522,13 +777,15 @@ const res = await fetch('https://meet-api-lemon.vercel.app/api/create-meet', {
                   className={styles.googleCalBtn}
                 >
                   <img src="https://www.gstatic.com/images/branding/product/1x/calendar_2020q4_32dp.png" alt="Google Calendar" width={16} height={16} />
-                  Ouvrir dans Google Calendar
+                  Ajouter à Google Calendar
                 </a>
 
                 <button
                   className={styles.restartBtn}
                   onClick={() => {
-                    setBooking({ date: null, time: null, name: '', email: '', note: '', meetLink: '', ics: '' });
+                    setBooking({ date: null, time: null, name: '', emails: [], note: '', meetLink: '', ics: '' });
+                    setEmailInput('');
+                    setEmailError('');
                     setStep('calendar');
                   }}
                 >
@@ -553,7 +810,7 @@ function buildGoogleCalendarLink(booking: BookingState): string {
   const start = new Date(booking.date);
   start.setHours(h, m, 0, 0);
   const end = new Date(start);
-  end.setMinutes(end.getMinutes() + 30);
+  end.setMinutes(end.getMinutes() + 60); // 1h
 
   const pad = (n: number) => String(n).padStart(2, '0');
   const fmt = (d: Date) =>

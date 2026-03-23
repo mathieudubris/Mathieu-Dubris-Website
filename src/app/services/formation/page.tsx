@@ -19,7 +19,6 @@ export default function FormationPage() {
   const fullFormationCacheRef = useRef<Record<string, any>>({});
   const currentUserRef = useRef<any>(null);
 
-  // ── Auth + chargement initial ─────────────────────────────────────────────
   useEffect(() => {
     const unsubscribe = setupAuthListener(async (user) => {
       currentUserRef.current = user;
@@ -27,7 +26,8 @@ export default function FormationPage() {
         setCurrentUser(user);
         const [users, formationsList] = await Promise.all([
           getAllUsers(),
-          getAllFormations(),
+          // ← On passe l'uid pour les requêtes ciblées (public + membre/créateur)
+          getAllFormations(user.uid),
         ]);
         setAllUsers(users);
 
@@ -35,7 +35,12 @@ export default function FormationPage() {
           const members = (f.teamMembers || []).map((uid: string) => {
             const u = users.find((u: any) => u.uid === uid);
             return u
-              ? { userId: u.uid as string, displayName: u.displayName as string | undefined, email: u.email as string | undefined, photoURL: u.photoURL as string | undefined }
+              ? {
+                  userId: u.uid as string,
+                  displayName: u.displayName as string | undefined,
+                  email: u.email as string | undefined,
+                  photoURL: u.photoURL as string | undefined,
+                }
               : null;
           }).filter((m): m is NonNullable<typeof m> => m !== null);
           return { ...f, members };
@@ -62,16 +67,22 @@ export default function FormationPage() {
 
   const reloadFormations = async () => {
     fullFormationCacheRef.current = {};
+    const userId = currentUserRef.current?.uid ?? null;
     const [users, formationsList] = await Promise.all([
       getAllUsers(),
-      getAllFormations(),
+      getAllFormations(userId),
     ]);
     setAllUsers(users);
     const enriched: FullFormation[] = formationsList.map((f) => {
       const members = (f.teamMembers || []).map((uid: string) => {
         const u = users.find((u: any) => u.uid === uid);
         return u
-          ? { userId: u.uid as string, displayName: u.displayName as string | undefined, email: u.email as string | undefined, photoURL: u.photoURL as string | undefined }
+          ? {
+              userId: u.uid as string,
+              displayName: u.displayName as string | undefined,
+              email: u.email as string | undefined,
+              photoURL: u.photoURL as string | undefined,
+            }
           : null;
       }).filter((m): m is NonNullable<typeof m> => m !== null);
       return { ...f, members };

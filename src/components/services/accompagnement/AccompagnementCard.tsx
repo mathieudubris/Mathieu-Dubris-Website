@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Lock, Users, Clock, BookMarked } from 'lucide-react';
+import { Edit2, Trash2, Sparkles, Users, Clock, BookMarked } from 'lucide-react';
 import { FullAccompagnement } from '@/utils/accompagnement-api';
 import styles from './AccompagnementCard.module.css';
 
@@ -32,30 +32,6 @@ const LEVEL_LABELS: Record<string, string> = {
   expert:        'Expert',
 };
 
-const MemberAvatar: React.FC<{ src?: string; name: string; email?: string }> = ({ src, name, email }) => {
-  const [failed, setFailed] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const label = name || email || 'Membre';
-  const letter = label.charAt(0).toUpperCase();
-
-  return (
-    <div
-      className={styles.memberAvatar}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {src && !failed ? (
-        <img src={src} alt={label} onError={() => setFailed(true)} className={styles.avatarImg} />
-      ) : (
-        <div className={styles.avatarPlaceholder}>{letter}</div>
-      )}
-      {hovered && (
-        <div className={styles.avatarTooltip}>{label}</div>
-      )}
-    </div>
-  );
-};
-
 const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
   accompagnement,
   currentUser,
@@ -67,12 +43,13 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
   onDeleteConfirm,
   onClick,
 }) => {
-  const isLocked = accompagnement.visibility === 'members_only' && !isMember && !isAdmin;
+  // Tout est public — badge "Accès anticipé" pour les non-membres uniquement
+  const isEarlyAccess = !isMember && !isAdmin;
   const levelColor = LEVEL_COLORS[accompagnement.level] || 'var(--primary)';
   const levelLabel = LEVEL_LABELS[accompagnement.level] || accompagnement.level;
 
   const handleClick = () => {
-    if (!currentUser || isLocked) {
+    if (!currentUser) {
       window.location.href = '/security/access';
       return;
     }
@@ -130,10 +107,10 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
               <span>Suivi</span>
             </div>
           )}
-          {isLocked && (
+          {isEarlyAccess && (
             <div className={styles.lockedBadge}>
-              <Lock size={9} />
-              <span>Accès restreint</span>
+              <Sparkles size={9} />
+              <span>Accès anticipé</span>
             </div>
           )}
         </div>
@@ -159,7 +136,7 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
       </div>
 
       {/* Cover */}
-      <div className={`${styles.coverWrap} ${isLocked ? styles.blurred : ''}`}>
+      <div className={styles.coverWrap}>
         <img
           src={accompagnement.image || '/default-accompagnement.jpg'}
           alt={accompagnement.title}
@@ -173,7 +150,7 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
 
       {/* Content */}
       <div className={styles.cardBody}>
-        <div className={`${styles.bodyContent} ${isLocked ? styles.bodyBlurred : ''}`}>
+        <div className={styles.bodyContent}>
           <span className={styles.category}>{accompagnement.category || 'Non catégorisé'}</span>
           <h3 className={styles.title}>{accompagnement.title}</h3>
           <p className={styles.description}>
@@ -196,21 +173,9 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
           </div>
         </div>
 
+        {/* Footer simplifié - plus de liste de membres */}
         <div className={styles.cardFooter}>
-          <div className={styles.membersRow}>
-            {(accompagnement.members || []).slice(0, 5).map((m: any, i: number) => (
-              <MemberAvatar
-                key={i}
-                src={m.photoURL}
-                name={m.displayName}
-                email={m.email}
-              />
-            ))}
-            {(accompagnement.members || []).length > 5 && (
-              <div className={styles.moreMembers}>+{(accompagnement.members || []).length - 5}</div>
-            )}
-          </div>
-          <span className={styles.dateLabel}>
+          <div className={styles.dateLabel}>
             {accompagnement.createdAt
               ? (() => {
                   try {
@@ -221,7 +186,7 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
                   } catch { return ''; }
                 })()
               : ''}
-          </span>
+          </div>
         </div>
       </div>
     </motion.div>

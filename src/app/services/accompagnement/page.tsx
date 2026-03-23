@@ -31,7 +31,9 @@ export default function AccompagnementPage() {
         setCurrentUser(user);
         const [users, accompagnementsList] = await Promise.all([
           getAllUsers(),
-          getAllAccompagnements(),
+          // ← On passe l'uid pour que getAllAccompagnements puisse faire
+          //   les requêtes ciblées (public + membre/créateur)
+          getAllAccompagnements(user.uid),
         ]);
         setAllUsers(users);
 
@@ -66,9 +68,10 @@ export default function AccompagnementPage() {
 
   const reloadAccompagnements = async () => {
     fullAccompagnementCacheRef.current = {};
+    const userId = currentUserRef.current?.uid ?? null;
     const [users, accompagnementsList] = await Promise.all([
       getAllUsers(),
-      getAllAccompagnements(),
+      getAllAccompagnements(userId),
     ]);
     setAllUsers(users);
     const enriched: FullAccompagnement[] = accompagnementsList.map((a) => {

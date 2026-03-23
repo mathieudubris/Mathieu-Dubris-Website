@@ -118,10 +118,54 @@ export const generateUniqueAccompagnementSlug = async (title: string, excludeSlu
 // Lecture
 // ─────────────────────────────────────────────
 
-export const getAllAccompagnements = async (): Promise<FullAccompagnement[]> => {
+/**
+ * Récupère tous les accompagnements accessibles à l'utilisateur courant.
+ *
+ * POURQUOI DEUX REQUÊTES ?
+ * Firestore évalue la règle `read` sur chaque document lors d'un getDocs().
+ * Si un seul document `members_only` n'est pas accessible à l'utilisateur,
+ * TOUTE la requête échoue avec "Missing or insufficient permissions".
+ * La solution est de faire deux requêtes `where` ciblées :
+ *   1. Les accompagnements publics → accessibles à tout utilisateur connecté
+ *   2. Les accompagnements members_only où l'utilisateur est membre ou créateur
+ * Les résultats sont fusionnés et dédupliqués par ID.
+ *
+ * @param userId - UID de l'utilisateur connecté (null si non connecté)
+ */
+export const getAllAccompagnements = async (userId?: string | null): Promise<FullAccompagnement[]> => {
   try {
-    const snap = await getDocs(ACCOMPAGNEMENTS_COL());
-    const accompagnements = snap.docs.map((d) => ({ id: d.id, ...d.data() } as FullAccompagnement));
+    const col = ACCOMPAGNEMENTS_COL();
+
+    // Requête 1 : tous les accompagnements publics
+    const publicQuery = query(col, where('visibility', '==', 'public'));
+
+    // Requêtes 2 & 3 : membres_only où l'utilisateur est membre ou créateur
+    // (uniquement si un userId est fourni)
+    const memberQueries = userId
+      ? [
+          query(col, where('visibility', '==', 'members_only'), where('teamMembers', 'array-contains', userId)),
+          query(col, where('visibility', '==', 'members_only'), where('createdBy', '==', userId)),
+        ]
+      : [];
+
+    // Exécuter toutes les requêtes en parallèle
+    const [publicSnap, ...memberSnaps] = await Promise.all([
+      getDocs(publicQuery),
+      ...memberQueries.map((q) => getDocs(q)),
+    ]);
+
+    // Fusionner et dédupliquer par ID
+    const docsById = new Map<string, FullAccompagnement>();
+
+    for (const snap of [publicSnap, ...memberSnaps]) {
+      for (const d of snap.docs) {
+        if (!docsById.has(d.id)) {
+          docsById.set(d.id, { id: d.id, ...d.data() } as FullAccompagnement);
+        }
+      }
+    }
+
+    const accompagnements = Array.from(docsById.values());
 
     // Charger overview + media + stats en parallèle pour chaque accompagnement
     const enriched = await Promise.all(
@@ -143,6 +187,7 @@ export const getAllAccompagnements = async (): Promise<FullAccompagnement[]> => 
         }
       })
     );
+
     return enriched;
   } catch (error) {
     console.error('getAllAccompagnements:', error);
