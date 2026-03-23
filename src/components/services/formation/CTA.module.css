@@ -1,7 +1,6 @@
-/* CTA.module.css — Floating CTA component */
+/* CTA.module.css — Floating CTA, design raffiné */
 
 /* ── Wrapper ─────────────────────────────────────────────────── */
-
 .ctaWrapper {
   position: fixed;
   bottom: 28px;
@@ -10,203 +9,212 @@
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* ── Action buttons (revealed on expand) ────────────────────── */
+/* ── Action cards ────────────────────────────────────────────── */
+.actionCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(18, 18, 20, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  min-width: 200px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
 
-.actions {
+.actionCard:hover {
+  background: rgba(24, 24, 28, 0.97);
+}
+
+/* Icon circle */
+.cardIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.actionCard:hover .cardIcon {
+  transform: scale(1.1);
+}
+
+/* Text */
+.cardText {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.23, 1, 0.32, 1);
+  gap: 1px;
 }
 
-.actions.visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+.cardTitle {
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
-.actionItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  border: none;
-  background: none;
-  padding: 0;
-  font-family: inherit;
-  text-decoration: none;
+.cardSub {
+  font-size: 0.68rem;
+  font-weight: 450;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
-.actionLabel {
-  background: #1a1a1a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.76rem;
-  font-weight: 600;
-  padding: 7px 13px;
-  border-radius: 8px;
-  white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  transition: color 0.18s ease, border-color 0.18s ease;
-  letter-spacing: 0.2px;
+/* ── Calendar variant ── */
+.cardCalendar .cardIcon {
+  background: rgba(199, 255, 68, 0.1);
+  color: var(--primary, #c7ff44);
+  border: 1px solid rgba(199, 255, 68, 0.18);
 }
 
-.actionItem:hover .actionLabel {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.22);
+.cardCalendar:hover {
+  border-color: rgba(199, 255, 68, 0.18);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(199, 255, 68, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Individual action icon buttons */
-
-.actionIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.22s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.22s ease, background 0.22s ease;
-  flex-shrink: 0;
-  cursor: pointer;
+.cardCalendar:hover .cardIcon {
+  background: rgba(199, 255, 68, 0.16);
+  border-color: rgba(199, 255, 68, 0.32);
 }
 
-.actionIcon:hover {
-  transform: scale(1.1) translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-/* Calendar / rendez-vous */
-.actionCalendar .actionIcon {
-  background: #1a1a2e;
-  border-color: rgba(199, 255, 68, 0.2);
-  color: var(--primary);
-}
-
-.actionCalendar:hover .actionIcon {
-  background: rgba(199, 255, 68, 0.12);
-  border-color: rgba(199, 255, 68, 0.4);
-  box-shadow: 0 8px 24px rgba(199, 255, 68, 0.15);
-}
-
-/* WhatsApp */
-.actionWhatsapp .actionIcon {
-  background: #0d1f0d;
-  border-color: rgba(37, 211, 102, 0.2);
+/* ── WhatsApp variant ── */
+.cardWhatsapp .cardIcon {
+  background: rgba(37, 211, 102, 0.1);
   color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.18);
 }
 
-.actionWhatsapp:hover .actionIcon {
-  background: rgba(37, 211, 102, 0.12);
-  border-color: rgba(37, 211, 102, 0.4);
-  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.2);
+.cardWhatsapp:hover {
+  border-color: rgba(37, 211, 102, 0.16);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(37, 211, 102, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* ── Main FAB button ─────────────────────────────────────────── */
+.cardWhatsapp:hover .cardIcon {
+  background: rgba(37, 211, 102, 0.16);
+  border-color: rgba(37, 211, 102, 0.32);
+}
 
+/* ── FAB ─────────────────────────────────────────────────────── */
 .fab {
-  width: 54px;
-  height: 54px;
-  background: var(--primary);
+  position: relative;
+  width: 52px;
+  height: 52px;
+  background: var(--primary, #c7ff44);
   border: none;
-  border-radius: 16px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  position: relative;
-  transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.28s ease;
-  box-shadow: 0 6px 24px rgba(199, 255, 68, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 6px 28px rgba(199, 255, 68, 0.28),
+    0 2px 8px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
-}
-
-.fab:hover {
-  transform: scale(1.06) translateY(-2px);
-  box-shadow: 0 12px 36px rgba(199, 255, 68, 0.4), 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.fab:active { transform: scale(0.97); }
-
-/* Icon inside FAB - rotates when open */
-.fabIcon {
+  overflow: visible;
   color: #0d0d0d;
-  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.fab:focus-visible {
+  outline: 2px solid var(--primary, #c7ff44);
+  outline-offset: 3px;
+}
+
+.fabOpen {
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 1px 4px rgba(0, 0, 0, 0.3);
+  background: rgba(28, 28, 32, 0.96);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Icon wrapper inside FAB */
+.fabIconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
-.fabIcon.rotated { transform: rotate(45deg); }
-
-/* Pulse ring */
+/* ── Pulse ring ── */
 .fabPulse {
   position: absolute;
-  inset: -4px;
-  border-radius: 20px;
-  border: 2px solid var(--primary);
+  inset: -5px;
+  border-radius: 19px;
+  border: 2px solid var(--primary, #c7ff44);
   opacity: 0;
-  animation: pulseRing 2.5s ease-out infinite;
+  pointer-events: none;
+  animation: pulseRing 2.8s ease-out infinite;
 }
 
 @keyframes pulseRing {
-  0%   { opacity: 0.5; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.4); }
+  0%   { opacity: 0.45; transform: scale(1); }
+  100% { opacity: 0;    transform: scale(1.45); }
 }
 
-/* Stop pulsing when open */
-.fab.open .fabPulse { animation: none; opacity: 0; }
-
-/* ── Tooltip on FAB ──────────────────────────────────────────── */
-
+/* ── Tooltip ── */
 .fabTooltip {
   position: absolute;
-  right: calc(100% + 12px);
+  right: calc(100% + 10px);
   top: 50%;
   transform: translateY(-50%);
-  background: #1a1a1a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.73rem;
+  background: rgba(16, 16, 18, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.71rem;
   font-weight: 600;
-  padding: 6px 11px;
+  padding: 5px 10px;
   border-radius: 7px;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.18s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.02em;
 }
 
+/* Arrow */
 .fabTooltip::after {
   content: '';
   position: absolute;
   left: 100%;
   top: 50%;
   transform: translateY(-50%);
-  border: 5px solid transparent;
-  border-left-color: rgba(255, 255, 255, 0.1);
+  border: 4px solid transparent;
+  border-left-color: rgba(255, 255, 255, 0.08);
 }
 
-.fab:hover .fabTooltip { opacity: 1; }
-.fab.open .fabTooltip { opacity: 0; }
-
-/* ── Backdrop (subtle click-away area) ──────────────────────── */
-
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
+.fab:hover .fabTooltip {
+  opacity: 1;
 }
 
-/* ── Responsive ──────────────────────────────────────────────── */
-
+/* ── Responsive ── */
 @media (max-width: 768px) {
   .ctaWrapper {
     bottom: 20px;
@@ -214,10 +222,16 @@
   }
 
   .fab {
-    width: 50px;
-    height: 50px;
-    border-radius: 14px;
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
   }
 
-  .fabTooltip { display: none; }
+  .fabTooltip {
+    display: none;
+  }
+
+  .actionCard {
+    min-width: 180px;
+  }
 }

@@ -438,16 +438,13 @@ export default function BookingPage() {
         <div className={styles.leftPanel}>
           <div className={styles.hostCard}>
             {/* Image de profil modifiée */}
-            <div className={styles.hostAvatar}>
-              <Image 
-                src="/assets/mathieu/images/png/profil.png" 
-                alt="Mathieu Dubris"
-                width={92}
-                height={92}
-                quality={100}
-                style={{ objectFit: 'cover', borderRadius: '50%', width: '46px', height: '46px' }}
-              />
-            </div>
+      <div className={styles.hostAvatar}>
+  <img
+    src="/assets/mathieu/images/png/profil.png"
+    alt="Mathieu Dubris"
+    style={{ objectFit: 'cover', borderRadius: '50%', width: '46px', height: '46px' }}
+  />
+</div>
             <div>
               <p className={styles.hostLabel}>Réserver un créneau avec</p>
               <h1 className={styles.hostName}>Mathieu Dubris</h1>

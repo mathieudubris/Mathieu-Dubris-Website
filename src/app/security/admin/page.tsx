@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   ArrowUpRight,
   BarChart2,
+  CalendarDays,
 } from 'lucide-react';
 import { auth, db } from '@/utils/firebase-api';
 import { collection, getDocs } from 'firebase/firestore';
@@ -101,6 +102,7 @@ function NavCard({ href, icon, title, desc, badge, badgeColor, accent }: NavCard
 export default function AdminPage() {
   const [userCount, setUserCount] = useState<number | null>(null);
   const [projectCount, setProjectCount] = useState<number | null>(null);
+  const [bookingCount, setBookingCount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -109,6 +111,8 @@ export default function AdminPage() {
         setUserCount(usersSnap.size);
         const projectsSnap = await getDocs(collection(db, 'projects'));
         setProjectCount(projectsSnap.size);
+        const bookingsSnap = await getDocs(collection(db, 'bookings'));
+        setBookingCount(bookingsSnap.size);
       } catch {}
     };
     fetchStats();
@@ -150,10 +154,10 @@ export default function AdminPage() {
           status="ok"
         />
         <StatCard
-          label="Alertes sécurité"
-          value="0"
-          icon={<AlertTriangle size={18} />}
-          trend="Aucun incident"
+          label="Rendez-vous"
+          value={bookingCount ?? '—'}
+          icon={<CalendarDays size={18} />}
+          trend="Total"
           status="ok"
         />
         <StatCard
@@ -162,6 +166,23 @@ export default function AdminPage() {
           icon={<TrendingUp size={18} />}
           trend="30 derniers jours"
           status="ok"
+        />
+      </div>
+
+      {/* Section : Agenda */}
+      <h2 className={styles.sectionTitle}>
+        <CalendarDays size={20} />
+        Agenda &amp; Rendez-vous
+      </h2>
+      <div className={styles.grid}>
+        <NavCard
+          href="/security/admin/booking-calendar"
+          icon={<CalendarDays size={22} />}
+          title="Calendrier des RDV"
+          desc="Visualisez tous vos rendez-vous clients : nom, email, raison, heure et lien Meet."
+          badge="Nouveau"
+          badgeColor="var(--primary)"
+          accent="var(--primary)"
         />
       </div>
 
@@ -194,7 +215,7 @@ export default function AdminPage() {
           title="Kanban Board"
           desc="Gérez vos tâches en colonnes drag-and-drop, avec priorités, checklist et commentaires."
           badge="Nouveau"
-          accent="var(--primary)" 
+          accent="var(--primary)"
         />
       </div>
 
