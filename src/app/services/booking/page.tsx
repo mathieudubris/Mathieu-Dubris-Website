@@ -368,7 +368,7 @@ export default function BookingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: booking.date.toISOString(),
+          date: booking.date.toLocaleDateString('en-CA'),
           time: booking.time,
           name: booking.name,
           email: booking.emails[0],

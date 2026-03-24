@@ -1,5 +1,22 @@
 "use client";
 
+// ──────────────────────────────────────────────────────────────────────────────
+// AdminBookingCalendar — page.tsx
+//
+// ✅ MIGRÉ vers la nouvelle structure Firestore :
+//   security/admin/calendar/{Mois-Année}/{NOM_YYYY-MM-DD_HH-mm}
+//
+// Avant : lisait collection("bookings") avec getDocs + orderBy
+// Après : utilise getAllBookings() de booking-api.ts
+//         qui parcourt automatiquement les collections mensuelles
+//
+// SUPPRIMÉ :
+//   - import { db } from "@/utils/firebase-api"
+//   - import { collection, getDocs, query, orderBy } from "firebase/firestore"
+// AJOUTÉ :
+//   - import { getAllBookings, Booking, formatDateFR } from "@/utils/booking-api"
+// ──────────────────────────────────────────────────────────────────────────────
+
 import React, { useEffect, useState, useCallback } from "react";
 import {
   ChevronLeft,
@@ -14,24 +31,12 @@ import {
   ExternalLink,
   Users,
 } from "lucide-react";
-import { db } from "@/utils/firebase-api";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import {
+  getAllBookings,
+  Booking,
+  formatDateFR,
+} from "@/utils/booking-api";
 import styles from "./bookingCalendar.module.css";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Booking {
-  id: string;
-  name: string;
-  email: string;
-  extraEmails?: string[];
-  note?: string;
-  date: string;
-  time: string;
-  meetLink?: string;
-  eventId?: string;
-  createdAt?: any;
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -50,10 +55,6 @@ function getFirstDayOfMonth(year: number, month: number) {
 }
 function toDateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-function formatDateFR(dateStr: string) {
-  const [y, m, d] = dateStr.split("-");
-  return `${d} ${MONTHS_FR[parseInt(m) - 1]} ${y}`;
 }
 
 // ─── Booking Detail Panel ─────────────────────────────────────────────────────
@@ -74,7 +75,7 @@ function BookingDetail({ booking, onClose }: { booking: Booking; onClose: () => 
           <div>
             <h3 className={styles.detailName}>{booking.name}</h3>
             <span className={styles.detailTime}>
-              <Clock size={11} /> {booking.time} — {booking.date && formatDateFR(booking.date)}
+              <Clock size={11} /> {booking.time} — {booking.date && formatDateFR(booking.date, { short: true })}
             </span>
           </div>
         </div>
@@ -83,7 +84,6 @@ function BookingDetail({ booking, onClose }: { booking: Booking; onClose: () => 
           <div className={styles.detailRow}>
             <Mail size={13} />
             <div>
-              {/* FIX: key uses both value + index to avoid duplicate key warning */}
               {allEmails.map((e, idx) => (
                 <div key={`email-${idx}-${e}`} className={styles.detailEmail}>{e}</div>
               ))}
@@ -126,13 +126,15 @@ export default function AdminBookingCalendar() {
   const [selected, setSelected] = useState<Booking | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  // ── Fetch : utilise getAllBookings() de booking-api.ts ──────────────────────
+  // Parcourt automatiquement les collections mensuelles :
+  //   security/admin/calendar/Avril-2026/...
+  //   security/admin/calendar/Mai-2026/...
+  //   etc. (fenêtre -2 → +12 mois)
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(
-        query(collection(db, "bookings"), orderBy("date", "asc"))
-      );
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Booking));
+      const data = await getAllBookings();
       setBookings(data);
     } catch (err) {
       console.error("fetchBookings:", err);
@@ -142,6 +144,8 @@ export default function AdminBookingCalendar() {
   }, []);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
+
+  // ── Dérivés ─────────────────────────────────────────────────────────────────
 
   const byDate = bookings.reduce<Record<string, Booking[]>>((acc, b) => {
     if (!acc[b.date]) acc[b.date] = [];
@@ -160,6 +164,8 @@ export default function AdminBookingCalendar() {
   const selectedDateBookings = selectedDate ? (byDate[selectedDate] || []) : [];
   const listToShow = selectedDate ? selectedDateBookings : upcomingBookings;
 
+  // ── Navigation mois ─────────────────────────────────────────────────────────
+
   const prevMonth = () => {
     if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
     else setCurrentMonth(m => m - 1);
@@ -170,6 +176,8 @@ export default function AdminBookingCalendar() {
     else setCurrentMonth(m => m + 1);
     setSelectedDate(null);
   };
+
+  // ── Rendu ────────────────────────────────────────────────────────────────────
 
   return (
     <div className={styles.page}>
@@ -269,7 +277,9 @@ export default function AdminBookingCalendar() {
         <div className={styles.sidebar}>
           <div className={styles.sidebarHead}>
             <span className={styles.sidebarTitle}>
-              {selectedDate ? formatDateFR(selectedDate) : "Prochains RDV"}
+              {selectedDate
+                ? formatDateFR(selectedDate, { capitalize: true, short: true })
+                : "Prochains RDV"}
             </span>
             {selectedDate && (
               <button className={styles.sidebarClear} onClick={() => setSelectedDate(null)}>

@@ -392,10 +392,6 @@ service cloud.firestore {
     // ─────────────────────────────────────────
     // SERVICES > FORMATION
     // Structure : services/formation/formations/{formationId}
-    //
-    // CORRECTION : formations 'public' lisibles par tout utilisateur
-    // connecté. Les formations 'members_only' restent réservées au
-    // créateur/membres. Le filtrage visuel est géré côté client.
     // ─────────────────────────────────────────
 
     match /services/formation/formations/{formationId} {
@@ -464,10 +460,6 @@ service cloud.firestore {
     // ─────────────────────────────────────────
     // SERVICES > ACCOMPAGNEMENT
     // Structure : services/accompagnement/accompagnements/{accompagnementId}
-    //
-    // CORRECTION : accompagnements 'public' lisibles par tout utilisateur
-    // connecté. Les accompagnements 'members_only' restent réservés au
-    // créateur/membres. Le filtrage visuel est géré côté client.
     // ─────────────────────────────────────────
 
     match /services/accompagnement/accompagnements/{accompagnementId} {
@@ -531,6 +523,69 @@ service cloud.firestore {
         allow create: if isAdmin();
         allow delete: if isAdmin();
       }
+    }
+
+    // ─────────────────────────────────────────
+    // BOOKINGS (ancienne collection — conservée pour compatibilité)
+    // Structure : bookings/{bookingId}
+    // ─────────────────────────────────────────
+
+    match /bookings/{bookingId} {
+      allow read: if true;
+      allow create: if
+        request.resource.data.date is string &&
+        request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        request.resource.data.time is string &&
+        request.resource.data.time.matches('^[0-9]{2}:00$') &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0;
+      allow update, delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────
+    // SECURITY / ADMIN — Données sensibles
+    //
+    // Structure :
+    //   security/admin/calendar/{Mois-Année}/{NOM_YYYY-MM-DD_HH-mm}
+    //
+    // Ex : security/admin/calendar/Avril-2026/Jean-Dupont_2026-04-15_14-00
+    //
+    // ⚠️ IMPORTANT : Les appels REST avec API key contournent les règles Firestore.
+    //    Les règles ci-dessous s'appliquent uniquement aux accès SDK.
+    //
+    // ─────────────────────────────────────────
+
+    match /security/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Règle spécifique pour la collection calendar (accès SDK)
+    match /security/admin/calendar/{monthCol}/{bookingId} {
+      // Création : publique (via SDK client si jamais utilisé)
+      allow create: if
+        request.resource.data.date is string &&
+        request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        request.resource.data.time is string &&
+        request.resource.data.time.matches('^[0-9]{2}:[0-9]{2}$') &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() > 0 &&
+        request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+      
+      // Lecture : admin uniquement
+      allow read: if isAdmin();
+      
+      // Modification : admin uniquement
+      allow update: if isAdmin();
+      
+      // Suppression : admin uniquement
+      allow delete: if isAdmin();
+    }
+
+    // Règle pour les sous-collections de calendar si besoin
+    match /security/admin/calendar/{monthCol}/{bookingId}/{document=**} {
+      allow read, write: if isAdmin();
     }
 
   }
