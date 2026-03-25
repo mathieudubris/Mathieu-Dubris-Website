@@ -1,8 +1,8 @@
 /* KanbanTask.module.css */
 
 .card {
-  background: #161616;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   cursor: grab;
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
@@ -16,7 +16,7 @@
 }
 
 .card:hover {
-  border-color: #333;
+  border-color: var(--primary);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
@@ -45,8 +45,8 @@
   width: 30px;
   height: 30px;
   border-radius: 6px;
-  background: #252525;
-  border: 1px solid #333;
+  background: var(--light);
+  border: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -167,8 +167,8 @@
   font-size: 0.57rem;
   color: var(--line);
   white-space: nowrap;
-  background: #111;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0.06rem 0.32rem;
 }
@@ -186,8 +186,8 @@
 }
 
 .actionBtn {
-  background: #1c1c1c;
-  border: 1px solid #2a2a2a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   color: var(--line);
   cursor: pointer;
   padding: 0.16rem;
@@ -197,4 +197,4 @@
   justify-content: center;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.actionBtn:hover { background: #252525; color: var(--light); }
+.actionBtn:hover { background: var(--light); color: var(--dark); }

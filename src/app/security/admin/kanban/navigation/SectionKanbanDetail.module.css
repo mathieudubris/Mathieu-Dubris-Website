@@ -1,3 +1,5 @@
+/* SectionKanbanDetail.module.css */
+
 .boardScroll {
   flex: 1;
   display: flex;
@@ -15,11 +17,11 @@
 }
 
 .boardScroll::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--dark);
 }
 
 .boardScroll::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: var(--line);
   border-radius: 3px;
 }
 
@@ -27,9 +29,9 @@
   flex: 0 0 300px;
   display: flex;
   flex-direction: column;
-  background: #111111;
+  background: var(--dark);
   border-radius: 12px;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--line);
   height: fit-content;
   max-height: 100%;
   scroll-snap-align: start;
@@ -50,8 +52,8 @@
   gap: 0.5rem;
   position: relative;
   flex-shrink: 0;
-  background: #111111;
-  border-bottom: 1px solid #1e1e1e;
+  background: var(--dark);
+  border-bottom: 1px solid var(--line);
 }
 
 .columnHeaderAccent {
@@ -79,8 +81,8 @@
 
 .columnCount {
   font-size: 0.72rem;
-  background: #1e1e1e;
-  color: var(--line);
+  background: var(--line);
+  color: var(--dark);
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   white-space: nowrap;
@@ -95,7 +97,7 @@
   height: 28px;
   border-radius: 6px;
   background: transparent;
-  border: 1px dashed #2a2a2a;
+  border: 1px dashed var(--line);
   color: var(--line);
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -103,7 +105,7 @@
 }
 
 .addColumnBtn:hover {
-  background: #1a1a1a;
+  background: var(--light);
   border-color: var(--primary);
   color: var(--primary);
 }
@@ -123,11 +125,11 @@
 }
 
 .cardsList::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--dark);
 }
 
 .cardsList::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: var(--line);
   border-radius: 2px;
 }
 
@@ -136,7 +138,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  color: #333;
+  color: var(--line);
   gap: 0.4rem;
   font-size: 0.8rem;
   text-align: center;

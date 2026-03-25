@@ -1,4 +1,6 @@
-/* KanbanTaskEditor.module.css — Full-screen editor */
+/* KanbanTaskEditor.module.css — Full-screen editor - Extrait des couleurs */
+
+/* Ajoutez/modifiez ces règles dans le fichier existant */
 
 .overlay {
   position: fixed;
@@ -37,9 +39,9 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 1.5rem;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--line);
   flex-shrink: 0;
-  background: #0a0a0a;
+  background: var(--dark);
 }
 
 .titleInput {
@@ -53,7 +55,7 @@
   outline: none;
   caret-color: var(--primary);
 }
-.titleInput::placeholder { color: #2e2e2e; }
+.titleInput::placeholder { color: var(--line); }
 
 .closeBtn {
   background: transparent;
@@ -67,9 +69,9 @@
   transition: color 0.12s ease, background 0.12s ease;
   flex-shrink: 0;
 }
-.closeBtn:hover { color: var(--light); background: #1a1a1a; }
+.closeBtn:hover { color: var(--light); background: var(--light); }
 
-/* ── Two-column layout: left = fields, right = media/links ── */
+/* Two-column layout: left = fields, right = media/links */
 .body {
   flex: 1;
   overflow: hidden;
@@ -78,29 +80,26 @@
   min-height: 0;
 }
 
-/* Left column */
 .leftCol {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #1a1a1a;
+  border-right: 1px solid var(--line);
   min-height: 0;
 }
 .leftCol::-webkit-scrollbar { width: 4px; }
-.leftCol::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+.leftCol::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
 
-/* Right column */
 .rightCol {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background: #0a0a0a;
+  background: var(--dark);
   min-height: 0;
 }
 .rightCol::-webkit-scrollbar { width: 4px; }
-.rightCol::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+.rightCol::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
 
-/* Fallback: bodyInner used when not split into leftCol/rightCol */
 .bodyInner {
   overflow-y: auto;
   display: flex;
@@ -108,7 +107,7 @@
   min-height: 0;
 }
 .bodyInner::-webkit-scrollbar { width: 4px; }
-.bodyInner::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+.bodyInner::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
 
 /* ── Section blocks ── */
 .section {
@@ -116,7 +115,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  border-bottom: 1px solid #161616;
+  border-bottom: 1px solid var(--line);
 }
 
 .sectionTitle {
@@ -133,8 +132,8 @@
 
 /* ── Description ── */
 .textarea {
-  background: #161616;
-  border: 1px solid #1e1e1e;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.7rem 0.85rem;
   color: var(--light);
@@ -159,13 +158,13 @@
   font-size: 0.67rem;
   font-weight: 700;
   cursor: pointer;
-  border: 1.5px solid #1e1e1e;
-  background: #161616;
+  border: 1.5px solid var(--line);
+  background: var(--dark);
   color: var(--line);
   transition: all 0.12s ease;
   font-family: var(--font-main);
 }
-.priorityPill:hover { color: var(--light); border-color: #2a2a2a; }
+.priorityPill:hover { color: var(--light); border-color: var(--primary); }
 .priorityPillActive { color: var(--dark) !important; border-color: transparent !important; }
 
 /* ── Move column pills ── */
@@ -177,13 +176,13 @@
   font-size: 0.67rem;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid #1e1e1e;
-  background: #161616;
+  border: 1px solid var(--line);
+  background: var(--dark);
   color: var(--line);
   transition: all 0.12s ease;
   font-family: var(--font-main);
 }
-.movePill:hover { border-color: #2a2a2a; color: var(--light); }
+.movePill:hover { border-color: var(--primary); color: var(--light); }
 .movePillActive { background: var(--primary) !important; color: var(--dark) !important; border-color: var(--primary) !important; }
 
 /* ── Date row ── */
@@ -208,7 +207,7 @@
   overflow-y: auto;
 }
 .assigneeGrid::-webkit-scrollbar { width: 3px; }
-.assigneeGrid::-webkit-scrollbar-thumb { background: #1e1e1e; }
+.assigneeGrid::-webkit-scrollbar-thumb { background: var(--line); }
 
 .assigneeRow {
   display: inline-flex;
@@ -216,19 +215,19 @@
   gap: 0.38rem;
   padding: 0.28rem 0.55rem 0.28rem 0.3rem;
   border-radius: 999px;
-  background: #161616;
-  border: 1px solid #1a1a1a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   cursor: pointer;
   transition: all 0.12s ease;
 }
-.assigneeRow:hover { border-color: #2a2a2a; }
-.assigneeOn { border-color: var(--primary) !important; background: color-mix(in srgb, var(--primary) 8%, #0e0e0e) !important; }
+.assigneeRow:hover { border-color: var(--primary); }
+.assigneeOn { border-color: var(--primary) !important; background: color-mix(in srgb, var(--primary) 8%, var(--dark)) !important; }
 
 .assigneeAvatar {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #222;
+  background: var(--light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -292,7 +291,7 @@
   padding: 0.18rem 0.45rem;
   border-radius: 999px;
   background: transparent;
-  border: 1px dashed #252525;
+  border: 1px dashed var(--line);
   color: var(--line);
   font-size: 0.63rem;
   cursor: pointer;
@@ -303,9 +302,9 @@
 
 .labelCreator {
   padding: 0.7rem;
-  background: #161616;
+  background: var(--dark);
   border-radius: 8px;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -333,19 +332,19 @@
   align-items: center;
   justify-content: center;
   gap: 0.32rem;
-  border: 1.5px dashed #222;
+  border: 1.5px dashed var(--line);
   border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
   color: var(--line);
   font-size: 0.72rem;
-  background: #0d0d0d;
+  background: var(--dark);
   min-height: 64px;
   user-select: none;
 }
 .dropZone:hover { border-color: var(--primary); color: var(--light); }
-.dropZoneActive { border-color: var(--primary) !important; background: color-mix(in srgb, var(--primary) 5%, #0e0e0e) !important; color: var(--primary) !important; }
+.dropZoneActive { border-color: var(--primary) !important; background: color-mix(in srgb, var(--primary) 5%, var(--dark)) !important; color: var(--primary) !important; }
 
 .dropZoneUploading {
   display: flex;
@@ -365,7 +364,7 @@
   display: block;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--line);
   transition: border-color 0.12s ease;
 }
 .imagePreviewLink:hover { border-color: var(--primary); }
@@ -379,8 +378,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   color: var(--line);
   cursor: pointer;
   display: flex;
@@ -390,7 +389,7 @@
   padding: 0;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.imageRemoveBtn:hover { background: #2a2a2a; color: var(--light); }
+.imageRemoveBtn:hover { background: var(--light); color: var(--dark); }
 
 /* ── Links ── */
 .linksList { display: flex; flex-direction: column; gap: 0.22rem; }
@@ -399,13 +398,13 @@
   display: flex;
   align-items: center;
   gap: 0.32rem;
-  background: #161616;
-  border: 1px solid #1a1a1a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.3rem 0.55rem;
   transition: border-color 0.12s ease;
 }
-.linkRow:hover { border-color: #2a2a2a; }
+.linkRow:hover { border-color: var(--primary); }
 
 .linkAnchor {
   flex: 1;
@@ -423,8 +422,8 @@
 /* ── Generic inputs ── */
 .smallInput {
   flex: 1;
-  background: #161616;
-  border: 1px solid #1e1e1e;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.4rem 0.55rem;
   color: var(--light);
@@ -443,9 +442,9 @@
   justify-content: flex-end;
   gap: 0.5rem;
   padding: 0.85rem 1.5rem;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--line);
   flex-shrink: 0;
-  background: #0a0a0a;
+  background: var(--dark);
 }
 
 /* ── Buttons ── */
@@ -481,34 +480,30 @@
   cursor: pointer;
   background: transparent;
   color: var(--light);
-  border: 1px solid #222;
+  border: 1px solid var(--line);
   font-family: var(--font-main);
   transition: all 0.12s ease;
 }
-.btnGhost:hover { background: #161616; border-color: #2e2e2e; }
+.btnGhost:hover { background: var(--light); border-color: var(--primary); }
 
 /* ── Responsive: stack columns on small screens ── */
 @media (max-width: 720px) {
   .body { grid-template-columns: 1fr; overflow-y: auto; }
   .bodyInner { overflow-y: visible; }
-  .rightCol { border-top: 1px solid #1a1a1a; }
+  .rightCol { border-top: 1px solid var(--line); }
   .dateRow { grid-template-columns: 1fr; }
 }
 
 .headerOuter {
-  border-bottom: 1px solid #1a1a1a;
-  background: #0a0a0a;
+  border-bottom: 1px solid var(--line);
+  background: var(--dark);
   flex-shrink: 0;
 }
 
 .footerOuter {
-  border-top: 1px solid #1a1a1a;
-  background: #0a0a0a;
+  border-top: 1px solid var(--line);
+  background: var(--dark);
 }
-
-/* ── Ajouts à KanbanTaskEditor.module.css ──
-   Copier-coller ces règles à la FIN du fichier KanbanTaskEditor.module.css existant
-*/
 
 /* Mode toggle upload / url */
 .imgModeTabs {
@@ -525,8 +520,8 @@
   border-radius: 999px;
   font-size: 0.66rem;
   font-weight: 600;
-  background: #161616;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   color: var(--line);
   cursor: pointer;
   transition: all 0.12s ease;
@@ -534,8 +529,8 @@
 }
 
 .imgModeTab:hover {
-  background: #1e1e1e;
-  color: var(--light);
+  background: var(--light);
+  color: var(--dark);
 }
 
 .imgModeTabActive {

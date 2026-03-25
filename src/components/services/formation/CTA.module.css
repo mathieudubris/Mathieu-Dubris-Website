@@ -82,42 +82,42 @@
 
 /* ── Calendar variant ── */
 .cardCalendar .cardIcon {
-  background: rgba(199, 255, 68, 0.1);
-  color: var(--primary, #c7ff44);
-  border: 1px solid rgba(199, 255, 68, 0.18);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 .cardCalendar:hover {
-  border-color: rgba(199, 255, 68, 0.18);
+  border-color: color-mix(in srgb, var(--primary) 18%, transparent);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(199, 255, 68, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--primary) 8%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .cardCalendar:hover .cardIcon {
-  background: rgba(199, 255, 68, 0.16);
-  border-color: rgba(199, 255, 68, 0.32);
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 32%, transparent);
 }
 
 /* ── WhatsApp variant ── */
 .cardWhatsapp .cardIcon {
-  background: rgba(37, 211, 102, 0.1);
+  background: color-mix(in srgb, #25d366 10%, transparent);
   color: #25d366;
-  border: 1px solid rgba(37, 211, 102, 0.18);
+  border: 1px solid color-mix(in srgb, #25d366 18%, transparent);
 }
 
 .cardWhatsapp:hover {
-  border-color: rgba(37, 211, 102, 0.16);
+  border-color: color-mix(in srgb, #25d366 16%, transparent);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(37, 211, 102, 0.06),
+    0 0 0 1px color-mix(in srgb, #25d366 6%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .cardWhatsapp:hover .cardIcon {
-  background: rgba(37, 211, 102, 0.16);
-  border-color: rgba(37, 211, 102, 0.32);
+  background: color-mix(in srgb, #25d366 16%, transparent);
+  border-color: color-mix(in srgb, #25d366 32%, transparent);
 }
 
 /* ── FAB ─────────────────────────────────────────────────────── */
@@ -125,7 +125,7 @@
   position: relative;
   width: 52px;
   height: 52px;
-  background: var(--primary, #c7ff44);
+  background: var(--primary);
   border: none;
   border-radius: 14px;
   display: flex;
@@ -133,15 +133,15 @@
   justify-content: center;
   cursor: pointer;
   box-shadow:
-    0 6px 28px rgba(199, 255, 68, 0.28),
+    0 6px 28px color-mix(in srgb, var(--primary) 28%, transparent),
     0 2px 8px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
   overflow: visible;
-  color: #0d0d0d;
+  color: var(--dark);
 }
 
 .fab:focus-visible {
-  outline: 2px solid var(--primary, #c7ff44);
+  outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
 
@@ -166,7 +166,7 @@
   position: absolute;
   inset: -5px;
   border-radius: 19px;
-  border: 2px solid var(--primary, #c7ff44);
+  border: 2px solid var(--primary);
   opacity: 0;
   pointer-events: none;
   animation: pulseRing 2.8s ease-out infinite;

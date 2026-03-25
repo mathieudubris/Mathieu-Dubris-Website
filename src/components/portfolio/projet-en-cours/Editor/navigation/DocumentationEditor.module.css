@@ -1,4 +1,4 @@
-
+/* DocumentationEditor.module.css */
 
 .container {
   background-color: var(--dark);
@@ -8,6 +8,7 @@
   font-family: var(--font-main);
 }
 
+/* ── Header ── */
 .header {
   display: flex;
   justify-content: space-between;
@@ -19,47 +20,130 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--light);
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
 .title svg {
   color: var(--primary);
 }
 
+.badge {
+  background-color: var(--line);
+  color: var(--dark);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .addBtn {
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: var(--dark);
+  background-color: transparent;
   border: 1px solid var(--primary);
   color: var(--primary);
   font-size: 12px;
-  font-weight: 500;
-  padding: 6px 12px;
+  font-weight: 600;
+  padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s;
+  font-family: var(--font-main);
 }
 
-.addBtn:hover {
+.addBtn:hover:not(:disabled) {
   background-color: var(--primary);
   color: var(--dark);
 }
 
+.addBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Feedback ── */
+.successMsg {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4caf80;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #f87171;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.errorBanner svg:first-child { flex-shrink: 0; }
+
+.errorClose {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Loading ── */
+.loadingState {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--line);
+  font-size: 13px;
+  padding: 24px 0;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Formulaire ajout ── */
 .addForm {
   background-color: var(--dark);
   border: 1px solid var(--primary);
   border-radius: 8px;
   padding: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .formRow {
@@ -73,23 +157,28 @@
   border: 1px solid var(--line);
   color: var(--light);
   font-size: 13px;
-  padding: 8px;
-  border-radius: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
   font-family: var(--font-main);
+  transition: border-color 0.15s;
 }
+
+.input::placeholder { color: var(--line); opacity: 0.6; }
 
 .input:focus {
   outline: none;
   border-color: var(--primary);
 }
 
+/* ── Sélecteur d'icône ── */
 .iconSelector {
   display: flex;
   gap: 4px;
   background-color: var(--dark);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 4px;
+  flex-shrink: 0;
 }
 
 .iconOption {
@@ -98,12 +187,12 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  background-color: var(--dark);
+  background-color: transparent;
   border: 1px solid transparent;
   color: var(--line);
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.15s, color 0.15s;
   padding: 0;
 }
 
@@ -113,11 +202,12 @@
 }
 
 .iconOptionActive {
-  border-color: var(--primary);
-  color: var(--primary);
-  background-color: var(--dark);
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+  background-color: rgba(var(--primary-rgb, 120, 80, 255), 0.08);
 }
 
+/* ── Actions formulaire ── */
 .formActions {
   display: flex;
   gap: 8px;
@@ -128,40 +218,52 @@
 .cancelBtn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 12px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 4px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
   border: 1px solid;
+  font-family: var(--font-main);
 }
 
 .saveBtn {
-  background-color: var(--dark);
+  background-color: transparent;
   border-color: var(--primary);
   color: var(--primary);
 }
 
-.saveBtn:hover {
+.saveBtn:hover:not(:disabled) {
   background-color: var(--primary);
   color: var(--dark);
 }
 
+.saveBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .cancelBtn {
-  background-color: var(--dark);
+  background-color: transparent;
   border-color: var(--line);
   color: var(--line);
 }
 
-.cancelBtn:hover {
-  border-color: var(--dark-red);
-  color: var(--dark-red);
+.cancelBtn:hover:not(:disabled) {
+  border-color: var(--dark-red, #dc2626);
+  color: var(--dark-red, #dc2626);
 }
 
+.cancelBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Empty state ── */
 .empty {
-  padding: 40px 20px;
+  padding: 36px 20px;
   text-align: center;
   color: var(--line);
   border: 1px dashed var(--line);
@@ -170,23 +272,26 @@
 
 .empty svg {
   color: var(--line);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  opacity: 0.5;
 }
 
 .empty p {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   margin: 0 0 4px 0;
 }
 
 .empty span {
-  font-size: 12px;
+  font-size: 11px;
+  opacity: 0.7;
 }
 
+/* ── Liste des liens ── */
 .linksList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 16px;
 }
 
@@ -197,12 +302,12 @@
   background-color: var(--dark);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
-  transition: all 0.2s;
+  padding: 10px 12px;
+  transition: border-color 0.2s;
 }
 
 .linkItem:hover {
-  border-color: var(--primary);
+  border-color: rgba(var(--primary-rgb, 120, 80, 255), 0.5);
 }
 
 .linkItem.editing {
@@ -213,12 +318,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   background-color: var(--line);
   color: var(--dark);
   border-radius: 6px;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .linkInfo {
@@ -238,34 +344,39 @@
   font-size: 11px;
   color: var(--line);
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  opacity: 0.8;
 }
 
 .linkStat {
   font-size: 10px;
   color: var(--line);
-  background-color: var(--dark);
   border: 1px solid var(--line);
-  padding: 2px 4px;
+  padding: 1px 5px;
   border-radius: 4px;
   display: inline-block;
   margin-bottom: 4px;
+  opacity: 0.8;
 }
 
 .linkUrl {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   font-size: 11px;
   color: var(--primary);
   text-decoration: none;
   word-break: break-all;
+  opacity: 0.8;
+  transition: opacity 0.15s;
 }
 
 .linkUrl:hover {
+  opacity: 1;
   text-decoration: underline;
 }
 
+/* ── Actions par lien ── */
 .linkActions {
   display: flex;
   gap: 4px;
@@ -279,36 +390,45 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  background-color: var(--dark);
+  background-color: transparent;
   border: 1px solid var(--line);
   color: var(--line);
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.15s, color 0.15s;
   padding: 0;
 }
 
-.editBtn:hover {
+.editBtn:hover:not(:disabled) {
   border-color: var(--primary);
   color: var(--primary);
 }
 
-.deleteBtn:hover {
-  border-color: var(--dark-red);
-  color: var(--dark-red);
+.deleteBtn:hover:not(:disabled) {
+  border-color: var(--dark-red, #dc2626);
+  color: var(--dark-red, #dc2626);
 }
 
+.editBtn:disabled,
+.deleteBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Édition inline ── */
 .editInline {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
+/* ── Hint ── */
 .hint {
   font-size: 11px;
   color: var(--line);
-  margin: 16px 0 0 0;
+  margin: 14px 0 0 0;
   padding-top: 12px;
   border-top: 1px solid var(--line);
+  opacity: 0.6;
 }

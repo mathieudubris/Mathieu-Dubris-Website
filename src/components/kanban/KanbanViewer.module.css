@@ -17,8 +17,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid #1a1a1a;
-  background: #0a0a0a;
+  border-bottom: 1px solid var(--line);
+  background: var(--dark);
   flex-shrink: 0;
 }
 
@@ -48,16 +48,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.65rem 1rem;
 }
 
 .createInput {
   flex: 1;
-  background: #161616;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0.42rem 0.7rem;
   color: var(--light);
@@ -67,7 +67,7 @@
   transition: border-color 0.12s ease;
 }
 .createInput:focus { border-color: var(--primary); }
-.createInput::placeholder { color: #2a2a2a; }
+.createInput::placeholder { color: var(--line); }
 
 .createActions { display: flex; gap: 0.4rem; }
 
@@ -80,8 +80,8 @@
 .boardCard {
   display: flex;
   align-items: center;
-  background: #0f0f0f;
-  border: 1px solid #1a1a1a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 6px;
   overflow: hidden;
   transition: all 0.15s ease;
@@ -118,7 +118,7 @@
   height: 100%;
   background: transparent;
   border: none;
-  border-left: 1px solid #1a1a1a;
+  border-left: 1px solid var(--line);
   color: var(--line);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -127,7 +127,7 @@
 }
 
 .boardDeleteBtn:hover {
-  background: #161616;
+  background: var(--light);
   color: var(--dark-red);
 }
 
@@ -146,7 +146,7 @@
 /* ── Detail view — columns have fixed height to enable per-column scroll ── */
 .detailWrapper {
   flex: 1;
-  overflow: hidden;   /* do NOT scroll here — columns handle their own scroll */
+  overflow: hidden;
   min-height: 0;
   min-width: 0;
   display: flex;
@@ -184,10 +184,10 @@
   transition: all 0.12s ease;
   background: transparent;
   color: var(--light);
-  border: 1px solid #222;
+  border: 1px solid var(--line);
   font-family: var(--font-main);
 }
-.btnGhost:hover { background: #161616; border-color: #333; }
+.btnGhost:hover { background: var(--light); border-color: var(--primary); }
 
 /* ── Loading / Error ── */
 .loading {
@@ -204,7 +204,7 @@
 .loadingSpinner {
   width: 22px;
   height: 22px;
-  border: 2px solid #222;
+  border: 2px solid var(--line);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
@@ -225,8 +225,8 @@
 
 .backButton {
   padding: 0.45rem 1rem;
-  background: #161616;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 4px;
   color: var(--light);
   cursor: pointer;
@@ -240,7 +240,7 @@
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  background: #161616;
+  background: var(--dark);
   border: 1px solid var(--primary);
   color: var(--light);
   padding: 0.7rem 1.2rem;

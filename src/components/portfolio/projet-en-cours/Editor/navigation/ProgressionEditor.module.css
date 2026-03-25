@@ -7,7 +7,6 @@
   flex-direction: column;
 }
 
-
 .emptyState {
   display: flex;
   flex-direction: column;
@@ -33,4 +32,25 @@
 .createBtn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(199, 255, 68, 0.2);
+}
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--dark);
+  border: 1px solid var(--primary);
+  color: var(--light);
+  padding: 0.7rem 1.2rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 9999;
+  animation: toastIn 0.22s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes toastIn {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }

@@ -1,3 +1,5 @@
+/* KanbanDetail.module.css */
+
 .wrapper {
   min-height: 100vh;
   background: var(--dark);
@@ -13,7 +15,7 @@
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  background: #1a1a1a;
+  background: var(--dark);
   border: 1px solid var(--primary);
   color: var(--light);
   padding: 0.75rem 1.25rem;

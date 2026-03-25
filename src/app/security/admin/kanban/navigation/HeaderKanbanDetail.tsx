@@ -5,10 +5,10 @@ import { Layout, Search, X, Edit2, Check } from "lucide-react";
 import styles from "./HeaderKanbanDetail.module.css";
 
 const PRIORITIES = [
-  { value: "low", label: "Basse", color: "#22c55e" },
-  { value: "medium", label: "Moyenne", color: "#3b82f6" },
-  { value: "high", label: "Haute", color: "#f59e0b" },
-  { value: "critical", label: "Critique", color: "#ef4444" },
+  { value: "low", label: "Basse", color: "var(--green)" },
+  { value: "medium", label: "Moyenne", color: "var(--blue)" },
+  { value: "high", label: "Haute", color: "var(--orange)" },
+  { value: "critical", label: "Critique", color: "var(--red)" },
 ];
 
 interface HeaderKanbanDetailProps {

@@ -4,9 +4,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, Clock, Calendar, Video,
-  Check, ArrowRight, User, Mail, X, Copy, ExternalLink, Plus
+  Check, ArrowRight, User, Mail, X, Copy, ExternalLink, Plus, ArrowLeft
 } from 'lucide-react';
 import styles from './booking.module.css';
+import { useRouter } from 'next/navigation';
 
 // Firestore
 import { db } from '@/utils/firebase-api';
@@ -270,6 +271,7 @@ interface BookingState {
 // ─────────────────────────────────────────────
 
 export default function BookingPage() {
+  const router = useRouter();
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -423,8 +425,18 @@ export default function BookingPage() {
 
   const canConfirm = booking.name && booking.emails.length > 0 && !confirming;
 
+  const handleGoBack = () => {
+    router.back();
+  };
+
   return (
     <div className={styles.page}>
+      {/* Back button at top left */}
+      <button className={styles.backToSiteBtn} onClick={handleGoBack} aria-label="Retour">
+        <ArrowLeft size={18} />
+        <span>Retour</span>
+      </button>
+
       {/* Background */}
       <div className={styles.bg}>
         <div className={styles.bgGlow1} />

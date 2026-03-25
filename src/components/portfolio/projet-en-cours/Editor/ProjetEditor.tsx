@@ -49,8 +49,6 @@ interface ProjetEditorProps {
 
 const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, currentUser }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
-  // PERF: isLoading ne bloque plus l'affichage du panel — l'UI s'ouvre immédiatement
-  // et les champs se remplissent dès que les données arrivent (~300-600ms après)
   const [isLoading, setIsLoading] = useState(!!project?.id);
 
   // Champs principaux (document projet)
@@ -94,7 +92,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [showNouveauteModal, setShowNouveauteModal] = useState(false);
 
-  // Pour nouveau projet (pas d'id), initialiser immédiatement sans loader
   useEffect(() => {
     if (!project?.id) {
       setTitle('');
@@ -118,13 +115,10 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
       setCreatedAtEditable(null);
       setUpdatedAtEditable(null);
       setIsLoading(false);
-      // Charger les users en arrière-plan
       getAllUsers().then(setAllUsers).catch(console.error);
       return;
     }
 
-    // PERF: Pour un projet existant — charger tout en parallèle en une seule vague
-    // L'UI s'ouvre immédiatement, les champs se peuplent dès que les données arrivent
     setIsLoading(true);
 
     Promise.all([
@@ -160,7 +154,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
         setUpdatedAtEditable(fullProject.updatedAt || null);
       }
 
-      // Roadmap — fusionner phases + canvas
       const richPhases = mergeCanvasIntoPhases(phases || [], canvas);
       setRoadmapPhases(richPhases);
       setRoadmapArrows(canvas?.arrows || []);
@@ -371,8 +364,6 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
         <div className={styles.editorForm}>
           {error && <div className={styles.errorMessage}>{error}</div>}
 
-          {/* PERF: Skeleton léger inline — le panel est déjà visible, seul le contenu
-              des champs est masqué le temps du chargement (~300ms max) */}
           {isLoading ? (
             <div className={styles.inlineLoadingWrapper}>
               <div className={styles.loadingSpinner} />
@@ -446,9 +437,11 @@ const ProjetEditor: React.FC<ProjetEditorProps> = ({ project, onClose, onSave, c
                 />
               )}
 
+              {/* ✅ CORRIGÉ : projectId et initialDocLinks correctement passés */}
               {activeTab === 'documentation' && (
                 <DocumentationEditor
-                  docLinks={docLinks}
+                  projectId={project?.id || ''}
+                  initialDocLinks={docLinks}
                   onDocLinksChange={setDocLinks}
                 />
               )}

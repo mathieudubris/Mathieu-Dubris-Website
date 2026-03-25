@@ -1,3 +1,5 @@
+/* KanbanEditor.module.css */
+
 .wrapper {
   min-height: 100vh;
   background: var(--dark);
@@ -12,8 +14,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #1f1f1f;
-  background: #0a0a0a;
+  border-bottom: 1px solid var(--line);
+  background: var(--dark);
 }
 
 .topbarLeft {
@@ -51,7 +53,7 @@
 }
 
 .btnPrimary:hover {
-  background: #d4ff66;
+  background: color-mix(in srgb, var(--primary) 85%, var(--light));
   transform: translateY(-1px);
 }
 
@@ -59,11 +61,11 @@
   composes: btnPrimary;
   background: transparent;
   color: var(--light);
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--line);
 }
 
 .btnGhost:hover {
-  background: #1a1a1a;
+  background: var(--light);
   border-color: var(--line);
 }
 
@@ -90,16 +92,16 @@
   gap: 0.5rem;
   width: 100%;
   max-width: 500px;
-  background: #111;
+  background: var(--dark);
   padding: 1rem;
   border-radius: 12px;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--line);
 }
 
 .input {
   width: 100%;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   color: var(--light);
@@ -133,8 +135,8 @@
 }
 
 .boardCard {
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -168,7 +170,7 @@
 
 .boardCardActions {
   display: flex;
-  border-top: 1px solid #1e1e1e;
+  border-top: 1px solid var(--line);
 }
 
 .boardActionBtn {
@@ -187,19 +189,19 @@
 }
 
 .boardActionBtn:first-child {
-  border-right: 1px solid #1e1e1e;
+  border-right: 1px solid var(--line);
 }
 
 .boardActionBtn:hover {
-  background: #1a1a1a;
-  color: var(--light);
+  background: var(--light);
+  color: var(--dark);
 }
 
 .toast {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  background: #1a1a1a;
+  background: var(--dark);
   border: 1px solid var(--primary);
   color: var(--light);
   padding: 0.75rem 1.25rem;

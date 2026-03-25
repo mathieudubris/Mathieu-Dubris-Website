@@ -998,3 +998,57 @@
   .stepLabel { display: none; }
   .stepDot { width: 22px; height: 22px; }
 }
+/* Back button at top left */
+.backToSiteBtn {
+  position: fixed;
+  top: 20px;
+  left: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--dark);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 16px;
+  color: var(--light);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--dark) 85%, transparent);
+}
+
+.backToSiteBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.backToSiteBtn span {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+@media (max-width: 840px) {
+  .backToSiteBtn {
+    top: 12px;
+    left: 16px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  
+  .backToSiteBtn span {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .backToSiteBtn {
+    top: 10px;
+    left: 12px;
+    padding: 5px 10px;
+  }
+}

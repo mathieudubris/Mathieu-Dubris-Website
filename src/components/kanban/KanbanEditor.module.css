@@ -14,8 +14,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #1a1a1a;
-  background: #0a0a0a;
+  border-bottom: 1px solid var(--line);
+  background: var(--dark);
 }
 
 .topbarLeft {
@@ -68,11 +68,11 @@
   transition: all 0.12s ease;
   background: transparent;
   color: var(--light);
-  border: 1px solid #222;
+  border: 1px solid var(--line);
   font-family: var(--font-main);
 }
 
-.btnGhost:hover { background: #161616; border-color: #333; }
+.btnGhost:hover { background: var(--light); border-color: var(--primary); }
 
 .boardSelector {
   display: flex;
@@ -98,16 +98,16 @@
   gap: 0.5rem;
   width: 100%;
   max-width: 480px;
-  background: #0f0f0f;
+  background: var(--dark);
   padding: 1rem;
   border-radius: 6px;
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--line);
 }
 
 .input {
   width: 100%;
-  background: #161616;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0.55rem 0.7rem;
   color: var(--light);
@@ -117,7 +117,7 @@
   transition: border-color 0.12s ease;
 }
 .input:focus { border-color: var(--primary); }
-.input::placeholder { color: #2a2a2a; }
+.input::placeholder { color: var(--line); }
 
 .formActions {
   display: flex;
@@ -140,8 +140,8 @@
 }
 
 .boardCard {
-  background: #0f0f0f;
-  border: 1px solid #1a1a1a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 6px;
   overflow: hidden;
   transition: all 0.15s ease;
@@ -173,7 +173,7 @@
 
 .boardCardActions {
   display: flex;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--line);
 }
 
 .boardActionBtn {
@@ -191,14 +191,14 @@
   font-size: 0.68rem;
 }
 
-.boardActionBtn:first-child { border-right: 1px solid #1a1a1a; }
-.boardActionBtn:hover { background: #161616; color: var(--light); }
+.boardActionBtn:first-child { border-right: 1px solid var(--line); }
+.boardActionBtn:hover { background: var(--light); color: var(--dark); }
 
 .toast {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  background: #161616;
+  background: var(--dark);
   border: 1px solid var(--primary);
   color: var(--light);
   padding: 0.7rem 1.2rem;

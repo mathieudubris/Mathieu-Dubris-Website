@@ -16,18 +16,18 @@ import type { KanbanCard, KanbanMember } from "@/utils/kanban-api";
 import styles from "./KanbanTaskDetail.module.css";
 
 const PRIORITIES = {
-  low: { label: "Basse", color: "#22c55e" },
-  medium: { label: "Moyenne", color: "#3b82f6" },
-  high: { label: "Haute", color: "#f59e0b" },
-  critical: { label: "Critique", color: "#ef4444" },
+  low: { label: "Basse", color: "var(--green)" },
+  medium: { label: "Moyenne", color: "var(--blue)" },
+  high: { label: "Haute", color: "var(--orange)" },
+  critical: { label: "Critique", color: "var(--red)" },
 };
 
 const COLUMN_STYLES: Record<string, { label: string; color: string }> = {
-  todo: { label: "À faire", color: "#a3a3a3" },
-  inprogress: { label: "En cours", color: "#c7ff44" },
-  review: { label: "En révision", color: "#f59e0b" },
-  blocked: { label: "Blocage", color: "#ef4444" },
-  done: { label: "Terminé", color: "#22c55e" },
+  todo: { label: "À faire", color: "var(--line)" },
+  inprogress: { label: "En cours", color: "var(--primary)" },
+  review: { label: "En révision", color: "var(--orange)" },
+  blocked: { label: "Blocage", color: "var(--red)" },
+  done: { label: "Terminé", color: "var(--green)" },
 };
 
 interface KanbanTaskDetailProps {

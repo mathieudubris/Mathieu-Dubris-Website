@@ -5,11 +5,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1.25rem;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--line);
   gap: 0.75rem;
   flex-wrap: wrap;
   flex-shrink: 0;
-  background: #0a0a0a;
+  background: var(--dark);
 }
 
 .topbarLeft {
@@ -35,7 +35,7 @@
 }
 .btnIcon:hover {
   color: var(--light);
-  background: #161616;
+  background: var(--light);
 }
 
 .titleWrapper {
@@ -72,7 +72,7 @@
   font-weight: 700;
   font-family: var(--font-main);
   outline: none;
-  background: #111;
+  background: var(--dark);
   caret-color: var(--primary);
 }
 
@@ -89,7 +89,7 @@
   transition: all 0.12s ease;
   background: transparent;
   color: var(--line);
-  border: 1px solid #222;
+  border: 1px solid var(--line);
   font-family: var(--font-main);
   white-space: nowrap;
   flex-shrink: 0;
@@ -114,10 +114,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1.25rem;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--line);
   flex-shrink: 0;
   flex-wrap: wrap;
-  background: #0d0d0d;
+  background: var(--dark);
 }
 
 .searchWrapper {
@@ -136,8 +136,8 @@
 
 .searchInput {
   width: 100%;
-  background: #111;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0.4rem 0.75rem 0.4rem 1.9rem;
   color: var(--light);
@@ -147,7 +147,7 @@
   transition: border-color 0.12s ease;
 }
 .searchInput:focus { border-color: var(--primary); }
-.searchInput::placeholder { color: #333; }
+.searchInput::placeholder { color: var(--line); }
 
 .clearSearch {
   position: absolute;
@@ -173,7 +173,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.12s ease;
-  border: 1px solid #222;
+  border: 1px solid var(--line);
   font-family: var(--font-main);
   background: transparent;
   color: var(--line);

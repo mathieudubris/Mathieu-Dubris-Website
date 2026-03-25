@@ -1,3 +1,5 @@
+/* KanbanTaskEditor.module.css */
+
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -17,8 +19,8 @@
 }
 
 .modal {
-  background: #111;
-  border: 1px solid #222;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 16px;
   width: 100%;
   max-width: 680px;
@@ -32,7 +34,7 @@
 }
 
 .modal::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: var(--line);
   border-radius: 2px;
 }
 
@@ -46,7 +48,7 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--line);
   gap: 1rem;
 }
 
@@ -77,8 +79,8 @@
 }
 
 .btnIcon:hover {
-  background: #1a1a1a;
-  color: var(--light);
+  background: var(--light);
+  color: var(--dark);
 }
 
 .modalBody {
@@ -89,7 +91,7 @@
 
 .modalMain {
   padding: 1.25rem 1.5rem;
-  border-right: 1px solid #1a1a1a;
+  border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -120,8 +122,8 @@
 }
 
 .textarea {
-  background: #0e0e0e;
-  border: 1px solid #2a2a2a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.75rem;
   color: var(--light);
@@ -174,24 +176,24 @@
   composes: btnIcon;
   font-size: 0.72rem;
   padding: 0.25rem 0.6rem;
-  border: 1px dashed #2a2a2a;
+  border: 1px dashed var(--line);
 }
 
 .labelCreator {
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: #0e0e0e;
+  background: var(--dark);
   border-radius: 8px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--line);
 }
 
 .labelInput {
   width: 100%;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--light);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
-  color: var(--light);
+  color: var(--dark);
   font-size: 0.8rem;
   font-family: var(--font-main);
   outline: none;
@@ -260,7 +262,7 @@
   left: 4px;
   width: 4px;
   height: 8px;
-  border: 2px solid #0e0e0e;
+  border: 2px solid var(--dark);
   border-top: none;
   border-left: none;
   transform: rotate(45deg);
@@ -285,8 +287,8 @@
 
 .addItemInput {
   flex: 1;
-  background: #0e0e0e;
-  border: 1px solid #2a2a2a;
+  background: var(--dark);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
   color: var(--light);
@@ -301,11 +303,11 @@
 }
 
 .sidebarSelect {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--light);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
-  color: var(--light);
+  color: var(--dark);
   font-size: 0.8rem;
   font-family: var(--font-main);
   outline: none;
@@ -325,7 +327,7 @@
 
 .divider {
   height: 1px;
-  background: #1e1e1e;
+  background: var(--line);
   margin: 0.25rem 0;
 }
 
@@ -348,7 +350,7 @@
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background: #d4ff66;
+  background: color-mix(in srgb, var(--primary) 85%, var(--light));
 }
 
 .btnPrimary:disabled {
@@ -360,10 +362,10 @@
   composes: btnPrimary;
   background: transparent;
   color: var(--light);
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--line);
 }
 
 .btnGhost:hover {
-  background: #1a1a1a;
+  background: var(--light);
   border-color: var(--line);
 }

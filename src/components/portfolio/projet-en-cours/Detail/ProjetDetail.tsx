@@ -84,9 +84,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
   const [hasIncremented, setHasIncremented] = useState(false);
   const [richPhases, setRichPhases] = useState<RichPhase[]>([]);
   const [roadmapArrows, setRoadmapArrows] = useState<RoadmapArrow[]>([]);
-  // PERF: plus besoin de fullProjectData — le projet complet arrive directement via props
-  // depuis page.tsx (qui a déjà appelé getFullProject et mis en cache).
-  // isLoading ne bloque plus sur getFullProject, seulement sur la roadmap.
   const [roadmapLoaded, setRoadmapLoaded] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -105,17 +102,15 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
       setIsInTeam(isUserInProject(project, currentUser.uid));
     }
 
-    // Vues : disponibles directement depuis les props (déjà chargées par getAllProjects)
+    // Vues : disponibles directement depuis les props
     setViews(project.views ?? 0);
 
-    // PERF: roadmap chargée en parallèle, sans bloquer l'affichage du modal.
-    // Le modal s'ouvre immédiatement, la roadmap apparaît dès qu'elle est prête.
+    // Roadmap chargée en parallèle, sans bloquer l'affichage du modal.
     loadRoadmapData(project.id);
   }, [project?.id]);
 
   const loadRoadmapData = async (projectId: string) => {
     try {
-      // phases + canvas en parallèle
       const [phases, canvas] = await Promise.all([
         loadRoadmapPhases(projectId).catch(() => []),
         loadRoadmapCanvas(projectId).catch(() => null),
@@ -173,8 +168,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
     setMenuOpen(false);
   };
 
-  // PERF: plus de spinner bloquant — le modal s'affiche immédiatement avec les données
-  // déjà disponibles dans les props. La roadmap se charge en arrière-plan.
   const carouselImages: string[] = project.carouselImages || [];
 
   return (
@@ -259,7 +252,6 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
           </div>
 
           <div className={`${styles.tabContent} ${activeTab === 'roadmap' ? styles.visible : ''}`}>
-            {/* Afficher la roadmap dès qu'elle est chargée, sinon un loader léger */}
             {roadmapLoaded
               ? <Roadmap phases={richPhases} arrows={roadmapArrows} />
               : (
@@ -291,8 +283,9 @@ const ProjetDetail: React.FC<ProjetDetailProps> = ({
             />
           </div>
 
+          {/* ✅ FIX : utiliser projectId au lieu de docLinks pour forcer le fetch Firestore */}
           <div className={`${styles.tabContent} ${activeTab === 'documentation' ? styles.visible : ''}`}>
-            <Documentation docLinks={project.docLinks || []} />
+            <Documentation projectId={project.id} />
           </div>
         </div>
       </motion.div>

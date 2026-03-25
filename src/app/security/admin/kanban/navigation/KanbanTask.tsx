@@ -7,10 +7,10 @@ import type { KanbanCard, KanbanMember } from "@/utils/kanban-api";
 import styles from "./KanbanTask.module.css";
 
 const PRIORITIES = {
-  low: { color: "#22c55e", label: "Basse" },
-  medium: { color: "#3b82f6", label: "Moyenne" },
-  high: { color: "#f59e0b", label: "Haute" },
-  critical: { color: "#ef4444", label: "Critique" },
+  low: { color: "var(--green)", label: "Basse" },
+  medium: { color: "var(--blue)", label: "Moyenne" },
+  high: { color: "var(--orange)", label: "Haute" },
+  critical: { color: "var(--red)", label: "Critique" },
 };
 
 interface KanbanTaskProps {
@@ -153,7 +153,6 @@ export default function KanbanTask({
                       <img
                         src={display.photoURL}
                         alt={display.name}
-                        className={styles.avatarImg}
                       />
                     ) : (
                       <span>{display.initials}</span>
