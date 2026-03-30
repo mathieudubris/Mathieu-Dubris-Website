@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, BookOpen, X, Menu } from 'lucide-react';
+import { Plus, BookOpen, X, Menu } from 'lucide-react';
 import { isAdmin } from '@/utils/firebase-api';
 import {
   FullAccompagnement,
@@ -20,7 +20,7 @@ import styles from './Accompagnement.module.css';
 
 const CATEGORIES = ['Toutes', 'Coaching', 'Mentorat', 'Conseil', 'Formation', 'Suivi', 'Autre'];
 
-type SidebarView = 'toutes' | 'commentaires' | 'mes-accompagnements' | 'favoris';
+type SidebarView = 'toutes' | 'mes-accompagnements' | 'favoris';
 
 interface AccompagnementProps {
   accompagnements: FullAccompagnement[];
@@ -37,7 +37,6 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
   fullAccompagnementCacheRef,
   onReload,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Toutes');
   const [sidebarView, setSidebarView] = useState<SidebarView>('toutes');
   const [showEditor, setShowEditor] = useState(false);
@@ -76,17 +75,8 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
     if (activeCategory !== 'Toutes') {
       list = list.filter((a) => a.category === activeCategory);
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (a) =>
-          a.title?.toLowerCase().includes(q) ||
-          a.description?.toLowerCase().includes(q) ||
-          a.category?.toLowerCase().includes(q)
-      );
-    }
     return list;
-  }, [accompagnements, activeCategory, searchQuery, sidebarView, favorites, currentUser]);
+  }, [accompagnements, activeCategory, sidebarView, favorites, currentUser]);
 
   const handleAccompagnementClick = async (accompagnement: FullAccompagnement) => {
     if (!currentUser) {
@@ -127,7 +117,6 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
     switch (sidebarView) {
       case 'mes-accompagnements': return 'Mes accompagnements';
       case 'favoris': return 'Mes favoris';
-      case 'commentaires': return 'Commentaires';
       default: return 'Tous les accompagnements';
     }
   };
@@ -138,7 +127,6 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
         <span className={styles.sidebarLabel}>Navigation</span>
         {([
           { id: 'toutes', label: 'Toutes' },
-          { id: 'commentaires', label: 'Commentaires' },
           { id: 'mes-accompagnements', label: 'Mes accompagnements' },
           { id: 'favoris', label: 'Mes favoris' },
         ] as { id: SidebarView; label: string }[]).map((item) => (
@@ -179,37 +167,21 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
 
   return (
     <div className={styles.container}>
-      {/* TOP BAR */}
-      <div className={styles.topBar}>
-        <div className={styles.topBarLeft}>
-          <button className={styles.hamburgerBtn} onClick={() => setSidebarOpen(true)} aria-label="Menu">
-            <Menu size={16} />
-          </button>
-          <h1 className={styles.pageTitle}>Accompagnements</h1>
-          <span className={styles.countBadge}>{accompagnements.length}</span>
-        </div>
-        <div className={styles.topBarRight}>
-          <div className={styles.searchWrap}>
-            <Search size={13} className={styles.searchIcon} />
-            <input
-              type="text"
-              className={styles.searchInput}
-              placeholder="Rechercher…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          {adminStatus && (
-            <button
-              className={styles.createBtn}
-              onClick={() => { setEditingAccompagnement(null); setShowEditor(true); }}
-            >
-              <Plus size={13} />
-              Nouveau
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Hamburger mobile */}
+      <button className={styles.hamburgerBtn} onClick={() => setSidebarOpen(true)} aria-label="Menu">
+        <Menu size={16} />
+      </button>
+
+      {/* Bouton flottant Nouveau (admin uniquement) */}
+      {adminStatus && (
+        <button
+          className={styles.createBtn}
+          onClick={() => { setEditingAccompagnement(null); setShowEditor(true); }}
+        >
+          <Plus size={15} />
+          Nouveau
+        </button>
+      )}
 
       {/* LAYOUT */}
       <div className={styles.layout}>
@@ -257,13 +229,7 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
             <span className={styles.sectionCount}>{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}</span>
           </div>
 
-          {sidebarView === 'commentaires' ? (
-            <div className={styles.emptyState}>
-              <BookOpen size={44} style={{ color: 'rgba(255,255,255,0.08)', marginBottom: 8 }} />
-              <h3 className={styles.emptyTitle}>Commentaires</h3>
-              <p className={styles.emptyText}>La section commentaires arrive bientôt.</p>
-            </div>
-          ) : filtered.length > 0 ? (
+          {filtered.length > 0 ? (
             <div className={styles.grid}>
               <AnimatePresence mode="popLayout">
                 {filtered.map((accompagnement, i) => {
@@ -291,13 +257,9 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
           ) : (
             <div className={styles.emptyState}>
               <BookOpen size={44} style={{ color: 'rgba(255,255,255,0.08)', marginBottom: 8 }} />
-              <h3 className={styles.emptyTitle}>
-                {searchQuery ? 'Aucun accompagnement trouvé' : 'Aucun accompagnement disponible'}
-              </h3>
+              <h3 className={styles.emptyTitle}>Aucun accompagnement disponible</h3>
               <p className={styles.emptyText}>
-                {searchQuery
-                  ? "Essayez avec d'autres termes"
-                  : sidebarView === 'favoris'
+                {sidebarView === 'favoris'
                   ? 'Ajoutez des accompagnements à vos favoris'
                   : sidebarView === 'mes-accompagnements'
                   ? "Vous n'êtes inscrit dans aucun accompagnement"

@@ -1,33 +1,16 @@
-/* Accompagnement.module.css - Version corrigée */
+/* Accompagnement.module.css */
 
 .container {
   flex: 1;
   display: flex;
   flex-direction: column;
   font-family: var(--font-main);
-  height: calc(100vh - 80px); /* Hauteur fixe pour permettre le scroll indépendant */
+  height: calc(100vh - 80px);
   overflow: hidden;
+  position: relative;
 }
 
-.topBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 28px;
-  border-bottom: 1px solid var(--line);
-  background: var(--dark);
-  flex-shrink: 0;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.topBarLeft { 
-  display: flex; 
-  align-items: center; 
-  gap: 12px; 
-}
-
-/* Hamburger caché par défaut sur desktop */
+/* Hamburger — mobile uniquement */
 .hamburgerBtn {
   display: none;
   background: transparent;
@@ -41,71 +24,53 @@
   cursor: pointer;
   transition: all 0.15s;
   font-family: inherit;
+  position: fixed;
+  top: 92px;
+  left: 14px;
+  z-index: 200;
 }
 .hamburgerBtn:hover {
   border-color: var(--primary);
   color: var(--primary);
 }
 
-.pageTitle { font-size: 1.1rem; font-weight: 800; color: var(--light); margin: 0; letter-spacing: -0.4px; }
-
-.countBadge {
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--line);
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 2px 9px;
-  border-radius: 20px;
-}
-
-.topBarRight { display: flex; align-items: center; gap: 10px; }
-
-.searchWrap { position: relative; }
-
-.searchIcon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--line); pointer-events: none; }
-
-.searchInput {
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 8px 14px 8px 34px;
-  color: var(--light);
-  font-size: 0.8rem;
-  font-family: inherit;
-  outline: none;
-  width: 220px;
-  transition: all 0.2s;
-}
-.searchInput::placeholder { color: var(--line); opacity: 0.6; }
-.searchInput:focus { border-color: var(--primary); width: 260px; }
-
+/* Bouton flottant Nouveau */
 .createBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   background: var(--primary);
   color: var(--dark);
   border: none;
-  padding: 8px 16px;
-  border-radius: 9px;
+  padding: 13px 28px;
+  border-radius: 50px;
   font-weight: 800;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   font-family: inherit;
   white-space: nowrap;
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
-.createBtn:hover { opacity: 0.88; transform: translateY(-1px); }
+.createBtn:hover {
+  opacity: 0.9;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+}
 
-.layout { 
-  display: flex; 
-  flex: 1; 
-  min-height: 0; 
+.layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
-/* Sidebar avec son propre scroll */
+/* Sidebar FIXE — pas de scroll */
 .sidebar {
   width: 260px;
   flex-shrink: 0;
@@ -114,20 +79,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
-}
-
-.sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: 4px;
+  overflow: hidden;
 }
 
 .sidebarSection { margin-bottom: 4px; }
@@ -153,15 +105,15 @@
   font-weight: 500;
   color: var(--line);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   font-family: inherit;
   width: 100%;
   text-align: left;
 }
-.sidebarItem:hover { background: transparent; color: var(--light); border: 1px solid var(--line); }
-.sidebarItemActive { color: var(--primary); font-weight: 700; border: 1px solid var(--primary); }
+.sidebarItem:hover { color: var(--light); border-color: var(--line); }
+.sidebarItemActive { color: var(--primary); font-weight: 700; border-color: var(--primary); }
 .sidebarItemActive .sidebarDot { background: var(--primary); }
 
 .sidebarDot { width: 6px; height: 6px; border-radius: 50%; background: var(--line); flex-shrink: 0; transition: background 0.15s; }
@@ -303,25 +255,8 @@
 
 @media (max-width: 768px) {
   .sidebar { display: none; }
-  
-  /* Afficher le hamburger sur mobile */
-  .hamburgerBtn {
-    display: flex;
-  }
-  
-  .topBar { padding: 12px 16px; }
-  .main { padding: 16px; }
+  .hamburgerBtn { display: flex; }
+  .main { padding: 16px 16px 80px; }
   .inProgressRow { grid-template-columns: 1fr; }
-  .grid { 
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .searchInput { width: 160px; }
-  .searchInput:focus { width: 180px; }
-  .topBarLeft {
-    flex: 1;
-  }
-  .pageTitle {
-    font-size: 0.95rem;
-  }
+  .grid { grid-template-columns: 1fr; gap: 16px; }
 }

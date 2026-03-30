@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  Edit2, Trash2, Clock, BookOpen, Heart, CalendarDays,
+  Edit2, Trash2, Clock, BookOpen, Bookmark, CalendarDays,
 } from 'lucide-react';
 import { FullAccompagnement } from '@/utils/accompagnement-api';
 import styles from './AccompagnementCard.module.css';
@@ -114,28 +114,21 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
         />
         <div className={styles.coverGradient} />
 
-        {/* Level badge */}
-        <span className={styles.levelBadge} style={{ color: levelColor, borderColor: levelColor }}>
-          {levelLabel}
-        </span>
-
-        {/* Member badge */}
-        {isMember && (
-          <div className={`${styles.statusBadge} ${styles.statusMember}`}>
-            Inscrit
-          </div>
-        )}
-
-        {/* Favorite button */}
+        {/* Bookmark button — top left */}
         {currentUser && accompagnement.id && (
           <button
             className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ''}`}
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(accompagnement.id!); }}
             title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           >
-            <Heart size={11} fill={isFavorite ? 'currentColor' : 'none'} />
+            <Bookmark size={11} fill={isFavorite ? 'currentColor' : 'none'} />
           </button>
         )}
+
+        {/* Level badge */}
+        <span className={styles.levelBadge} style={{ color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.25)' }}>
+          {levelLabel}
+        </span>
 
         {/* Admin actions */}
         {isAdmin && (
@@ -182,24 +175,41 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
           )}
         </div>
 
-        {/* CTA — animated button → /services/booking */}
+        {/* CTA */}
         <div className={styles.ctaWrap}>
-          <button
-            data-tooltip="Prendre un RDV"
-            className={styles.animBtn}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!currentUser) { window.location.href = '/security/access'; return; }
-              window.location.href = '/services/booking';
-            }}
-          >
-            <div className={styles.animBtnWrapper}>
-              <div className={styles.animBtnText}>Plus d'infos</div>
-              <span className={styles.animBtnIcon}>
-                <CalendarDays size={20} />
-              </span>
-            </div>
-          </button>
+          {isMember ? (
+            <button
+              className={styles.animBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClick();
+              }}
+            >
+              <div className={styles.animBtnWrapper}>
+                <div className={styles.animBtnText}>Continuer</div>
+                <span className={styles.animBtnIcon}>
+                  <BookOpen size={18} />
+                </span>
+              </div>
+            </button>
+          ) : (
+            <button
+              data-tooltip="Prendre un RDV"
+              className={styles.animBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!currentUser) { window.location.href = '/security/access'; return; }
+                window.location.href = '/services/booking';
+              }}
+            >
+              <div className={styles.animBtnWrapper}>
+                <div className={styles.animBtnText}>Plus d'infos</div>
+                <span className={styles.animBtnIcon}>
+                  <CalendarDays size={18} />
+                </span>
+              </div>
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

@@ -9,9 +9,9 @@
   cursor: pointer;
   position: relative;
   display: flex;
-  flex-direction: row;   /* ← horizontal */
+  flex-direction: row;
   transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
-  height: 160px;          /* fixed height */
+  height: 190px;
   min-height: 0;
 }
 .card:hover {
@@ -23,8 +23,8 @@
 /* ── LEFT — fixed cover, no scroll ── */
 .coverWrap {
   position: relative;
-  width: 160px;
-  flex-shrink: 0;      /* never shrinks */
+  width: 180px;
+  flex-shrink: 0;
   overflow: hidden;
   background: var(--dark);
 }
@@ -76,36 +76,36 @@
   bottom: 8px;
   left: 8px;
   z-index: 2;
-  border: 1px solid currentColor;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 2px 7px;
   border-radius: 4px;
   font-size: 0.52rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  background: var(--dark);
-  color: var(--primary);
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .favBtn {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
+  top: 8px;
+  left: 8px;
   z-index: 3;
   width: 24px;
   height: 24px;
-  background: var(--dark);
-  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 6px;
-  color: var(--line);
+  color: rgba(255,255,255,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.15s;
 }
-.favBtn:hover  { border-color: #f43f5e; color: #f43f5e; }
-.favBtnActive  { border-color: #f43f5e !important; color: #f43f5e !important; }
+.favBtn:hover  { border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.9); }
+.favBtnActive  { border-color: var(--primary) !important; color: var(--primary) !important; }
 
 .adminActions {
   position: absolute;
@@ -147,10 +147,11 @@
 
 .category {
   font-size: 0.56rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: var(--primary);
+  color: var(--line);
+  opacity: 0.7;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -206,75 +207,27 @@
   margin-top: auto;
 }
 
-/* ── Animated button (Uiverse style) ── */
+/* ── Animated button ── */
 .animBtn {
   --width: 130px;
   --height: 34px;
-  --tooltip-height: 30px;
-  --tooltip-width: 100px;
-  --gap: 14px;
-  --btn-color: var(--primary, #34d399);
-  --tooltip-color: #fff;
 
   width: var(--width);
   height: var(--height);
-  background: var(--btn-color);
+  background: transparent;
+  border: 1px solid var(--line);
   position: relative;
   text-align: center;
   border-radius: 8px;
-  border: none;
   cursor: pointer;
   font-family: inherit;
-  overflow: visible;
-  transition: background 0.3s, opacity 0.2s;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
   flex-shrink: 0;
 }
-.animBtn:hover { opacity: 0.9; }
-
-/* Tooltip */
-.animBtn::before {
-  position: absolute;
-  content: attr(data-tooltip);
-  width: var(--tooltip-width);
-  height: var(--tooltip-height);
-  background-color: #555;
-  font-size: 0.72rem;
-  color: #fff;
-  border-radius: 5px;
-  line-height: var(--tooltip-height);
-  bottom: calc(var(--height) + var(--gap) + 10px);
-  left: calc(50% - var(--tooltip-width) / 2);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s;
-  white-space: nowrap;
-  pointer-events: none;
-}
-/* Arrow */
-.animBtn::after {
-  position: absolute;
-  content: '';
-  width: 0;
-  height: 0;
-  border: 8px solid transparent;
-  border-top-color: #555;
-  left: calc(50% - 8px);
-  bottom: calc(100% + var(--gap) - 10px);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s;
-  pointer-events: none;
-}
-
-.animBtn:hover::before {
-  opacity: 1;
-  visibility: visible;
-  bottom: calc(var(--height) + var(--gap));
-}
-.animBtn:hover::after {
-  opacity: 1;
-  visibility: visible;
-  bottom: calc(var(--height) + var(--gap) - 20px);
+.animBtn:hover {
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.05);
 }
 
 /* Inner wrapper */
@@ -294,10 +247,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--dark, #0f0f0f);
-  font-size: 0.75rem;
-  font-weight: 800;
-  transition: top 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  color: var(--light);
+  font-size: 0.73rem;
+  font-weight: 600;
+  transition: top 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   overflow: hidden;
 }
 
@@ -310,8 +263,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--dark, #0f0f0f);
-  transition: top 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  color: var(--light);
+  transition: top 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   overflow: hidden;
 }
 
@@ -361,10 +314,10 @@
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .card {
-    height: 140px;
+    height: 170px;
   }
   .coverWrap {
-    width: 120px;
+    width: 140px;
   }
   .adminActions { opacity: 1; }
   .cardTitle { font-size: 0.82rem; }
