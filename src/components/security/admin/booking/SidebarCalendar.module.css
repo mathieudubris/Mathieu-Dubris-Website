@@ -1,0 +1,123 @@
+/* SidebarCalendar.module.css */
+
+/* ── Sidebar inner content ── */
+.sidebarInner {
+  padding: 1rem 0.85rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Mini Calendar ── */
+.miniCal { }
+.miniCalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+.miniNavBtn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #1e1e1e;
+  border-radius: 5px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.miniNavBtn:hover { color: #e8e8e8; border-color: #333; }
+.miniMonthLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #e8e8e8;
+  letter-spacing: -0.01em;
+}
+.miniGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+.miniDayName {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #444;
+  text-align: center;
+  padding: 0.15rem 0;
+}
+.miniDay {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #777;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.miniDay:hover { background: #1a1a1a; color: #e8e8e8; }
+.miniDayToday { color: #c7ff44; font-weight: 900; }
+.miniDaySelected { background: #c7ff44 !important; color: #0a0a0a !important; font-weight: 900; }
+.miniDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #c7ff44;
+}
+.miniDaySelected .miniDot { background: #0a0a0a; }
+
+/* ── Filters ── */
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.4rem;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  text-align: left;
+  width: 100%;
+}
+.filterItem:hover { background: #111; }
+.filterItemInactive { opacity: 0.4; }
+.filterDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.filterBadge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.18rem 0.5rem;
+  border-radius: 5px;
+  border: 1px solid;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.filterCount {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #444;
+  margin-left: auto;
+  flex-shrink: 0;
+}

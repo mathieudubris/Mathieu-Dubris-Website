@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Sparkles, Users, Clock, BookMarked } from 'lucide-react';
+import {
+  Edit2, Trash2, Clock, BookOpen, Heart, CalendarDays,
+} from 'lucide-react';
 import { FullAccompagnement } from '@/utils/accompagnement-api';
 import styles from './AccompagnementCard.module.css';
 
@@ -11,11 +13,13 @@ interface AccompagnementCardProps {
   currentUser: any;
   isAdmin: boolean;
   isMember: boolean;
+  isFavorite: boolean;
   isDeleteConfirm: boolean;
   onEdit: (a: FullAccompagnement) => void;
   onDelete: (id: string) => void;
   onDeleteConfirm: (id: string | null) => void;
   onClick: (a: FullAccompagnement) => void;
+  onToggleFavorite: (id: string) => void;
 }
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -37,16 +41,17 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
   currentUser,
   isAdmin,
   isMember,
+  isFavorite,
   isDeleteConfirm,
   onEdit,
   onDelete,
   onDeleteConfirm,
   onClick,
+  onToggleFavorite,
 }) => {
-  // Tout est public — badge "Accès anticipé" pour les non-membres uniquement
-  const isEarlyAccess = !isMember && !isAdmin;
-  const levelColor = LEVEL_COLORS[accompagnement.level] || 'var(--primary)';
+  const levelColor = LEVEL_COLORS[accompagnement.level] || '#34d399';
   const levelLabel = LEVEL_LABELS[accompagnement.level] || accompagnement.level;
+  const moduleCount = accompagnement.modules?.length ?? 0;
 
   const handleClick = () => {
     if (!currentUser) {
@@ -60,6 +65,7 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
     return (
       <motion.div
         className={styles.card}
+        style={{ minHeight: 120 }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -68,7 +74,7 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
           <div className={styles.deleteContent}>
             <div className={styles.deleteEmoji}>🗑️</div>
             <h4 className={styles.deleteTitle}>Supprimer l'accompagnement ?</h4>
-            <p className={styles.deleteMsg}>Cette action est irréversible</p>
+            <p className={styles.deleteMsg}>Cette action est irréversible.</p>
             <div className={styles.deleteActions}>
               <button
                 onClick={(e) => { e.stopPropagation(); if (accompagnement.id) onDelete(accompagnement.id); }}
@@ -92,50 +98,13 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
   return (
     <motion.div
       className={styles.card}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
       onClick={handleClick}
     >
-      {/* Badges + admin actions */}
-      <div className={styles.cardHeader}>
-        <div className={styles.badgesLeft}>
-          {isMember && (
-            <div className={styles.memberBadge}>
-              <Users size={9} />
-              <span>Suivi</span>
-            </div>
-          )}
-          {isEarlyAccess && (
-            <div className={styles.lockedBadge}>
-              <Sparkles size={9} />
-              <span>Accès anticipé</span>
-            </div>
-          )}
-        </div>
-
-        {isAdmin && (
-          <div className={styles.adminActions}>
-            <button
-              className={styles.actionBtn}
-              onClick={(e) => { e.stopPropagation(); onEdit(accompagnement); }}
-              title="Modifier"
-            >
-              <Edit2 size={11} />
-            </button>
-            <button
-              className={styles.actionBtn}
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteConfirm(accompagnement.id || ''); }}
-              title="Supprimer"
-            >
-              <Trash2 size={11} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Cover */}
+      {/* LEFT — Fixed cover */}
       <div className={styles.coverWrap}>
         <img
           src={accompagnement.image || '/default-accompagnement.jpg'}
@@ -143,50 +112,94 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
           className={styles.coverImg}
           onError={(e) => { e.currentTarget.src = '/default-accompagnement.jpg'; }}
         />
+        <div className={styles.coverGradient} />
+
+        {/* Level badge */}
         <span className={styles.levelBadge} style={{ color: levelColor, borderColor: levelColor }}>
           {levelLabel}
         </span>
+
+        {/* Member badge */}
+        {isMember && (
+          <div className={`${styles.statusBadge} ${styles.statusMember}`}>
+            Inscrit
+          </div>
+        )}
+
+        {/* Favorite button */}
+        {currentUser && accompagnement.id && (
+          <button
+            className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ''}`}
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(accompagnement.id!); }}
+            title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          >
+            <Heart size={11} fill={isFavorite ? 'currentColor' : 'none'} />
+          </button>
+        )}
+
+        {/* Admin actions */}
+        {isAdmin && (
+          <div className={styles.adminActions}>
+            <button
+              className={styles.actionBtn}
+              onClick={(e) => { e.stopPropagation(); onEdit(accompagnement); }}
+              title="Modifier"
+            >
+              <Edit2 size={10} />
+            </button>
+            <button
+              className={styles.actionBtn}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteConfirm(accompagnement.id || ''); }}
+              title="Supprimer"
+            >
+              <Trash2 size={10} />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Content */}
+      {/* RIGHT — Content */}
       <div className={styles.cardBody}>
-        <div className={styles.bodyContent}>
-          <span className={styles.category}>{accompagnement.category || 'Non catégorisé'}</span>
-          <h3 className={styles.title}>{accompagnement.title}</h3>
-          <p className={styles.description}>
-            {accompagnement.description || 'Aucune description disponible.'}
-          </p>
+        <span className={styles.category}>{accompagnement.category || 'Non catégorisé'}</span>
+        <h3 className={styles.cardTitle}>{accompagnement.title}</h3>
+        <p className={styles.description}>
+          {accompagnement.description || 'Aucune description disponible.'}
+        </p>
 
-          <div className={styles.metaRow}>
-            {accompagnement.duration && (
-              <span className={styles.metaItem}>
-                <Clock size={10} />
-                {accompagnement.duration}
-              </span>
-            )}
-            {accompagnement.modules && accompagnement.modules.length > 0 && (
-              <span className={styles.metaItem}>
-                <BookMarked size={10} />
-                {accompagnement.modules.length} étape{accompagnement.modules.length > 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
+        {/* Meta */}
+        <div className={styles.metaRow}>
+          {accompagnement.duration && (
+            <div className={styles.metaItem}>
+              <Clock size={10} />
+              {accompagnement.duration}
+            </div>
+          )}
+          {moduleCount > 0 && (
+            <div className={styles.metaItem}>
+              <BookOpen size={10} />
+              {moduleCount} étape{moduleCount > 1 ? 's' : ''}
+            </div>
+          )}
         </div>
 
-        {/* Footer simplifié - plus de liste de membres */}
-        <div className={styles.cardFooter}>
-          <div className={styles.dateLabel}>
-            {accompagnement.createdAt
-              ? (() => {
-                  try {
-                    const d = accompagnement.createdAt.toDate
-                      ? accompagnement.createdAt.toDate()
-                      : new Date(accompagnement.createdAt);
-                    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                  } catch { return ''; }
-                })()
-              : ''}
-          </div>
+        {/* CTA — animated button → /services/booking */}
+        <div className={styles.ctaWrap}>
+          <button
+            data-tooltip="Prendre un RDV"
+            className={styles.animBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!currentUser) { window.location.href = '/security/access'; return; }
+              window.location.href = '/services/booking';
+            }}
+          >
+            <div className={styles.animBtnWrapper}>
+              <div className={styles.animBtnText}>Plus d'infos</div>
+              <span className={styles.animBtnIcon}>
+                <CalendarDays size={20} />
+              </span>
+            </div>
+          </button>
         </div>
       </div>
     </motion.div>

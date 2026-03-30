@@ -21,23 +21,63 @@ import { db } from '@/utils/firebase-api';
 // ─────────────────────────────────────────────
 
 const SERVICES_DOC        = () => doc(db, 'services', 'accompagnement');
-const ACCOMPAGNEMENTS_COL      = () => collection(db, 'services', 'accompagnement', 'accompagnements');
-const ACCOMPAGNEMENT_DOC       = (id: string) => doc(db, 'services', 'accompagnement', 'accompagnements', id);
+const ACCOMPAGNEMENTS_COL = () => collection(db, 'services', 'accompagnement', 'accompagnements');
+const ACCOMPAGNEMENT_DOC  = (id: string) => doc(db, 'services', 'accompagnement', 'accompagnements', id);
 const OVERVIEW_DOC        = (id: string) => doc(db, 'services', 'accompagnement', 'accompagnements', id, 'overview', 'main');
 const MEDIA_DOC           = (id: string) => doc(db, 'services', 'accompagnement', 'accompagnements', id, 'media', 'main');
 const CONTENT_DOC         = (id: string) => doc(db, 'services', 'accompagnement', 'accompagnements', id, 'content', 'main');
 const STATS_DOC           = (id: string) => doc(db, 'services', 'accompagnement', 'accompagnements', id, 'stats', 'main');
 
 // ─────────────────────────────────────────────
-// Interfaces
+// Interfaces - Mêmes structures que Formation
 // ─────────────────────────────────────────────
+
+export type LessonType =
+  | 'introduction'
+  | 'developpement'
+  | 'lecon'
+  | 'pratique'
+  | 'conclusion'
+  | 'autre';
+
+export interface QuizOption {
+  text: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: QuizOption[];
+  correctIndex: number;
+  explanation?: string;
+}
+
+export interface LessonResource {
+  id: string;
+  name: string;
+  url: string;
+  type: 'pdf' | 'link' | 'zip' | 'doc' | 'video' | 'autre';
+}
+
+export interface AccompagnementLesson {
+  id: string;
+  title: string;
+  type: LessonType;
+  duration?: string;
+  videoUrl?: string;
+  notes?: string;
+  resources?: LessonResource[];
+  quiz?: QuizQuestion[];
+  order: number;
+}
 
 export interface AccompagnementModule {
   id: string;
   title: string;
   description?: string;
-  duration?: string; // ex: "2h30"
+  duration?: string;
   order: number;
+  lessons?: AccompagnementLesson[];
 }
 
 export interface Accompagnement {
@@ -51,26 +91,23 @@ export interface Accompagnement {
   price?: number;
   currency?: string;
   visibility: 'public' | 'members_only';
-  teamMembers: string[]; // UIDs des membres autorisés
+  teamMembers: string[];
   createdBy: string;
   createdAt: any;
   updatedAt: any;
 }
 
 export interface FullAccompagnement extends Accompagnement {
-  // overview
   description?: string;
   objective?: string;
   targetAudience?: string;
   prerequisites?: string;
-  // media
   image?: string;
   carouselImages?: Array<string | { url: string; type: string; caption?: string }>;
-  // content
   modules?: AccompagnementModule[];
-  // stats
   views?: number;
-  // membres enrichis
+  totalParticipants?: number;
+  activeParticipants?: number;
   members?: Array<{
     userId?: string;
     uid?: string;
@@ -78,6 +115,7 @@ export interface FullAccompagnement extends Accompagnement {
     photoURL?: string;
     email?: string;
   }>;
+  favoritedBy?: string[];
 }
 
 // ─────────────────────────────────────────────
@@ -118,29 +156,12 @@ export const generateUniqueAccompagnementSlug = async (title: string, excludeSlu
 // Lecture
 // ─────────────────────────────────────────────
 
-/**
- * Récupère tous les accompagnements accessibles à l'utilisateur courant.
- *
- * POURQUOI DEUX REQUÊTES ?
- * Firestore évalue la règle `read` sur chaque document lors d'un getDocs().
- * Si un seul document `members_only` n'est pas accessible à l'utilisateur,
- * TOUTE la requête échoue avec "Missing or insufficient permissions".
- * La solution est de faire deux requêtes `where` ciblées :
- *   1. Les accompagnements publics → accessibles à tout utilisateur connecté
- *   2. Les accompagnements members_only où l'utilisateur est membre ou créateur
- * Les résultats sont fusionnés et dédupliqués par ID.
- *
- * @param userId - UID de l'utilisateur connecté (null si non connecté)
- */
 export const getAllAccompagnements = async (userId?: string | null): Promise<FullAccompagnement[]> => {
   try {
     const col = ACCOMPAGNEMENTS_COL();
 
-    // Requête 1 : tous les accompagnements publics
     const publicQuery = query(col, where('visibility', '==', 'public'));
 
-    // Requêtes 2 & 3 : membres_only où l'utilisateur est membre ou créateur
-    // (uniquement si un userId est fourni)
     const memberQueries = userId
       ? [
           query(col, where('visibility', '==', 'members_only'), where('teamMembers', 'array-contains', userId)),
@@ -148,13 +169,11 @@ export const getAllAccompagnements = async (userId?: string | null): Promise<Ful
         ]
       : [];
 
-    // Exécuter toutes les requêtes en parallèle
     const [publicSnap, ...memberSnaps] = await Promise.all([
       getDocs(publicQuery),
       ...memberQueries.map((q) => getDocs(q)),
     ]);
 
-    // Fusionner et dédupliquer par ID
     const docsById = new Map<string, FullAccompagnement>();
 
     for (const snap of [publicSnap, ...memberSnaps]) {
@@ -167,7 +186,6 @@ export const getAllAccompagnements = async (userId?: string | null): Promise<Ful
 
     const accompagnements = Array.from(docsById.values());
 
-    // Charger overview + media + stats en parallèle pour chaque accompagnement
     const enriched = await Promise.all(
       accompagnements.map(async (f) => {
         try {
@@ -181,6 +199,8 @@ export const getAllAccompagnements = async (userId?: string | null): Promise<Ful
             ...(overviewSnap?.exists() ? overviewSnap.data() : {}),
             ...(mediaSnap?.exists() ? mediaSnap.data() : {}),
             views: statsSnap?.exists() ? (statsSnap.data()?.views ?? 0) : 0,
+            totalParticipants: statsSnap?.exists() ? (statsSnap.data()?.totalParticipants ?? 0) : 0,
+            activeParticipants: statsSnap?.exists() ? (statsSnap.data()?.activeParticipants ?? 0) : 0,
           } as FullAccompagnement;
         } catch {
           return f;
@@ -214,6 +234,8 @@ export const getFullAccompagnement = async (accompagnementId: string): Promise<F
       ...(mediaSnap?.exists() ? mediaSnap.data() : {}),
       modules: contentSnap?.exists() ? (contentSnap.data()?.modules ?? []) : [],
       views: statsSnap?.exists() ? (statsSnap.data()?.views ?? 0) : 0,
+      totalParticipants: statsSnap?.exists() ? (statsSnap.data()?.totalParticipants ?? 0) : 0,
+      activeParticipants: statsSnap?.exists() ? (statsSnap.data()?.activeParticipants ?? 0) : 0,
     } as FullAccompagnement;
   } catch (error) {
     console.error('getFullAccompagnement:', error);
@@ -226,7 +248,6 @@ export const getFullAccompagnement = async (accompagnementId: string): Promise<F
 // ─────────────────────────────────────────────
 
 export interface SaveAccompagnementPayload {
-  // main
   title: string;
   slug: string;
   category: string;
@@ -238,18 +259,16 @@ export interface SaveAccompagnementPayload {
   visibility: Accompagnement['visibility'];
   teamMembers: string[];
   createdBy: string;
-  // overview
   description?: string;
   objective?: string;
   targetAudience?: string;
   prerequisites?: string;
-  // media
   image?: string;
   carouselImages?: any[];
-  // content
   modules?: AccompagnementModule[];
-  // stats
   views?: number;
+  totalParticipants?: number;
+  activeParticipants?: number;
 }
 
 export const saveAccompagnement = async (
@@ -263,10 +282,8 @@ export const saveAccompagnement = async (
 
     const batch = writeBatch(db);
 
-    // S'assurer que le document services/accompagnement existe
     batch.set(SERVICES_DOC(), { updatedAt: now }, { merge: true });
 
-    // Document principal
     const mainData: any = {
       title: payload.title,
       slug: payload.slug,
@@ -289,7 +306,6 @@ export const saveAccompagnement = async (
       batch.update(ACCOMPAGNEMENT_DOC(id), mainData);
     }
 
-    // Overview
     batch.set(OVERVIEW_DOC(id), {
       description: payload.description || '',
       objective: payload.objective || '',
@@ -298,28 +314,31 @@ export const saveAccompagnement = async (
       updatedAt: now,
     }, { merge: true });
 
-    // Media
     batch.set(MEDIA_DOC(id), {
       image: payload.image || '',
       carouselImages: payload.carouselImages || [],
       updatedAt: now,
     }, { merge: true });
 
-    // Content
     batch.set(CONTENT_DOC(id), {
       modules: payload.modules || [],
       updatedAt: now,
     }, { merge: true });
 
-    // Stats (uniquement à la création)
     if (isNew) {
       batch.set(STATS_DOC(id), {
         views: payload.views ?? 0,
+        totalParticipants: payload.totalParticipants ?? 0,
+        activeParticipants: payload.activeParticipants ?? 0,
         createdAt: now,
         updatedAt: now,
       });
-    } else if (payload.views !== undefined) {
-      batch.update(STATS_DOC(id), { views: payload.views, updatedAt: now });
+    } else {
+      const statsUpdate: any = { updatedAt: now };
+      if (payload.views !== undefined) statsUpdate.views = payload.views;
+      if (payload.totalParticipants !== undefined) statsUpdate.totalParticipants = payload.totalParticipants;
+      if (payload.activeParticipants !== undefined) statsUpdate.activeParticipants = payload.activeParticipants;
+      batch.update(STATS_DOC(id), statsUpdate);
     }
 
     await batch.commit();
@@ -333,8 +352,6 @@ export const saveAccompagnement = async (
 export const deleteAccompagnement = async (accompagnementId: string): Promise<void> => {
   try {
     const batch = writeBatch(db);
-
-    // Supprimer les sous-collections
     for (const subDoc of [
       OVERVIEW_DOC(accompagnementId),
       MEDIA_DOC(accompagnementId),
@@ -343,7 +360,6 @@ export const deleteAccompagnement = async (accompagnementId: string): Promise<vo
     ]) {
       batch.delete(subDoc);
     }
-
     batch.delete(ACCOMPAGNEMENT_DOC(accompagnementId));
     await batch.commit();
   } catch (error) {
@@ -419,4 +435,38 @@ export {
   MEDIA_DOC,
   CONTENT_DOC,
   STATS_DOC,
+};
+
+// ─────────────────────────────────────────────
+// Favoris
+// ─────────────────────────────────────────────
+
+const FAVORITES_COL = (userId: string) => collection(db, 'users', userId, 'favorites');
+const FAVORITE_DOC  = (userId: string, accompagnementId: string) =>
+  doc(db, 'users', userId, 'favorites', accompagnementId);
+
+export const getUserFavorites = async (userId: string): Promise<string[]> => {
+  try {
+    const snap = await getDocs(FAVORITES_COL(userId));
+    return snap.docs.map((d) => d.id);
+  } catch {
+    return [];
+  }
+};
+
+export const toggleFavorite = async (userId: string, accompagnementId: string): Promise<boolean> => {
+  try {
+    const ref = FAVORITE_DOC(userId, accompagnementId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await deleteDoc(ref);
+      return false;
+    } else {
+      await setDoc(ref, { addedAt: Timestamp.now() });
+      return true;
+    }
+  } catch (error) {
+    console.error('toggleFavorite:', error);
+    throw error;
+  }
 };

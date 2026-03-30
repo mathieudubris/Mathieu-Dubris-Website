@@ -5,11 +5,16 @@ import { motion } from 'framer-motion';
 import {
   X, Save, Info, Tag, Target, Users2, Clock, DollarSign,
   Globe, Plus, Trash2, ChevronUp, ChevronDown, Image as ImageIcon,
-  Search, Check, Mail,
+  Search, Check, Mail, BookOpen, FileText, Link as LinkIcon,
+  HelpCircle, StickyNote, ChevronRight,
 } from 'lucide-react';
 import {
   FullAccompagnement,
   AccompagnementModule,
+  AccompagnementLesson,
+  LessonType,
+  LessonResource,
+  QuizQuestion,
   saveAccompagnement,
   generateUniqueAccompagnementSlug,
   generateAccompagnementSlug,
@@ -19,7 +24,17 @@ import styles from './AccompagnementEditor.module.css';
 const CATEGORIES = ['Coaching', 'Mentorat', 'Conseil', 'Formation', 'Suivi', 'Autre'];
 const LEVELS = ['débutant', 'intermédiaire', 'avancé', 'expert'] as const;
 const CURRENCIES = ['EUR', 'USD', 'GBP'];
-const TABS = ['Informations', 'Médias', 'Étapes', 'Bénéficiaires'] as const;
+const LESSON_TYPES: { value: LessonType; label: string }[] = [
+  { value: 'introduction', label: 'Introduction' },
+  { value: 'developpement', label: 'Développement' },
+  { value: 'lecon', label: 'Leçon' },
+  { value: 'pratique', label: 'Pratique' },
+  { value: 'conclusion', label: 'Conclusion' },
+  { value: 'autre', label: 'Autre' },
+];
+const RESOURCE_TYPES = ['pdf', 'link', 'zip', 'doc', 'autre'] as const;
+
+const TABS = ['Informations', 'Médias', 'Modules', 'Équipe'] as const;
 type Tab = typeof TABS[number];
 
 interface Props {
@@ -31,7 +46,6 @@ interface Props {
 }
 
 function detectType(url: string): string {
-  if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(url)) return 'video';
   if (/\.gif(\?|$)/i.test(url)) return 'gif';
   return 'image';
 }
@@ -43,6 +57,7 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // ── Info fields ──
   const [title, setTitle] = useState(accompagnement?.title || '');
   const [slug, setSlug] = useState(accompagnement?.slug || '');
   const [editingSlug, setEditingSlug] = useState(false);
@@ -57,6 +72,7 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
   const [targetAudience, setTargetAudience] = useState(accompagnement?.targetAudience || '');
   const [prerequisites, setPrerequisites] = useState(accompagnement?.prerequisites || '');
 
+  // ── Media ──
   const [mainImage, setMainImage] = useState(accompagnement?.image || '');
   const [carouselImages, setCarouselImages] = useState<any[]>(
     (accompagnement?.carouselImages || []).map((i) =>
@@ -64,9 +80,16 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
     )
   );
 
+  // ── Modules ──
   const [modules, setModules] = useState<AccompagnementModule[]>(accompagnement?.modules || []);
+  const [expandedModuleIdx, setExpandedModuleIdx] = useState<number | null>(null);
+  const [expandedLessonIdx, setExpandedLessonIdx] = useState<{ mod: number; les: number } | null>(null);
+
+  // ── Team ──
   const [teamMembers, setTeamMembers] = useState<string[]>(accompagnement?.teamMembers || []);
   const [memberSearch, setMemberSearch] = useState('');
+  const [totalParticipants, setTotalParticipants] = useState<number>(accompagnement?.totalParticipants ?? 0);
+  const [activeParticipants, setActiveParticipants] = useState<number>(accompagnement?.activeParticipants ?? 0);
 
   useEffect(() => {
     if (isNew && title && !editingSlug) {
@@ -77,22 +100,29 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
   const openCloudinary = (onSuccess: (url: string) => void, multiple = false) => {
     if (typeof window === 'undefined' || !(window as any).cloudinary) return;
     (window as any).cloudinary.createUploadWidget(
-      { cloudName: 'dhqqx2m3y', uploadPreset: 'blog_preset', sources: ['local', 'url'], multiple, resourceType: 'auto', theme: 'minimal' },
+      { cloudName: 'dhqqx2m3y', uploadPreset: 'blog_preset', sources: ['local', 'url'], multiple, resourceType: 'image', theme: 'minimal' },
       (_: any, result: any) => {
         if (!_ && result?.event === 'success') onSuccess(result.info.secure_url);
       }
     ).open();
   };
 
+  // ── Module helpers ──
   const addModule = () => {
-    setModules([...modules, { id: Date.now().toString(), title: '', description: '', duration: '', order: modules.length }]);
+    const idx = modules.length;
+    setModules([...modules, { id: Date.now().toString(), title: '', description: '', duration: '', order: idx, lessons: [] }]);
+    setExpandedModuleIdx(idx);
   };
 
   const updateModule = (i: number, field: keyof AccompagnementModule, val: any) => {
     setModules(modules.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
   };
 
-  const removeModule = (i: number) => setModules(modules.filter((_, idx) => idx !== i));
+  const removeModule = (i: number) => {
+    setModules(modules.filter((_, idx) => idx !== i).map((m, idx) => ({ ...m, order: idx })));
+    setExpandedModuleIdx(null);
+    setExpandedLessonIdx(null);
+  };
 
   const moveModule = (i: number, dir: 'up' | 'down') => {
     const arr = [...modules];
@@ -102,6 +132,115 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
     setModules(arr.map((m, idx) => ({ ...m, order: idx })));
   };
 
+  // ── Lesson helpers ──
+  const addLesson = (modIdx: number) => {
+    const mod = modules[modIdx];
+    const lessons = mod.lessons || [];
+    const newLesson: AccompagnementLesson = {
+      id: Date.now().toString(),
+      title: '',
+      type: 'lecon',
+      duration: '',
+      notes: '',
+      resources: [],
+      quiz: [],
+      order: lessons.length,
+    };
+    const updated = [...modules];
+    updated[modIdx] = { ...mod, lessons: [...lessons, newLesson] };
+    setModules(updated);
+    setExpandedLessonIdx({ mod: modIdx, les: lessons.length });
+  };
+
+  const updateLesson = (modIdx: number, lesIdx: number, field: keyof AccompagnementLesson, val: any) => {
+    const updated = [...modules];
+    const lessons = [...(updated[modIdx].lessons || [])];
+    lessons[lesIdx] = { ...lessons[lesIdx], [field]: val };
+    updated[modIdx] = { ...updated[modIdx], lessons };
+    setModules(updated);
+  };
+
+  const removeLesson = (modIdx: number, lesIdx: number) => {
+    const updated = [...modules];
+    const lessons = (updated[modIdx].lessons || []).filter((_, i) => i !== lesIdx).map((l, i) => ({ ...l, order: i }));
+    updated[modIdx] = { ...updated[modIdx], lessons };
+    setModules(updated);
+    setExpandedLessonIdx(null);
+  };
+
+  const moveLessonUp = (modIdx: number, lesIdx: number) => {
+    if (lesIdx === 0) return;
+    const updated = [...modules];
+    const lessons = [...(updated[modIdx].lessons || [])];
+    [lessons[lesIdx - 1], lessons[lesIdx]] = [lessons[lesIdx], lessons[lesIdx - 1]];
+    updated[modIdx] = { ...updated[modIdx], lessons: lessons.map((l, i) => ({ ...l, order: i })) };
+    setModules(updated);
+  };
+
+  const moveLessonDown = (modIdx: number, lesIdx: number) => {
+    const lessons = modules[modIdx].lessons || [];
+    if (lesIdx >= lessons.length - 1) return;
+    const updated = [...modules];
+    const les = [...lessons];
+    [les[lesIdx], les[lesIdx + 1]] = [les[lesIdx + 1], les[lesIdx]];
+    updated[modIdx] = { ...updated[modIdx], lessons: les.map((l, i) => ({ ...l, order: i })) };
+    setModules(updated);
+  };
+
+  // ── Resource helpers ──
+  const addResource = (modIdx: number, lesIdx: number) => {
+    const newRes: LessonResource = { id: Date.now().toString(), name: '', url: '', type: 'link' };
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'resources', [...(lesson.resources || []), newRes]);
+  };
+
+  const updateResource = (modIdx: number, lesIdx: number, resIdx: number, field: keyof LessonResource, val: any) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    const resources = [...(lesson.resources || [])];
+    resources[resIdx] = { ...resources[resIdx], [field]: val };
+    updateLesson(modIdx, lesIdx, 'resources', resources);
+  };
+
+  const removeResource = (modIdx: number, lesIdx: number, resIdx: number) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'resources', (lesson.resources || []).filter((_, i) => i !== resIdx));
+  };
+
+  // ── Quiz helpers ──
+  const addQuizQuestion = (modIdx: number, lesIdx: number) => {
+    const newQ: QuizQuestion = {
+      id: Date.now().toString(),
+      question: '',
+      options: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
+      correctIndex: 0,
+      explanation: '',
+    };
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'quiz', [...(lesson.quiz || []), newQ]);
+  };
+
+  const updateQuizQuestion = (modIdx: number, lesIdx: number, qIdx: number, field: keyof QuizQuestion, val: any) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    const quiz = [...(lesson.quiz || [])];
+    quiz[qIdx] = { ...quiz[qIdx], [field]: val };
+    updateLesson(modIdx, lesIdx, 'quiz', quiz);
+  };
+
+  const updateQuizOption = (modIdx: number, lesIdx: number, qIdx: number, oIdx: number, text: string) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    const quiz = [...(lesson.quiz || [])];
+    const options = [...quiz[qIdx].options];
+    options[oIdx] = { text };
+    quiz[qIdx] = { ...quiz[qIdx], options };
+    updateLesson(modIdx, lesIdx, 'quiz', quiz);
+  };
+
+  const removeQuizQuestion = (modIdx: number, lesIdx: number, qIdx: number) => {
+    const lesson = modules[modIdx].lessons![lesIdx];
+    updateLesson(modIdx, lesIdx, 'quiz', (lesson.quiz || []).filter((_, i) => i !== qIdx));
+  };
+
+  // ── Team ──
   const filteredUsers = useMemo(() => {
     if (!memberSearch.trim()) return allUsers;
     const q = memberSearch.toLowerCase();
@@ -116,6 +255,7 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
     );
   };
 
+  // ── Save ──
   const handleSave = async () => {
     if (!title.trim()) { setError('Le titre est obligatoire'); return; }
     if (!category) { setError('La catégorie est obligatoire'); return; }
@@ -146,6 +286,8 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
           image: mainImage,
           carouselImages,
           modules: modules.map((m, i) => ({ ...m, order: i })),
+          totalParticipants,
+          activeParticipants,
         },
         isNew ? undefined : accompagnement?.id
       );
@@ -163,17 +305,11 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={onClose}
+      transition={{ duration: 0.2 }}
     >
-      <motion.div
-        className={styles.modal}
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 40 }}
-        transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
+      <div className={styles.modal}>
+
+        {/* ── Header ── */}
         <div className={styles.header}>
           <h2 className={styles.headerTitle}>{isNew ? 'Nouvel accompagnement' : 'Modifier l\'accompagnement'}</h2>
           <div className={styles.headerActions}>
@@ -187,7 +323,7 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
 
         {error && <div className={styles.errorBanner}>{error}</div>}
 
-        {/* Tabs */}
+        {/* ── Tabs ── */}
         <div className={styles.tabs}>
           {TABS.map((t) => (
             <button key={t} className={`${styles.tab} ${activeTab === t ? styles.tabActive : ''}`} onClick={() => setActiveTab(t)}>
@@ -198,7 +334,7 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
 
         <div className={styles.body}>
 
-          {/* ── TAB: Informations ── */}
+          {/* ────────────────── TAB: Informations ────────────────── */}
           {activeTab === 'Informations' && (
             <div className={styles.section}>
               <div className={styles.field}>
@@ -282,7 +418,7 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
             </div>
           )}
 
-          {/* ── TAB: Médias ── */}
+          {/* ────────────────── TAB: Médias ────────────────── */}
           {activeTab === 'Médias' && (
             <div className={styles.section}>
               <div className={styles.field}>
@@ -330,49 +466,257 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
             </div>
           )}
 
-          {/* ── TAB: Étapes ── */}
-          {activeTab === 'Étapes' && (
+          {/* ────────────────── TAB: Modules ────────────────── */}
+          {activeTab === 'Modules' && (
             <div className={styles.section}>
               <div className={styles.modulesHeader}>
-                <span className={styles.modulesCount}>{modules.length} étape{modules.length !== 1 ? 's' : ''}</span>
+                <span className={styles.modulesCount}>{modules.length} module{modules.length !== 1 ? 's' : ''}</span>
                 <button type="button" className={styles.addSmallBtn} onClick={addModule}>
-                  <Plus size={12} /> Ajouter une étape
+                  <Plus size={12} /> Ajouter un module
                 </button>
               </div>
 
               {modules.length === 0 ? (
                 <div className={styles.emptyModules} onClick={addModule}>
                   <Plus size={22} />
-                  <span>Ajouter la première étape</span>
+                  <span>Ajouter le premier module</span>
                 </div>
               ) : (
                 <div className={styles.modulesList}>
-                  {modules.map((mod, i) => (
-                    <div key={mod.id} className={styles.moduleCard}>
-                      <div className={styles.moduleIndex}>{i + 1}</div>
-                      <div className={styles.moduleFields}>
-                        <input className={styles.moduleInput} value={mod.title} onChange={(e) => updateModule(i, 'title', e.target.value)} placeholder="Titre de l'étape…" />
-                        <input className={`${styles.moduleInput} ${styles.moduleSmall}`} value={mod.duration || ''} onChange={(e) => updateModule(i, 'duration', e.target.value)} placeholder="Durée (ex: 2 semaines)" />
-                        <input className={`${styles.moduleInput} ${styles.moduleDesc}`} value={mod.description || ''} onChange={(e) => updateModule(i, 'description', e.target.value)} placeholder="Description optionnelle…" />
+                  {modules.map((mod, mIdx) => {
+                    const isExpanded = expandedModuleIdx === mIdx;
+                    const lessons = mod.lessons || [];
+                    return (
+                      <div key={mod.id} className={styles.moduleCard}>
+                        {/* Module header row */}
+                        <div className={styles.moduleCardHeader}>
+                          <div className={styles.moduleIndex}>{mIdx + 1}</div>
+                          <div className={styles.moduleFieldsRow} onClick={() => setExpandedModuleIdx(isExpanded ? null : mIdx)}>
+                            <input
+                              className={styles.moduleInput}
+                              value={mod.title}
+                              onChange={(e) => updateModule(mIdx, 'title', e.target.value)}
+                              placeholder="Titre du module…"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <div className={styles.moduleMeta}>
+                              <span className={styles.moduleMetaText}>{lessons.length} étape{lessons.length !== 1 ? 's' : ''}</span>
+                              <ChevronDown size={13} className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ''}`} />
+                            </div>
+                          </div>
+                          <div className={styles.moduleActions}>
+                            <button type="button" onClick={() => moveModule(mIdx, 'up')} disabled={mIdx === 0} className={styles.moduleBtn}><ChevronUp size={13} /></button>
+                            <button type="button" onClick={() => moveModule(mIdx, 'down')} disabled={mIdx === modules.length - 1} className={styles.moduleBtn}><ChevronDown size={13} /></button>
+                            <button type="button" onClick={() => removeModule(mIdx)} className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`}><Trash2 size={13} /></button>
+                          </div>
+                        </div>
+
+                        {/* Module expanded content */}
+                        {isExpanded && (
+                          <div className={styles.moduleExpanded}>
+                            <div className={styles.row2}>
+                              <div className={styles.field}>
+                                <label className={styles.label}><Clock size={12} /> Durée du module</label>
+                                <input className={styles.input} value={mod.duration || ''} onChange={(e) => updateModule(mIdx, 'duration', e.target.value)} placeholder="Ex: 1h30" />
+                              </div>
+                              <div className={styles.field}>
+                                <label className={styles.label}>Description</label>
+                                <input className={styles.input} value={mod.description || ''} onChange={(e) => updateModule(mIdx, 'description', e.target.value)} placeholder="Description du module…" />
+                              </div>
+                            </div>
+
+                            {/* Lessons */}
+                            <div className={styles.lessonsSection}>
+                              <div className={styles.lessonsSectionHeader}>
+                                <span className={styles.lessonsSectionTitle}>Étapes / Leçons</span>
+                                <button type="button" className={styles.addSmallBtn} onClick={() => addLesson(mIdx)}>
+                                  <Plus size={11} /> Ajouter une étape
+                                </button>
+                              </div>
+
+                              {lessons.length === 0 ? (
+                                <div className={styles.emptyLessons} onClick={() => addLesson(mIdx)}>
+                                  <BookOpen size={18} />
+                                  <span>Ajouter la première étape</span>
+                                </div>
+                              ) : (
+                                <div className={styles.lessonsList}>
+                                  {lessons.map((les, lIdx) => {
+                                    const isLesExpanded = expandedLessonIdx?.mod === mIdx && expandedLessonIdx?.les === lIdx;
+                                    return (
+                                      <div key={les.id} className={`${styles.lessonCard} ${isLesExpanded ? styles.lessonCardExpanded : ''}`}>
+                                        {/* Lesson header */}
+                                        <div
+                                          className={styles.lessonCardHeader}
+                                          onClick={() => setExpandedLessonIdx(isLesExpanded ? null : { mod: mIdx, les: lIdx })}
+                                        >
+                                          <div className={styles.lessonTypePill}>
+                                            {LESSON_TYPES.find(t => t.value === les.type)?.label || 'Étape'}
+                                          </div>
+                                          <span className={styles.lessonCardTitle}>
+                                            {les.title || `Étape ${lIdx + 1}`}
+                                          </span>
+                                          <div className={styles.lessonCardActions}>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); moveLessonUp(mIdx, lIdx); }} disabled={lIdx === 0} className={styles.moduleBtn}><ChevronUp size={11} /></button>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); moveLessonDown(mIdx, lIdx); }} disabled={lIdx === lessons.length - 1} className={styles.moduleBtn}><ChevronDown size={11} /></button>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); removeLesson(mIdx, lIdx); }} className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`}><Trash2 size={11} /></button>
+                                          </div>
+                                        </div>
+
+                                        {/* Lesson expanded */}
+                                        {isLesExpanded && (
+                                          <div className={styles.lessonExpanded}>
+                                            <div className={styles.row2}>
+                                              <div className={styles.field}>
+                                                <label className={styles.label}>Titre de l'étape</label>
+                                                <input className={styles.input} value={les.title} onChange={(e) => updateLesson(mIdx, lIdx, 'title', e.target.value)} placeholder="Ex: Introduction" />
+                                              </div>
+                                              <div className={styles.field}>
+                                                <label className={styles.label}>Type</label>
+                                                <select className={styles.select} value={les.type} onChange={(e) => updateLesson(mIdx, lIdx, 'type', e.target.value as LessonType)}>
+                                                  {LESSON_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                                                </select>
+                                              </div>
+                                            </div>
+
+                                            <div className={styles.field}>
+                                              <label className={styles.label}><Clock size={12} /> Durée</label>
+                                              <input className={styles.input} value={les.duration || ''} onChange={(e) => updateLesson(mIdx, lIdx, 'duration', e.target.value)} placeholder="Ex: 12min" />
+                                            </div>
+
+                                            {/* Notes admin */}
+                                            <div className={styles.field}>
+                                              <label className={styles.label}><StickyNote size={12} /> Notes de l'étape (visibles par les bénéficiaires)</label>
+                                              <textarea className={styles.textarea} rows={4} value={les.notes || ''} onChange={(e) => updateLesson(mIdx, lIdx, 'notes', e.target.value)} placeholder="Notes, points clés, résumé de l'étape…" />
+                                            </div>
+
+                                            {/* Resources */}
+                                            <div className={styles.field}>
+                                              <div className={styles.labelRow}>
+                                                <label className={styles.label}><FileText size={12} /> Ressources</label>
+                                                <button type="button" className={styles.addSmallBtn} onClick={() => addResource(mIdx, lIdx)}>
+                                                  <Plus size={11} /> Ajouter
+                                                </button>
+                                              </div>
+                                              {(les.resources || []).length === 0 ? (
+                                                <p className={styles.hint}>Aucune ressource pour cette étape</p>
+                                              ) : (
+                                                <div className={styles.resourcesEditorList}>
+                                                  {(les.resources || []).map((res, rIdx) => (
+                                                    <div key={res.id} className={styles.resourceEditorRow}>
+                                                      <select className={styles.resourceTypeSelect} value={res.type} onChange={(e) => updateResource(mIdx, lIdx, rIdx, 'type', e.target.value)}>
+                                                        {RESOURCE_TYPES.map((t) => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+                                                      </select>
+                                                      <input className={styles.input} value={res.name} onChange={(e) => updateResource(mIdx, lIdx, rIdx, 'name', e.target.value)} placeholder="Nom de la ressource" style={{ flex: 1 }} />
+                                                      <input className={styles.input} value={res.url} onChange={(e) => updateResource(mIdx, lIdx, rIdx, 'url', e.target.value)} placeholder="URL (Google Doc, PDF, ZIP…)" style={{ flex: 2 }} />
+                                                      <button type="button" className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`} onClick={() => removeResource(mIdx, lIdx, rIdx)}><Trash2 size={11} /></button>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+
+                                            {/* Quiz */}
+                                            <div className={styles.field}>
+                                              <div className={styles.labelRow}>
+                                                <label className={styles.label}><HelpCircle size={12} /> Quiz</label>
+                                                <button type="button" className={styles.addSmallBtn} onClick={() => addQuizQuestion(mIdx, lIdx)}>
+                                                  <Plus size={11} /> Ajouter une question
+                                                </button>
+                                              </div>
+                                              {(les.quiz || []).length === 0 ? (
+                                                <p className={styles.hint}>Aucune question pour cette étape</p>
+                                              ) : (
+                                                <div className={styles.quizEditorList}>
+                                                  {(les.quiz || []).map((q, qIdx) => (
+                                                    <div key={q.id} className={styles.quizEditorCard}>
+                                                      <div className={styles.quizEditorHeader}>
+                                                        <span className={styles.quizEditorNum}>Q{qIdx + 1}</span>
+                                                        <input className={styles.input} value={q.question} onChange={(e) => updateQuizQuestion(mIdx, lIdx, qIdx, 'question', e.target.value)} placeholder="Question…" style={{ flex: 1 }} />
+                                                        <button type="button" className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`} onClick={() => removeQuizQuestion(mIdx, lIdx, qIdx)}><Trash2 size={11} /></button>
+                                                      </div>
+                                                      <div className={styles.quizEditorOptions}>
+                                                        {q.options.map((opt, oIdx) => (
+                                                          <div key={oIdx} className={styles.quizEditorOption}>
+                                                            <button
+                                                              type="button"
+                                                              className={`${styles.quizCorrectBtn} ${q.correctIndex === oIdx ? styles.quizCorrectBtnActive : ''}`}
+                                                              onClick={() => updateQuizQuestion(mIdx, lIdx, qIdx, 'correctIndex', oIdx)}
+                                                              title="Marquer comme bonne réponse"
+                                                            >
+                                                              <Check size={10} />
+                                                            </button>
+                                                            <input
+                                                              className={styles.input}
+                                                              value={opt.text}
+                                                              onChange={(e) => updateQuizOption(mIdx, lIdx, qIdx, oIdx, e.target.value)}
+                                                              placeholder={`Option ${oIdx + 1}`}
+                                                              style={{ flex: 1 }}
+                                                            />
+                                                          </div>
+                                                        ))}
+                                                      </div>
+                                                      <div className={styles.field}>
+                                                        <input className={styles.input} value={q.explanation || ''} onChange={(e) => updateQuizQuestion(mIdx, lIdx, qIdx, 'explanation', e.target.value)} placeholder="Explication de la bonne réponse (optionnel)" />
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className={styles.moduleActions}>
-                        <button type="button" onClick={() => moveModule(i, 'up')} disabled={i === 0} className={styles.moduleBtn}><ChevronUp size={13} /></button>
-                        <button type="button" onClick={() => moveModule(i, 'down')} disabled={i === modules.length - 1} className={styles.moduleBtn}><ChevronDown size={13} /></button>
-                        <button type="button" onClick={() => removeModule(i)} className={`${styles.moduleBtn} ${styles.moduleBtnDelete}`}><Trash2 size={13} /></button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
-          {/* ── TAB: Bénéficiaires ── */}
-          {activeTab === 'Bénéficiaires' && (
+          {/* ────────────────── TAB: Équipe ────────────────── */}
+          {activeTab === 'Équipe' && (
             <div className={styles.section}>
               <div className={styles.statsRow}>
                 <span className={styles.statChip}><strong>{teamMembers.length}</strong> bénéficiaire{teamMembers.length !== 1 ? 's' : ''}</span>
                 <span className={styles.statChip}>{allUsers.length} utilisateurs</span>
+              </div>
+
+              {/* Participant counters (public-facing stats) */}
+              <div className={styles.row2} style={{ marginBottom: 12 }}>
+                <div className={styles.field}>
+                  <label className={styles.label}>👥 Participants au total</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className={styles.input}
+                    value={totalParticipants}
+                    onChange={(e) => setTotalParticipants(Math.max(0, Number(e.target.value)))}
+                    placeholder="0"
+                  />
+                  <p className={styles.hint}>Nombre affiché publiquement</p>
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>✅ En cours actuellement</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className={styles.input}
+                    value={activeParticipants}
+                    onChange={(e) => setActiveParticipants(Math.max(0, Number(e.target.value)))}
+                    placeholder="0"
+                  />
+                  <p className={styles.hint}>Participants actifs affichés</p>
+                </div>
               </div>
 
               {teamMembers.length > 0 && (
@@ -439,8 +783,9 @@ const AccompagnementEditor: React.FC<Props> = ({ accompagnement, currentUser, al
               </div>
             </div>
           )}
+
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 };

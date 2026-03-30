@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Users, SlidersHorizontal, ChevronDown, X } from 'lucide-react';
+import { Plus, Search, BookOpen, X, Menu } from 'lucide-react';
 import { isAdmin } from '@/utils/firebase-api';
 import {
   FullAccompagnement,
@@ -10,6 +10,8 @@ import {
   hasAccessToAccompagnement,
   isUserInAccompagnement,
   getFullAccompagnement,
+  getUserFavorites,
+  toggleFavorite,
 } from '@/utils/accompagnement-api';
 import AccompagnementCard from './AccompagnementCard';
 import AccompagnementEditor from './AccompagnementEditor';
@@ -17,7 +19,8 @@ import AccompagnementDetail from './AccompagnementDetail';
 import styles from './Accompagnement.module.css';
 
 const CATEGORIES = ['Toutes', 'Coaching', 'Mentorat', 'Conseil', 'Formation', 'Suivi', 'Autre'];
-const LEVELS = ['Tous', 'débutant', 'intermédiaire', 'avancé', 'expert'];
+
+type SidebarView = 'toutes' | 'commentaires' | 'mes-accompagnements' | 'favoris';
 
 interface AccompagnementProps {
   accompagnements: FullAccompagnement[];
@@ -36,49 +39,43 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Toutes');
-  const [activeLevel, setActiveLevel] = useState('Tous');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'joined'>('all');
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [sidebarView, setSidebarView] = useState<SidebarView>('toutes');
   const [showEditor, setShowEditor] = useState(false);
   const [editingAccompagnement, setEditingAccompagnement] = useState<FullAccompagnement | null>(null);
   const [selectedAccompagnement, setSelectedAccompagnement] = useState<FullAccompagnement | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const adminStatus = currentUser && isAdmin(currentUser.email);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Count active filters for badge
-  const activeFilterCount = [
-    activeFilter !== 'all',
-    activeCategory !== 'Toutes',
-    activeLevel !== 'Tous',
-  ].filter(Boolean).length;
-
-  // Close dropdown on outside click
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowFilterDropdown(false);
-      }
-    };
-    if (showFilterDropdown) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showFilterDropdown]);
+    if (currentUser?.uid) {
+      getUserFavorites(currentUser.uid).then(setFavorites).catch(() => {});
+    }
+  }, [currentUser?.uid]);
+
+  const handleToggleFavorite = async (accompagnementId: string) => {
+    if (!currentUser?.uid) return;
+    try {
+      const isNowFav = await toggleFavorite(currentUser.uid, accompagnementId);
+      setFavorites((prev) =>
+        isNowFav ? [...prev, accompagnementId] : prev.filter((id) => id !== accompagnementId)
+      );
+    } catch (err) {
+      console.error('toggleFavorite:', err);
+    }
+  };
 
   const filtered = useMemo(() => {
     let list = [...accompagnements];
-
-    if (activeFilter === 'joined' && currentUser) {
-      list = list.filter((a) => isUserInAccompagnement(a, currentUser.uid));
+    if (sidebarView === 'mes-accompagnements') {
+      list = list.filter((a) => currentUser && isUserInAccompagnement(a, currentUser.uid));
+    } else if (sidebarView === 'favoris') {
+      list = list.filter((a) => a.id && favorites.includes(a.id));
     }
-
     if (activeCategory !== 'Toutes') {
       list = list.filter((a) => a.category === activeCategory);
     }
-
-    if (activeLevel !== 'Tous') {
-      list = list.filter((a) => a.level === activeLevel);
-    }
-
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -88,21 +85,14 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
           a.category?.toLowerCase().includes(q)
       );
     }
-
     return list;
-  }, [accompagnements, activeFilter, activeCategory, activeLevel, searchQuery, currentUser]);
+  }, [accompagnements, activeCategory, searchQuery, sidebarView, favorites, currentUser]);
 
   const handleAccompagnementClick = async (accompagnement: FullAccompagnement) => {
     if (!currentUser) {
       window.location.href = '/security/access';
       return;
     }
-
-    if (!hasAccessToAccompagnement(accompagnement, currentUser?.uid) && !adminStatus) {
-      window.location.href = '/security/access';
-      return;
-    }
-
     const cacheKey = accompagnement.slug || accompagnement.id!;
     const immediate = fullAccompagnementCacheRef.current[cacheKey] || accompagnement;
     setSelectedAccompagnement(immediate);
@@ -133,173 +123,194 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
     }
   };
 
-  return (
-    <main className={styles.container}>
-      {/* ── TOOLBAR (single line) ── */}
-      <div className={styles.toolbar}>
-        {/* Title + count */}
-        <div className={styles.toolbarTitle}>
-          <h1 className={styles.heroTitle}>Accompagnements</h1>
-          <span className={styles.heroCount}>{accompagnements.length}</span>
-        </div>
+  const getSectionTitle = () => {
+    switch (sidebarView) {
+      case 'mes-accompagnements': return 'Mes accompagnements';
+      case 'favoris': return 'Mes favoris';
+      case 'commentaires': return 'Commentaires';
+      default: return 'Tous les accompagnements';
+    }
+  };
 
-        {/* Search */}
-        <div className={styles.searchWrap}>
-          <Search size={14} className={styles.searchIcon} />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Rechercher…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        {/* Filter dropdown */}
-        <div className={styles.filterDropdownWrap} ref={dropdownRef}>
+  const SidebarContent = () => (
+    <>
+      <div className={styles.sidebarSection}>
+        <span className={styles.sidebarLabel}>Navigation</span>
+        {([
+          { id: 'toutes', label: 'Toutes' },
+          { id: 'commentaires', label: 'Commentaires' },
+          { id: 'mes-accompagnements', label: 'Mes accompagnements' },
+          { id: 'favoris', label: 'Mes favoris' },
+        ] as { id: SidebarView; label: string }[]).map((item) => (
           <button
-            className={`${styles.filterTrigger} ${activeFilterCount > 0 ? styles.filterTriggerActive : ''}`}
-            onClick={() => setShowFilterDropdown((v) => !v)}
+            key={item.id}
+            className={`${styles.sidebarItem} ${sidebarView === item.id ? styles.sidebarItemActive : ''}`}
+            onClick={() => { setSidebarView(item.id); setSidebarOpen(false); }}
           >
-            <SlidersHorizontal size={14} />
-            Filtres
-            {activeFilterCount > 0 && (
-              <span className={styles.filterBadge}>{activeFilterCount}</span>
+            <span className={styles.sidebarDot} />
+            {item.label}
+            {item.id === 'toutes' && (
+              <span className={styles.sidebarCount}>{accompagnements.length}</span>
             )}
-            <ChevronDown size={13} style={{ opacity: 0.5, marginLeft: 2 }} />
-          </button>
-
-          <AnimatePresence>
-            {showFilterDropdown && (
-              <motion.div
-                className={styles.filterDropdown}
-                initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-              >
-                {/* Mes accompagnements */}
-                {currentUser && (
-                  <div className={styles.filterSection}>
-                    <span className={styles.filterSectionLabel}>Affichage</span>
-                    <div className={styles.filterChipsRow}>
-                      <button
-                        className={`${styles.filterChip} ${activeFilter === 'all' ? styles.active : ''}`}
-                        onClick={() => setActiveFilter('all')}
-                      >Tous</button>
-                      <button
-                        className={`${styles.filterChip} ${activeFilter === 'joined' ? styles.active : ''}`}
-                        onClick={() => setActiveFilter('joined')}
-                      >Mes accompagnements</button>
-                    </div>
-                  </div>
-                )}
-
-                <div className={styles.filterDivider} />
-
-                {/* Catégorie */}
-                <div className={styles.filterSection}>
-                  <span className={styles.filterSectionLabel}>Catégorie</span>
-                  <div className={styles.filterChipsRow}>
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat}
-                        className={`${styles.filterChip} ${activeCategory === cat ? styles.activeSecondary : ''}`}
-                        onClick={() => setActiveCategory(cat)}
-                      >{cat}</button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={styles.filterDivider} />
-
-                {/* Niveau */}
-                <div className={styles.filterSection}>
-                  <span className={styles.filterSectionLabel}>Niveau</span>
-                  <div className={styles.filterChipsRow}>
-                    {LEVELS.map((lvl) => (
-                      <button
-                        key={lvl}
-                        className={`${styles.filterChip} ${activeLevel === lvl ? styles.activeTertiary : ''}`}
-                        onClick={() => setActiveLevel(lvl)}
-                      >{lvl === 'Tous' ? 'Tous niveaux' : lvl.charAt(0).toUpperCase() + lvl.slice(1)}</button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
+            {item.id === 'favoris' && favorites.length > 0 && (
+              <span className={styles.sidebarCount}>{favorites.length}</span>
             )}
-          </AnimatePresence>
-        </div>
-
-        {/* New accompagnement button */}
-        {adminStatus && (
-          <button
-            className={styles.createBtn}
-            onClick={() => { setEditingAccompagnement(null); setShowEditor(true); }}
-          >
-            <Plus size={14} />
-            Nouvel accompagnement
           </button>
-        )}
+        ))}
       </div>
 
-      {/* ── GRID ── */}
-      {filtered.length > 0 ? (
-        <>
-          <div className={styles.sectionBar}>
-            <span className={styles.sectionCount}>
-              {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
-            </span>
+      <div className={styles.sidebarDivider} />
+
+      <div className={styles.sidebarSection}>
+        <span className={styles.sidebarLabel}>Catégories</span>
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            className={`${styles.sidebarItem} ${activeCategory === cat ? styles.sidebarItemActive : ''}`}
+            onClick={() => { setActiveCategory(cat); setSidebarOpen(false); }}
+          >
+            <span className={styles.sidebarDot} />
+            {cat}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+
+  return (
+    <div className={styles.container}>
+      {/* TOP BAR */}
+      <div className={styles.topBar}>
+        <div className={styles.topBarLeft}>
+          <button className={styles.hamburgerBtn} onClick={() => setSidebarOpen(true)} aria-label="Menu">
+            <Menu size={16} />
+          </button>
+          <h1 className={styles.pageTitle}>Accompagnements</h1>
+          <span className={styles.countBadge}>{accompagnements.length}</span>
+        </div>
+        <div className={styles.topBarRight}>
+          <div className={styles.searchWrap}>
+            <Search size={13} className={styles.searchIcon} />
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Rechercher…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <div className={styles.grid}>
-            <AnimatePresence mode="popLayout">
-              {filtered.map((accompagnement, i) => {
-                const isMember = currentUser && isUserInAccompagnement(accompagnement, currentUser.uid);
-                return (
-                  <AccompagnementCard
-                    key={accompagnement.id || i}
-                    accompagnement={accompagnement}
-                    currentUser={currentUser}
-                    isAdmin={adminStatus}
-                    isMember={isMember}
-                    isDeleteConfirm={deleteConfirmId === (accompagnement.id || '')}
-                    onEdit={(a) => { setEditingAccompagnement(a); setShowEditor(true); }}
-                    onDelete={handleDelete}
-                    onDeleteConfirm={setDeleteConfirmId}
-                    onClick={handleAccompagnementClick}
-                  />
-                );
-              })}
-            </AnimatePresence>
-          </div>
-        </>
-      ) : (
-        <div className={styles.emptyState}>
-          <Users size={48} className={styles.emptyIcon} />
-          <h3 className={styles.emptyTitle}>
-            {searchQuery || activeCategory !== 'Toutes' || activeFilter !== 'all'
-              ? 'Aucun accompagnement trouvé'
-              : 'Aucun accompagnement disponible'}
-          </h3>
-          <p className={styles.emptyText}>
-            {searchQuery
-              ? 'Essayez avec d\'autres termes ou réinitialisez les filtres'
-              : adminStatus
-              ? 'Créez votre premier accompagnement pour commencer'
-              : 'Revenez bientôt ou contactez l\'administrateur'}
-          </p>
-          {adminStatus && !searchQuery && (
+          {adminStatus && (
             <button
-              className={styles.emptyBtn}
+              className={styles.createBtn}
               onClick={() => { setEditingAccompagnement(null); setShowEditor(true); }}
             >
-              <Plus size={14} /> Créer un accompagnement
+              <Plus size={13} />
+              Nouveau
             </button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* ── EDITOR ── */}
+      {/* LAYOUT */}
+      <div className={styles.layout}>
+        {/* SIDEBAR desktop */}
+        <nav className={styles.sidebar}>
+          <SidebarContent />
+        </nav>
+
+        {/* MOBILE SIDEBAR */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <>
+              <motion.div
+                className={styles.sidebarOverlay}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSidebarOpen(false)}
+              />
+              <motion.nav
+                className={styles.sidebarMobile}
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'tween', duration: 0.25 }}
+              >
+                <div className={styles.sidebarMobileHeader}>
+                  <span className={styles.sidebarMobileTitle}>Filtres</span>
+                  <button className={styles.sidebarMobileClose} onClick={() => setSidebarOpen(false)}>
+                    <X size={15} />
+                  </button>
+                </div>
+                <div className={styles.sidebarMobileBody}>
+                  <SidebarContent />
+                </div>
+              </motion.nav>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* MAIN */}
+        <main className={styles.main}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTitle}>{getSectionTitle()}</span>
+            <span className={styles.sectionCount}>{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}</span>
+          </div>
+
+          {sidebarView === 'commentaires' ? (
+            <div className={styles.emptyState}>
+              <BookOpen size={44} style={{ color: 'rgba(255,255,255,0.08)', marginBottom: 8 }} />
+              <h3 className={styles.emptyTitle}>Commentaires</h3>
+              <p className={styles.emptyText}>La section commentaires arrive bientôt.</p>
+            </div>
+          ) : filtered.length > 0 ? (
+            <div className={styles.grid}>
+              <AnimatePresence mode="popLayout">
+                {filtered.map((accompagnement, i) => {
+                  const isMember = currentUser && isUserInAccompagnement(accompagnement, currentUser.uid);
+                  const isFav = accompagnement.id ? favorites.includes(accompagnement.id) : false;
+                  return (
+                    <AccompagnementCard
+                      key={accompagnement.id || i}
+                      accompagnement={accompagnement}
+                      currentUser={currentUser}
+                      isAdmin={adminStatus}
+                      isMember={isMember}
+                      isFavorite={isFav}
+                      isDeleteConfirm={deleteConfirmId === (accompagnement.id || '')}
+                      onEdit={(a) => { setEditingAccompagnement(a); setShowEditor(true); }}
+                      onDelete={handleDelete}
+                      onDeleteConfirm={setDeleteConfirmId}
+                      onClick={handleAccompagnementClick}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <BookOpen size={44} style={{ color: 'rgba(255,255,255,0.08)', marginBottom: 8 }} />
+              <h3 className={styles.emptyTitle}>
+                {searchQuery ? 'Aucun accompagnement trouvé' : 'Aucun accompagnement disponible'}
+              </h3>
+              <p className={styles.emptyText}>
+                {searchQuery
+                  ? "Essayez avec d'autres termes"
+                  : sidebarView === 'favoris'
+                  ? 'Ajoutez des accompagnements à vos favoris'
+                  : sidebarView === 'mes-accompagnements'
+                  ? "Vous n'êtes inscrit dans aucun accompagnement"
+                  : adminStatus
+                  ? 'Créez votre premier accompagnement'
+                  : 'Revenez bientôt'}
+              </p>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* EDITOR */}
       <AnimatePresence>
         {showEditor && (
           <AccompagnementEditor
@@ -316,17 +327,18 @@ const Accompagnement: React.FC<AccompagnementProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ── DETAIL ── */}
+      {/* DETAIL */}
       <AnimatePresence>
         {selectedAccompagnement && (
           <AccompagnementDetail
             accompagnement={selectedAccompagnement}
             currentUser={currentUser}
+            isMember={!!(currentUser && isUserInAccompagnement(selectedAccompagnement, currentUser.uid))}
             onBack={() => setSelectedAccompagnement(null)}
           />
         )}
       </AnimatePresence>
-    </main>
+    </div>
   );
 };
 

@@ -10,9 +10,9 @@ import {
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Eye, Trash2, Edit3, AlertTriangle, Tag as TagIcon, Plus, Bookmark } from 'lucide-react';
-import BlogEditor from '@/components/blog/BlogEditor';
+import BlogEditor from '@/components/communaute/blog/BlogEditor';
 import Header from '@/components/app/Header/Header';
-import BlogModal from '@/components/blog/BlogModal';
+import BlogModal from '@/components/communaute/blog/BlogModal';
 import styles from './blog.module.css';
 
 interface BlogPost {

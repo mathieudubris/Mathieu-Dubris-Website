@@ -176,7 +176,7 @@ export default function AdminPage() {
       </h2>
       <div className={styles.grid}>
         <NavCard
-          href="/security/admin/booking-calendar"
+          href="/security/admin/booking"
           icon={<CalendarDays size={22} />}
           title="Calendrier des RDV"
           desc="Visualisez tous vos rendez-vous clients : nom, email, raison, heure et lien Meet."

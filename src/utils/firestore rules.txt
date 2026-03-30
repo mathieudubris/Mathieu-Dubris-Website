@@ -120,6 +120,11 @@ service cloud.firestore {
       match /savedPosts/{postId} {
         allow read, write: if isAuthenticated();
       }
+
+      match /favorites/{accompagnementId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // ─────────────────────────────────────────
@@ -391,7 +396,6 @@ service cloud.firestore {
 
     // ─────────────────────────────────────────
     // SERVICES > FORMATION
-    // Structure : services/formation/formations/{formationId}
     // ─────────────────────────────────────────
 
     match /services/formation/formations/{formationId} {
@@ -459,7 +463,6 @@ service cloud.firestore {
 
     // ─────────────────────────────────────────
     // SERVICES > ACCOMPAGNEMENT
-    // Structure : services/accompagnement/accompagnements/{accompagnementId}
     // ─────────────────────────────────────────
 
     match /services/accompagnement/accompagnements/{accompagnementId} {
@@ -515,19 +518,30 @@ service cloud.firestore {
           isAccompagnementCreator(accompagnementId) ||
           isAccompagnementMember(accompagnementId)
         );
+        // ─── CORRECTION ───────────────────────────────────────────────────
+        // Tout utilisateur authentifié ayant accès en lecture peut incrémenter
+        // les vues (create si le doc stats n'existe pas encore, update sinon).
+        // On ne contraint pas les champs exacts pour éviter les échecs avec
+        // FieldValue.increment() qui ne passe pas la validation request.resource.
+        // ──────────────────────────────────────────────────────────────────
         allow update: if request.auth != null && (
           isAdmin() ||
           isAccompagnementCreator(accompagnementId) ||
-          isAccompagnementMember(accompagnementId)
+          isAccompagnementMember(accompagnementId) ||
+          isAccompagnementPublic(accompagnementId)
         );
-        allow create: if isAdmin();
+        allow create: if request.auth != null && (
+          isAdmin() ||
+          isAccompagnementCreator(accompagnementId) ||
+          isAccompagnementMember(accompagnementId) ||
+          isAccompagnementPublic(accompagnementId)
+        );
         allow delete: if isAdmin();
       }
     }
 
     // ─────────────────────────────────────────
-    // BOOKINGS (ancienne collection — conservée pour compatibilité)
-    // Structure : bookings/{bookingId}
+    // BOOKINGS
     // ─────────────────────────────────────────
 
     match /bookings/{bookingId} {
@@ -543,25 +557,14 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────
-    // SECURITY / ADMIN — Données sensibles
-    //
-    // Structure :
-    //   security/admin/calendar/{Mois-Année}/{NOM_YYYY-MM-DD_HH-mm}
-    //
-    // Ex : security/admin/calendar/Avril-2026/Jean-Dupont_2026-04-15_14-00
-    //
-    // ⚠️ IMPORTANT : Les appels REST avec API key contournent les règles Firestore.
-    //    Les règles ci-dessous s'appliquent uniquement aux accès SDK.
-    //
+    // SECURITY / ADMIN
     // ─────────────────────────────────────────
 
     match /security/{document=**} {
       allow read, write: if isAdmin();
     }
 
-    // Règle spécifique pour la collection calendar (accès SDK)
     match /security/admin/calendar/{monthCol}/{bookingId} {
-      // Création : publique (via SDK client si jamais utilisé)
       allow create: if
         request.resource.data.date is string &&
         request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
@@ -572,18 +575,11 @@ service cloud.firestore {
         request.resource.data.email is string &&
         request.resource.data.email.size() > 0 &&
         request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
-      
-      // Lecture : admin uniquement
       allow read: if isAdmin();
-      
-      // Modification : admin uniquement
       allow update: if isAdmin();
-      
-      // Suppression : admin uniquement
       allow delete: if isAdmin();
     }
 
-    // Règle pour les sous-collections de calendar si besoin
     match /security/admin/calendar/{monthCol}/{bookingId}/{document=**} {
       allow read, write: if isAdmin();
     }
