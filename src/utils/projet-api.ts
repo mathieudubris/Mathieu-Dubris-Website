@@ -53,6 +53,7 @@ export interface ProjectTeamMember {
   agePublic: boolean;
   email: string;
   phone: string;
+  discordId?: string;
   skills?: string;
   skillsPublic?: boolean;
   contacts: Contact[];
@@ -113,35 +114,21 @@ export interface Project {
   visibility?: 'public' | 'early_access';
 }
 
-/**
- * FullProject : type renvoyé par getFullProject() / getAllProjects().
- * Combine le document principal + toutes les sous-collections (overview, media,
- * software, stats, documentation, roadmap).
- * Utilisez ce type dans ProjectCard, ProjetDetail, et tout composant qui
- * consomme le résultat de getFullProject / getAllProjects.
- */
 export interface FullProject extends Project {
-  // overview
   description?: string;
   projectType?: string;
   objective?: string;
   targetAudience?: string;
   status?: string;
   features?: ProjectFeature[];
-  // media
   image?: string;
   carouselImages?: string[];
-  // software
   software?: SoftwareItem[];
-  // stats
   views?: number;
   progress?: number;
   kanbanBoardId?: string | null;
-  // documentation
   docLinks?: ProjectDocLink[];
-  // roadmap
   roadmapPhases?: RoadmapPhase[];
-  // membres enrichis (utilisé dans ProjectCard)
   members?: Array<{
     userId?: string;
     uid?: string;
@@ -268,7 +255,6 @@ export const getFullProject = async (projectId: string): Promise<any | null> => 
 
     const projectData = projectSnap.data() as Project;
 
-    // PERF: toutes les sous-collections en parallèle
     const [
       overviewSnap,
       mediaSnap,
@@ -301,11 +287,6 @@ export const getFullProject = async (projectId: string): Promise<any | null> => 
   }
 };
 
-// ─────────────────────────────────────────────
-// PERF: getAllProjects — fetches stats + media + software en parallèle
-// FIX: software était absent → les icônes logiciels n'apparaissaient pas dans les cartes
-// ─────────────────────────────────────────────
-
 export const getAllProjects = async (): Promise<any[]> => {
   try {
     const snapshot = await getDocs(PROJECTS_COL());
@@ -313,7 +294,6 @@ export const getAllProjects = async (): Promise<any[]> => {
 
     const ids = snapshot.docs.map((d) => d.id);
 
-    // Charger stats, media, software ET overview pour tous les projets en parallèle simultanément
     const [statsSnaps, mediaSnaps, softwareSnaps, overviewSnaps] = await Promise.all([
       Promise.all(ids.map((id) => getDoc(STATS_DOC(id)).catch(() => null))),
       Promise.all(ids.map((id) => getDoc(MEDIA_DOC(id)).catch(() => null))),
@@ -324,21 +304,17 @@ export const getAllProjects = async (): Promise<any[]> => {
     return snapshot.docs.map((docSnap, i) => ({
       id: docSnap.id,
       ...docSnap.data(),
-      // overview
       description: overviewSnaps[i]?.data()?.description || '',
       projectType: overviewSnaps[i]?.data()?.projectType || '',
       objective: overviewSnaps[i]?.data()?.objective || '',
       targetAudience: overviewSnaps[i]?.data()?.targetAudience || '',
       status: overviewSnaps[i]?.data()?.status || '',
       features: overviewSnaps[i]?.data()?.features || [],
-      // media
       image: mediaSnaps[i]?.data()?.image || '/default-project.jpg',
       carouselImages: mediaSnaps[i]?.data()?.carouselImages || [],
-      // stats
       progress: statsSnaps[i]?.data()?.progress || 0,
       views: statsSnaps[i]?.data()?.views || 0,
       kanbanBoardId: statsSnaps[i]?.data()?.kanbanBoardId || null,
-      // software
       software: softwareSnaps[i]?.data()?.items || [],
     }));
   } catch (error) {
@@ -487,7 +463,6 @@ export const deleteProject = async (projectId: string): Promise<void> => {
   try {
     const batch = writeBatch(db);
 
-    // Supprimer les sous-collections connues
     const subDocs = [
       OVERVIEW_DOC(projectId),
       MEDIA_DOC(projectId),
@@ -499,7 +474,6 @@ export const deleteProject = async (projectId: string): Promise<void> => {
     ];
     subDocs.forEach((ref) => batch.delete(ref));
 
-    // Supprimer les membres de l'équipe
     try {
       const teamSnap = await getDocs(TEAM_COL(projectId));
       teamSnap.docs.forEach((d) => batch.delete(d.ref));
@@ -507,7 +481,6 @@ export const deleteProject = async (projectId: string): Promise<void> => {
       console.log('Collection team non trouvée');
     }
 
-    // Supprimer les colonnes kanban
     try {
       const colSnap = await getDocs(KANBAN_COLUMNS_COL(projectId));
       colSnap.docs.forEach((d) => batch.delete(d.ref));
@@ -515,7 +488,6 @@ export const deleteProject = async (projectId: string): Promise<void> => {
       console.log('Collection kanban_columns non trouvée');
     }
 
-    // Supprimer les cartes kanban
     try {
       const cardSnap = await getDocs(KANBAN_CARDS_COL(projectId));
       cardSnap.docs.forEach((d) => batch.delete(d.ref));
@@ -523,10 +495,8 @@ export const deleteProject = async (projectId: string): Promise<void> => {
       console.log('Collection kanban_cards non trouvée');
     }
 
-    // Supprimer le document principal
     batch.delete(PROJECT_DOC(projectId));
 
-    // Supprimer les nouveautés liées
     try {
       const nouv = query(
         collection(db, 'nouveautes'),
@@ -669,9 +639,17 @@ export const getProjectTeamMembers = async (projectId: string): Promise<ProjectT
         }];
       }
 
+      // Résoudre le discordId : champ direct OU dans contacts[]
+      const directDiscordId = data.discordId || '';
+      const contactDiscordId = (data.contacts || []).find(
+        (c: any) => c.type === 'discord' && c.value
+      )?.value || '';
+      const resolvedDiscordId = directDiscordId || contactDiscordId;
+
       return {
         id: d.id,
         ...data,
+        discordId: resolvedDiscordId,
         equipment: { internet, phones, computers },
       } as ProjectTeamMember;
     });
@@ -703,7 +681,7 @@ export const getUserProjectTeamProfile = async (
     const snapshot = await getDocs(q);
     if (snapshot.empty) return null;
     const d = snapshot.docs[0];
-    return { id: d.id, ...d.data() } as ProjectTeamMember;
+    return { id: d.id, ...d.data(), discordId: d.data().discordId || '' } as ProjectTeamMember;
   } catch (error) {
     console.error('getUserProjectTeamProfile:', error);
     return null;
@@ -735,14 +713,28 @@ export const saveProjectTeamMember = async (
       equipment.computers = [];
     }
 
+    // Nettoyer les données undefined
+    const cleanData: any = {};
+    Object.keys(data).forEach(key => {
+      const value = data[key as keyof ProjectTeamMember];
+      if (value !== undefined) {
+        cleanData[key] = value;
+      }
+    });
+
+    const discordIdValue = data.discordId !== undefined && data.discordId !== null 
+      ? String(data.discordId) 
+      : '';
+
     if (snapshot.empty) {
       const memberSlug = generateTeamSlug(projectId, data.firstName || '', data.lastName || '');
       const memberRef = TEAM_MEMBER_DOC(projectId, memberSlug);
       await setDoc(memberRef, {
-        ...data,
+        ...cleanData,
         userId,
         projectId,
         slug: memberSlug,
+        discordId: discordIdValue,
         skills: data.skills || '',
         skillsPublic: data.skillsPublic !== undefined ? data.skillsPublic : true,
         equipment,
@@ -750,11 +742,20 @@ export const saveProjectTeamMember = async (
         updatedAt: Timestamp.now(),
       });
     } else {
-      await updateDoc(snapshot.docs[0].ref, {
-        ...data,
+      const updateData: any = {
+        ...cleanData,
+        discordId: discordIdValue,
         equipment,
         updatedAt: Timestamp.now(),
+      };
+      
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+          delete updateData[key];
+        }
       });
+      
+      await updateDoc(snapshot.docs[0].ref, updateData);
     }
   } catch (error) {
     console.error('saveProjectTeamMember:', error);

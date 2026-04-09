@@ -1,10 +1,15 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { X, Flag, Calendar, MessageCircle, Link2, Edit2, Trash2, Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { X, Flag, Calendar, MessageCircle, Link2, Edit2, Trash2, Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw, Bell, Loader } from "lucide-react";
 import { deleteCard } from "@/utils/kanban-projet-api";
 import type { KanbanCard } from "@/utils/kanban-projet-api";
 import type { TeamMemberForKanban } from "@/components/kanban/KanbanTaskEditor";
+import { 
+  sendDiscordNotification, 
+  getTaskNotificationStats, 
+  incrementTaskNotificationStats 
+} from "@/utils/discord-notify-api";
 import styles from "./KanbanTaskDetail.module.css";
 
 const PRIORITIES: Record<string, { label: string; color: string; bg: string }> = {
@@ -310,6 +315,15 @@ export default function KanbanTaskDetail({
   columnActions = [], onMoveCard, readOnly = false, projectId, boardId, teamMembers = [],
 }: KanbanTaskDetailProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [notificationStats, setNotificationStats] = useState<{ totalSent: number } | null>(null);
+  const [sendingNotif, setSendingNotif] = useState(false);
+
+  // Charger les stats au montage
+  useEffect(() => {
+    if (card?.id && projectId && boardId) {
+      getTaskNotificationStats(projectId, boardId, card.id!).then(setNotificationStats);
+    }
+  }, [card?.id, projectId, boardId]);
 
   const getMember = (uid: string) => {
     const m = teamMembers.find(t => t.userId === uid);
@@ -319,6 +333,7 @@ export default function KanbanTaskDetail({
         : uid.slice(0, 6),
       avatar: m ? (m.image || m.photoURL || "") : "",
       init:   m ? (m.firstName || m.displayName || "?")[0].toUpperCase() : uid[0]?.toUpperCase() || "?",
+      discordId: m?.discordId,
     };
   };
 
@@ -336,6 +351,53 @@ export default function KanbanTaskDetail({
     await onMoveCard(card.id!, targetId);
     onToast(`Déplacé vers ${columnActions.find(c => c.id === targetId)?.label}`);
     onClose();
+  };
+
+  const handleSendDiscordNotification = async () => {
+    if (!card || sendingNotif) return;
+    
+    // Récupérer les discordIds des assignés
+    const assigneesWithDiscord = teamMembers.filter(tm => 
+      card.assignees?.includes(tm.userId) && tm.discordId
+    );
+    
+    const discordIds = assigneesWithDiscord.map(tm => tm.discordId!).filter(Boolean);
+    
+    if (discordIds.length === 0) {
+      onToast("⚠️ Aucun membre assigné n'a d'ID Discord configuré");
+      return;
+    }
+    
+    setSendingNotif(true);
+    
+    try {
+      const webhookUrl = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL || 
+        "https://discordapp.com/api/webhooks/1490967463184171078/shV29Ctm22383cUhRqNfWGtWzZ5SEpAnZh9nRUjnCTNK5-whCPq1eUpOZjkmNBZRBmD1";
+      
+      const result = await sendDiscordNotification(
+        webhookUrl,
+        card.title,
+        card.description || "Pas de description",
+        discordIds,
+        `${window.location.origin}/portfolio/projet-en-cours?project=${projectId}`
+      );
+      
+      if (result.success) {
+        // Incrémenter le compteur
+        await incrementTaskNotificationStats(projectId, boardId, card.id!, currentUser?.uid || 'unknown');
+        // Recharger les stats
+        const newStats = await getTaskNotificationStats(projectId, boardId, card.id!);
+        setNotificationStats(newStats);
+        onToast(`✅ Notification envoyée à ${result.mentionsSent} personne(s) sur Discord`);
+      } else {
+        onToast("❌ Erreur lors de l'envoi de la notification");
+      }
+    } catch (error) {
+      console.error(error);
+      onToast("❌ Erreur lors de l'envoi");
+    } finally {
+      setSendingNotif(false);
+    }
   };
 
   const formatDate = (ts: any) => {
@@ -384,6 +446,17 @@ export default function KanbanTaskDetail({
                   <>
                     <button className={styles.iconBtn} onClick={onEdit} title="Modifier"><Edit2 size={15} /></button>
                     <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} onClick={handleDelete} title="Supprimer"><Trash2 size={15} /></button>
+                    <button 
+                      className={`${styles.iconBtn} ${styles.notifBtn}`} 
+                      onClick={handleSendDiscordNotification} 
+                      title="Notifier sur Discord"
+                      disabled={sendingNotif}
+                    >
+                      {sendingNotif ? <Loader size={15} className={styles.spinIcon} /> : <Bell size={15} />}
+                      {notificationStats && notificationStats.totalSent > 0 && (
+                        <span className={styles.notifBadge}>{notificationStats.totalSent}</span>
+                      )}
+                    </button>
                   </>
                 )}
                 <button className={styles.iconBtn} onClick={onClose} title="Fermer"><X size={16} /></button>

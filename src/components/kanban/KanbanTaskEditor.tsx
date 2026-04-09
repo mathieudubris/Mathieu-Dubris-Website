@@ -35,6 +35,7 @@ export interface TeamMemberForKanban {
   firstName?: string;
   lastName?: string;
   image?: string;
+  discordId?: string;  // ← AJOUTÉ
 }
 
 interface LinkEntry { id: string; name: string; url: string; }
@@ -144,7 +145,6 @@ export default function KanbanTaskEditor({
     const url = imgUrlInput.trim();
     if (!url) return;
     const normalized = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-    // Accept any URL as image (user knows what they paste)
     const name = imgNameInput.trim() || url.split("/").pop()?.split("?")[0] || "image";
     setLinks(p => [...p, { id: `img-url-${Date.now()}`, name, url: normalized }]);
     setImgUrlInput("");

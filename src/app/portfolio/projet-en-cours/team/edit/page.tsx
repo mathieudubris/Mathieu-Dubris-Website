@@ -73,6 +73,7 @@ function EquipePageContent() {
     agePublic: true,
     email: '',
     phone: '',
+    discordId: '',
     skills: '',
     skillsPublic: true,
     contacts: [],
@@ -159,6 +160,7 @@ function EquipePageContent() {
           lastName: profile.lastName || '',
           email: profile.email || currentUser?.email || '',
           phone: profile.phone || '',
+          discordId: profile.discordId || '',
           age: profile.age || 0,
           agePublic: profile.agePublic !== undefined ? profile.agePublic : true,
           image: profile.image || '',
@@ -186,6 +188,7 @@ function EquipePageContent() {
           userId,
           projectId: pid,
           email: currentUser?.email || '',
+          discordId: '',
           firstName: currentUser?.displayName?.split(' ')[0] || '',
           lastName: currentUser?.displayName?.split(' ').slice(1).join(' ') || '',
           image: currentUser?.photoURL || '',
@@ -347,13 +350,17 @@ function EquipePageContent() {
 
     setIsSaving(true);
     try {
-      await saveProjectTeamMember(currentUser.uid, projectId, {
+      const cleanTeamMember = {
         ...teamMember,
         userId: currentUser.uid,
         projectId: projectId,
         email: teamMember.email || currentUser.email || '',
+        discordId: teamMember.discordId || '',
+        skills: teamMember.skills || '',
         updatedAt: new Date()
-      });
+      };
+      
+      await saveProjectTeamMember(currentUser.uid, projectId, cleanTeamMember);
 
       showNotification('Profil enregistré avec succès!', 'success');
       

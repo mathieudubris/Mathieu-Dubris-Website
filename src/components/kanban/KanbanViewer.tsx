@@ -64,6 +64,7 @@ export default function KanbanViewer({
             image: tp.image || "",
             displayName: googleUser?.displayName || "",
             photoURL: googleUser?.photoURL || "",
+            discordId: (tp as any).discordId,  // ← AJOUTÉ
           };
         });
         setTeamMembers(merged);

@@ -93,6 +93,12 @@ export interface KanbanColumn {
   updatedAt: any;
 }
 
+export interface KanbanAssignee {
+  userId: string;
+  discordId?: string;
+  displayName?: string;
+}
+
 // ─── CHEMINS FIRESTORE ─────────────────────────────────────────────────────
 
 /** Référence vers la collection progression d'un projet */
@@ -419,4 +425,15 @@ export const toggleCardAssignee = async (
     ? currentAssignees.filter(uid => uid !== userId)
     : [...currentAssignees, userId];
   await updateCard(projectId, boardId, cardId, { assignees: updated });
+};
+
+// ─── UTILITAIRES DISCORD ─────────────────────────────────────────────────────
+
+export const getDiscordIdsFromAssignees = (
+  assignees: string[],
+  teamMembers: Array<{ userId: string; discordId?: string }>
+): string[] => {
+  return assignees
+    .map(uid => teamMembers.find(m => m.userId === uid)?.discordId)
+    .filter((id): id is string => !!id);
 };
