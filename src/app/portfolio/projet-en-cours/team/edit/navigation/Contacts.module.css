@@ -1,6 +1,8 @@
-.container {
-  width: 100%;
-}
+/* =====================
+   Contacts.module.css
+   ===================== */
+
+.container { width: 100%; }
 
 .title {
   font-size: 1.25rem;
@@ -12,9 +14,7 @@
   gap: 0.5rem;
 }
 
-.addContactSection {
-  margin: 0 0 1.5rem;
-}
+.addContactSection { margin: 0 0 1.5rem; }
 
 .subtitle {
   font-size: 1rem;
@@ -23,17 +23,10 @@
   color: var(--light);
 }
 
-.contactInputs {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .contactInputs {
-    grid-template-columns: 1fr 2fr auto;
-  }
+/* ── Stacked rows ── */
+.row {
+  width: 100%;
+  margin-bottom: 0.6rem;
 }
 
 .input {
@@ -46,6 +39,7 @@
   font-family: var(--font-main);
   font-size: 0.875rem;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .input:focus {
@@ -54,7 +48,22 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
+/* ── WhatsApp row ── */
+.phoneRow {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  align-items: stretch;
+}
+
+.phoneInput {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ── Add button ── */
 .addButton {
+  width: 100%;
   background: var(--primary);
   color: var(--dark);
   border: none;
@@ -68,19 +77,20 @@
   gap: 0.5rem;
   transition: all 0.3s ease;
   font-size: 0.875rem;
+  margin-bottom: 0.6rem;
 }
 
-.addButton:hover {
-  background: color-mix(in srgb, var(--primary) 90%, transparent);
-}
+.addButton:hover { background: color-mix(in srgb, var(--primary) 90%, transparent); }
 
 .hint {
   color: var(--light);
   opacity: 0.5;
   font-size: 0.75rem;
   margin-top: 0.25rem;
+  line-height: 1.4;
 }
 
+/* ── Contacts list ── */
 .contactsList {
   display: flex;
   flex-direction: column;
@@ -109,15 +119,8 @@
   min-width: 0;
 }
 
-.contactIcon {
-  color: var(--primary);
-  flex-shrink: 0;
-}
-
-.contactDetails {
-  flex: 1;
-  min-width: 0;
-}
+.contactIcon { color: var(--primary); flex-shrink: 0; }
+.contactDetails { flex: 1; min-width: 0; }
 
 .contactType {
   font-weight: 500;
@@ -140,26 +143,14 @@
   flex-shrink: 0;
 }
 
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+/* Toggle switch */
+.switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+.switch input { opacity: 0; width: 0; height: 0; }
 
 .slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   transition: .4s;
   border-radius: 20px;
@@ -169,31 +160,17 @@
 .slider:before {
   position: absolute;
   content: "";
-  height: 14px;
-  width: 14px;
-  left: 2px;
-  bottom: 2px;
+  height: 14px; width: 14px;
+  left: 2px; bottom: 2px;
   background-color: var(--light);
   transition: .4s;
   border-radius: 50%;
 }
 
-input:checked + .slider {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
+input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
+input:checked + .slider:before { transform: translateX(20px); background-color: var(--dark); }
 
-input:checked + .slider:before {
-  transform: translateX(20px);
-  background-color: var(--dark);
-}
-
-.privacyLabel {
-  font-size: 0.75rem;
-  color: var(--light);
-  opacity: 0.7;
-  min-width: 40px;
-}
+.privacyLabel { font-size: 0.75rem; color: var(--light); opacity: 0.7; min-width: 40px; }
 
 .removeButton {
   color: var(--dark-red);
@@ -208,10 +185,7 @@ input:checked + .slider:before {
   border-radius: 0.25rem;
 }
 
-.removeButton:hover {
-  color: var(--dark-red);
-  background: color-mix(in srgb, var(--dark-red) 10%, transparent);
-}
+.removeButton:hover { background: color-mix(in srgb, var(--dark-red) 10%, transparent); }
 
 .emptyState {
   text-align: center;
@@ -221,9 +195,171 @@ input:checked + .slider:before {
   font-size: 0.875rem;
 }
 
-.emptyState svg {
-  margin: 0 auto 0.75rem;
-  display: block;
-  opacity: 0.4;
+.emptyState svg { margin: 0 auto 0.75rem; display: block; opacity: 0.4; color: var(--light); }
+
+/* ══════════════════════════════════════════
+   Custom Country Picker — flagcdn images
+   ══════════════════════════════════════════ */
+
+.pickerWrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 110px;
+}
+
+/* Trigger button */
+.pickerTrigger {
+  width: 100%;
+  height: 100%;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: var(--dark);
+  border: 1px solid var(--light);
+  border-radius: 0.5rem;
   color: var(--light);
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  white-space: nowrap;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.pickerTrigger:hover,
+.pickerTrigger:focus { border-color: var(--primary); outline: none; }
+
+/* Flag image in trigger */
+.pickerFlagImg {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.pickerCode { font-size: 0.78rem; font-weight: 600; flex: 1; text-align: left; min-width: 0; overflow: hidden; }
+
+.pickerChevron { opacity: 0.55; transition: transform 0.2s ease; flex-shrink: 0; }
+.pickerChevronOpen { transform: rotate(180deg); }
+
+/* Dropdown */
+.pickerDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 9999;
+  width: 290px;
+  background: var(--dark);
+  border: 1px solid var(--primary);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 520px) {
+  .pickerDropdown {
+    /* on small screens anchor to left edge of the phoneRow */
+    width: min(290px, calc(100vw - 1.5rem));
+  }
+}
+
+/* Search */
+.pickerSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.pickerSearchIcon { color: var(--light); opacity: 0.45; flex-shrink: 0; }
+
+.pickerSearchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--light);
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+}
+
+.pickerSearchInput::placeholder { opacity: 0.35; }
+
+/* List */
+.pickerList {
+  max-height: 230px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pickerList::-webkit-scrollbar { width: 4px; }
+.pickerList::-webkit-scrollbar-track { background: transparent; }
+.pickerList::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
+  border-radius: 4px;
+}
+
+/* Item */
+.pickerItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--light);
+  font-family: var(--font-main);
+  transition: background 0.12s;
+}
+
+.pickerItem:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+
+.pickerItemActive {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--primary);
+}
+
+/* Flag image in list items */
+.pickerItemFlagImg {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.pickerItemCode {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 46px;
+  flex-shrink: 0;
+}
+
+.pickerItemCountry {
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerEmpty {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--light);
+  opacity: 0.4;
 }

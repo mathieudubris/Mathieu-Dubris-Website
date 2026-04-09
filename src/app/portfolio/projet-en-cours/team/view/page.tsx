@@ -16,6 +16,10 @@ import CardView from './navigation/CardView';
 import DetailView from './navigation/DetailView';
 import styles from './view.module.css';
 
+// ─── Import partagé ─────────────────────────────────────────────
+import { rolesData, getRoleColorClass } from '@/utils/roles';
+export { rolesData, getRoleColorClass };
+
 // ─── Types ──────────────────────────────────────────────────────
 
 export interface PhoneEntry {
@@ -34,48 +38,10 @@ export interface ComputerEntry {
 // Ré-export du type depuis projet-api
 export type { ProjectTeamMember } from '@/utils/projet-api';
 
-export const rolesData: { name: string; colorClass: string }[] = [
-  { name: 'Game Director', colorClass: 'Direction' },
-  { name: 'Creative Director', colorClass: 'Direction' },
-  { name: 'Technical Director', colorClass: 'Direction' },
-  { name: 'Project Manager', colorClass: 'Direction' },
-  { name: 'Team Coordinator', colorClass: 'Direction' },
-  { name: 'Game Designer', colorClass: 'Design' },
-  { name: 'Level Designer', colorClass: 'Design' },
-  { name: 'Gameplay Designer', colorClass: 'Design' },
-  { name: 'Narrative Designer', colorClass: 'Design' },
-  { name: 'Game Programmer', colorClass: 'Programming' },
-  { name: 'Engine Programmer', colorClass: 'Programming' },
-  { name: 'AI Programmer', colorClass: 'Programming' },
-  { name: 'UI Programmer', colorClass: 'Programming' },
-  { name: '3D Artist', colorClass: 'Art3D' },
-  { name: '3D Cinematic', colorClass: 'Art3D' },
-  { name: 'Texture Artist', colorClass: 'Art3D' },
-  { name: 'Prop Artist', colorClass: 'Art3D' },
-  { name: 'Environment Artist', colorClass: 'Art3D' },
-  { name: '3D Animator', colorClass: 'Art3D' },
-  { name: 'Mocap Actor', colorClass: 'Art3D' },
-  { name: '3D Art Support', colorClass: 'Art3D' },
-  { name: 'Technical Artist', colorClass: 'Art3D' },
-  { name: 'UX Designer', colorClass: 'UIUX' },
-  { name: 'UI Designer', colorClass: 'UIUX' },
-  { name: 'UI Artist', colorClass: 'UIUX' },
-  { name: 'UI Art Support', colorClass: 'UIUX' },
-  { name: 'Music Composer', colorClass: 'Audio' },
-  { name: 'Sound Designer', colorClass: 'Audio' },
-  { name: 'Voice Actor', colorClass: 'Audio' },
-  { name: 'Voice Director', colorClass: 'Audio' },
-  { name: 'Community Manager', colorClass: 'Support' },
-  { name: 'Documentation Manager', colorClass: 'Support' },
-  { name: 'Content Creator', colorClass: 'Support' },
-  { name: 'Marketing Manager', colorClass: 'Support' },
-  { name: 'QA Tester', colorClass: 'Support' },
-];
+// ─── Utilitaire : générer un id temporaire unique ──────────────
 
-export const getRoleColorClass = (roleName: string): string => {
-  const role = rolesData.find((r) => r.name === roleName);
-  return role ? role.colorClass : '';
-};
+let _tmpIdCounter = 0;
+const generateTempId = () => `__tmp_${Date.now()}_${++_tmpIdCounter}`;
 
 // ─── Normalisation des données ─────────────────────────────────
 
@@ -117,9 +83,12 @@ const normalizeMemberData = (member: any): ProjectTeamMember => {
     }];
   }
 
+  // ✅ Garantir un id unique même si Firestore n'en a pas retourné
+  const resolvedId = member.id || member.userId || generateTempId();
+
   return {
     ...member,
-    id: member.id || '',
+    id: resolvedId,
     userId: member.userId || '',
     projectId: member.projectId || '',
     firstName: member.firstName || '',
@@ -199,7 +168,7 @@ function TeamViewContent() {
   };
 
   const handleEditProfile = () => {
-    if (currentUser && projectSlug) router.push(`/portfolio/team/edit?project=${projectSlug}`);
+    if (currentUser && projectSlug) router.push(`/portfolio/projet-en-cours/team/edit?project=${projectSlug}`);
     else setShowLogin(true);
   };
 

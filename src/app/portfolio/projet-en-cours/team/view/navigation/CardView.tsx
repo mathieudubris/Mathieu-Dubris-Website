@@ -105,7 +105,7 @@ export default function CardView({ member, index, shouldShowInfo, onClick }: Car
               {member.roles.slice(0, 2).map((role, i) => {
                 const cc = getRoleColorClass(role);
                 return (
-                  <span key={i} className={`${styles.roleTag} ${styles[cc]}`}>
+                  <span key={`static-${i}`} className={`${styles.roleTag} ${styles[cc]}`}>
                     {role}
                   </span>
                 );
@@ -122,11 +122,20 @@ export default function CardView({ member, index, shouldShowInfo, onClick }: Car
                 className={styles.marqueeTrack}
                 style={{ transform: `translateX(${translateX}px)` }}
               >
-                {/* Duplicate roles for infinite loop effect */}
-                {[...member.roles, ...member.roles].map((role, i) => {
+                {/* Première copie */}
+                {member.roles.map((role, i) => {
                   const cc = getRoleColorClass(role);
                   return (
-                    <span key={i} className={`${styles.roleTag} ${styles[cc]}`}>
+                    <span key={`copy-a-${i}`} className={`${styles.roleTag} ${styles[cc]}`}>
+                      {role}
+                    </span>
+                  );
+                })}
+                {/* Deuxième copie pour l'effet infini */}
+                {member.roles.map((role, i) => {
+                  const cc = getRoleColorClass(role);
+                  return (
+                    <span key={`copy-b-${i}`} className={`${styles.roleTag} ${styles[cc]}`}>
                       {role}
                     </span>
                   );

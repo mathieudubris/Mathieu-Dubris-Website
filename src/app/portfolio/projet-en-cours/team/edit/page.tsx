@@ -365,7 +365,7 @@ function EquipePageContent() {
       showNotification('Profil enregistré avec succès!', 'success');
       
       setTimeout(() => {
-        router.push(`/portfolio/team/view?project=${projectSlug}`);
+        router.push(`/portfolio/projet-en-cours/team/view?project=${projectSlug}`);
       }, 1500);
       
     } catch (error) {
@@ -439,7 +439,7 @@ function EquipePageContent() {
 
   const handleBackToTeamView = () => {
     if (projectSlug) {
-      router.push(`/portfolio/team/view?project=${projectSlug}`);
+      router.push(`/portfolio/projet-en-cours/team/view?project=${projectSlug}`);
     } else {
       router.push('/portfolio/projet-en-cours');
     }

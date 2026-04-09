@@ -35,7 +35,7 @@ export interface ComputerEntry {
 }
 
 export interface Contact {
-  type: 'instagram' | 'whatsapp' | 'discord' | 'tiktok' | 'youtube' | 'facebook' | 'twitter' | 'linkedin';
+  type: 'instagram' | 'whatsapp' | 'discord' | 'tiktok' | 'youtube' | 'facebook' | 'linkedin' | 'website';
   value: string;
   label?: string;
   isPublic: boolean;
