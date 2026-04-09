@@ -73,6 +73,7 @@ export default function RootLayout({
         <link rel="canonical" href="https://mathieu-dubris.web.app" />
         <meta name="theme-color" content="#0a0a0a" />
         <meta name="format-detection" content="telephone=no" />
+
         {/* Google Analytics */}
         <Script
           strategy="afterInteractive"
@@ -90,24 +91,31 @@ export default function RootLayout({
             `,
           }}
         />
-        {/* Schema.org markup pour Google */}
+
+        {/* Schema.org — données structurées pour Google */}
         <Script
           id="schema-org"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Person",
-              "name": "Mathieu Dubris",
-              "alternateName": "MathieuDubris",
-              "url": "https://mathieu-dubris.web.app",
-              "sameAs": [],
-              "jobTitle": "Développeur Full Stack Freelance",
-              "worksFor": {
-                "@type": "Organization",
-                "name": "Mathieu Dubris Digital"
-              }
-            })
+              '@context': 'https://schema.org',
+              '@type': 'Person',
+              name: 'Mathieu Dubris',
+              alternateName: 'MathieuDubris',
+              url: 'https://mathieu-dubris.web.app',
+              // ⚠️ Remplace par tes vrais profils
+              sameAs: [
+                'https://www.linkedin.com/in/mathieudubris/',
+                'https://github.com/mathieudubris',
+                'https://www.instagram.com/mathieudubris',
+                'https://www.youtube.com/@mathieudubris',
+              ],
+              jobTitle: 'Développeur Full Stack Freelance',
+              worksFor: {
+                '@type': 'Organization',
+                name: 'Mathieu Dubris Digital',
+              },
+            }),
           }}
         />
       </head>
@@ -115,11 +123,13 @@ export default function RootLayout({
         <ThemeProvider>
           <UsersProvider>
             <div className="app-wrapper">{children}</div>
-            {/* CTA global — visible sur toutes les pages sauf "/" */}
             <CTAWrapper />
           </UsersProvider>
         </ThemeProvider>
-        <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+        <script
+          src="https://upload-widget.cloudinary.com/global/all.js"
+          type="text/javascript"
+        ></script>
       </body>
     </html>
   );

@@ -1,10 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import {
-  Edit2, Trash2, Clock, BookOpen, Bookmark, CalendarDays,
-} from 'lucide-react';
+import { Edit2, Trash2, Clock, BookOpen, Bookmark, CalendarDays } from 'lucide-react';
 import { FullAccompagnement } from '@/utils/accompagnement-api';
 import styles from './AccompagnementCard.module.css';
 
@@ -15,6 +12,9 @@ interface AccompagnementCardProps {
   isMember: boolean;
   isFavorite: boolean;
   isDeleteConfirm: boolean;
+  isActive: boolean;
+  isCentered: boolean;
+  onActivate: () => void;
   onEdit: (a: FullAccompagnement) => void;
   onDelete: (id: string) => void;
   onDeleteConfirm: (id: string | null) => void;
@@ -28,7 +28,6 @@ const LEVEL_COLORS: Record<string, string> = {
   avancé:        '#f97316',
   expert:        '#f43f5e',
 };
-
 const LEVEL_LABELS: Record<string, string> = {
   débutant:      'Débutant',
   intermédiaire: 'Intermédiaire',
@@ -43,6 +42,9 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
   isMember,
   isFavorite,
   isDeleteConfirm,
+  isActive,
+  isCentered,
+  onActivate,
   onEdit,
   onDelete,
   onDeleteConfirm,
@@ -53,166 +55,85 @@ const AccompagnementCard: React.FC<AccompagnementCardProps> = ({
   const levelLabel = LEVEL_LABELS[accompagnement.level] || accompagnement.level;
   const moduleCount = accompagnement.modules?.length ?? 0;
 
-  const handleClick = () => {
-    if (!currentUser) {
-      window.location.href = '/security/access';
-      return;
-    }
-    onClick(accompagnement);
-  };
-
   if (isDeleteConfirm && accompagnement.id) {
     return (
-      <motion.div
-        className={styles.card}
-        style={{ minHeight: 120 }}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-      >
-        <div className={styles.deleteOverlay}>
-          <div className={styles.deleteContent}>
-            <div className={styles.deleteEmoji}>🗑️</div>
-            <h4 className={styles.deleteTitle}>Supprimer l'accompagnement ?</h4>
-            <p className={styles.deleteMsg}>Cette action est irréversible.</p>
-            <div className={styles.deleteActions}>
-              <button
-                onClick={(e) => { e.stopPropagation(); if (accompagnement.id) onDelete(accompagnement.id); }}
-                className={styles.deleteConfirmBtn}
-              >
-                Supprimer
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onDeleteConfirm(null); }}
-                className={styles.deleteCancelBtn}
-              >
-                Annuler
-              </button>
-            </div>
+      <div className={`${styles.item} ${styles.itemActive}`} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.bg} style={{ backgroundImage: `url(${accompagnement.image || '/default-accompagnement.jpg'})` }} />
+        <div className={styles.overlay} />
+        <div className={styles.deleteContent}>
+          <div className={styles.deleteEmoji}>🗑️</div>
+          <h4 className={styles.deleteTitle}>Supprimer ?</h4>
+          <p className={styles.deleteMsg}>Action irréversible.</p>
+          <div className={styles.deleteActions}>
+            <button onClick={(e) => { e.stopPropagation(); if (accompagnement.id) onDelete(accompagnement.id); }} className={styles.deleteConfirmBtn}>Supprimer</button>
+            <button onClick={(e) => { e.stopPropagation(); onDeleteConfirm(null); }} className={styles.deleteCancelBtn}>Annuler</button>
           </div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      className={styles.card}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
-      onClick={handleClick}
+    <div
+      className={[
+        styles.item,
+        isActive ? styles.itemActive : '',
+        isCentered && !isActive ? styles.itemCentered : '',
+      ].filter(Boolean).join(' ')}
+      onClick={onActivate}
     >
-      {/* LEFT — Fixed cover */}
-      <div className={styles.coverWrap}>
-        <img
-          src={accompagnement.image || '/default-accompagnement.jpg'}
-          alt={accompagnement.title}
-          className={styles.coverImg}
-          onError={(e) => { e.currentTarget.src = '/default-accompagnement.jpg'; }}
-        />
-        <div className={styles.coverGradient} />
+      <div className={styles.bg} style={{ backgroundImage: `url(${accompagnement.image || '/default-accompagnement.jpg'})` }} />
+      <div className={styles.overlay} />
 
-        {/* Bookmark button — top left */}
-        {currentUser && accompagnement.id && (
-          <button
-            className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ''}`}
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(accompagnement.id!); }}
-            title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-          >
-            <Bookmark size={11} fill={isFavorite ? 'currentColor' : 'none'} />
+      {/* Tap hint — only visible when centered but not yet open */}
+      {isCentered && !isActive && (
+        <div className={styles.tapHint}>Appuyer pour ouvrir</div>
+      )}
+
+      {currentUser && accompagnement.id && (
+        <button
+          className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(accompagnement.id!); }}
+          title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+        >
+          <Bookmark size={12} fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
+      )}
+
+      {isAdmin && (
+        <div className={styles.adminActions} onClick={(e) => e.stopPropagation()}>
+          <button className={styles.actionBtn} onClick={(e) => { e.stopPropagation(); onEdit(accompagnement); }} title="Modifier">
+            <Edit2 size={10} />
           </button>
-        )}
+          <button className={styles.actionBtn} onClick={(e) => { e.stopPropagation(); onDeleteConfirm(accompagnement.id || ''); }} title="Supprimer">
+            <Trash2 size={10} />
+          </button>
+        </div>
+      )}
 
-        {/* Level badge */}
-        <span className={styles.levelBadge} style={{ color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.25)' }}>
-          {levelLabel}
-        </span>
-
-        {/* Admin actions */}
-        {isAdmin && (
-          <div className={styles.adminActions}>
-            <button
-              className={styles.actionBtn}
-              onClick={(e) => { e.stopPropagation(); onEdit(accompagnement); }}
-              title="Modifier"
-            >
-              <Edit2 size={10} />
-            </button>
-            <button
-              className={styles.actionBtn}
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteConfirm(accompagnement.id || ''); }}
-              title="Supprimer"
-            >
-              <Trash2 size={10} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* RIGHT — Content */}
-      <div className={styles.cardBody}>
-        <span className={styles.category}>{accompagnement.category || 'Non catégorisé'}</span>
+      <div className={styles.itemDesc}>
+        <div className={styles.metaTop}>
+          <span className={styles.category}>{accompagnement.category || 'Non catégorisé'}</span>
+          <span className={styles.levelBadge} style={{ color: levelColor, borderColor: levelColor }}>{levelLabel}</span>
+        </div>
         <h3 className={styles.cardTitle}>{accompagnement.title}</h3>
-        <p className={styles.description}>
-          {accompagnement.description || 'Aucune description disponible.'}
-        </p>
-
-        {/* Meta */}
+        <p className={styles.description}>{accompagnement.description || 'Aucune description disponible.'}</p>
         <div className={styles.metaRow}>
-          {accompagnement.duration && (
-            <div className={styles.metaItem}>
-              <Clock size={10} />
-              {accompagnement.duration}
-            </div>
-          )}
-          {moduleCount > 0 && (
-            <div className={styles.metaItem}>
-              <BookOpen size={10} />
-              {moduleCount} étape{moduleCount > 1 ? 's' : ''}
-            </div>
-          )}
+          {accompagnement.duration && <div className={styles.metaItem}><Clock size={10} />{accompagnement.duration}</div>}
+          {moduleCount > 0 && <div className={styles.metaItem}><BookOpen size={10} />{moduleCount} étape{moduleCount > 1 ? 's' : ''}</div>}
         </div>
-
-        {/* CTA */}
         <div className={styles.ctaWrap}>
-          {isMember ? (
-            <button
-              className={styles.animBtn}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClick();
-              }}
-            >
-              <div className={styles.animBtnWrapper}>
-                <div className={styles.animBtnText}>Continuer</div>
-                <span className={styles.animBtnIcon}>
-                  <BookOpen size={18} />
-                </span>
-              </div>
-            </button>
-          ) : (
-            <button
-              data-tooltip="Prendre un RDV"
-              className={styles.animBtn}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!currentUser) { window.location.href = '/security/access'; return; }
-                window.location.href = '/services/booking';
-              }}
-            >
-              <div className={styles.animBtnWrapper}>
-                <div className={styles.animBtnText}>Plus d'infos</div>
-                <span className={styles.animBtnIcon}>
-                  <CalendarDays size={18} />
-                </span>
-              </div>
-            </button>
-          )}
+          <button className={styles.ctaBtn} onClick={(e) => {
+            e.stopPropagation();
+            if (!currentUser) { window.location.href = '/security/access'; return; }
+            if (isMember) onClick(accompagnement);
+            else window.location.href = '/services/booking';
+          }}>
+            {isMember ? <><BookOpen size={14} />Continuer</> : <><CalendarDays size={14} />Plus d'infos</>}
+          </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
