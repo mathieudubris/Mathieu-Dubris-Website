@@ -5,7 +5,7 @@ import {
   Plus, X, Music, MessageSquare, Globe, ChevronDown, Search,
 } from 'lucide-react';
 import styles from './Contacts.module.css';
-import { countryCodes, type CountryCode } from './countryCodes';
+import { countryCodes, type CountryCode } from '@/utils/countryCodes';
 
 interface Contact {
   type: 'instagram' | 'whatsapp' | 'discord' | 'tiktok' | 'youtube' | 'facebook' | 'linkedin' | 'website';
@@ -147,12 +147,30 @@ export default function Contacts({
   onUpdateContactPrivacy,
   hideTitle,
 }: ContactsProps) {
+  // Types already present in the contacts list
+  const usedTypes = new Set((teamMember.contacts ?? []).map(c => c.type));
+
+  // Available types = all types minus already-used ones
+  const availableTypes = contactTypes.filter(ct => !usedTypes.has(ct.type as Contact['type']));
+
   const [newContact, setNewContact] = useState<{ type: Contact['type']; value: string; label: string }>({
-    type: 'instagram',
+    type: (availableTypes[0]?.type ?? 'instagram') as Contact['type'],
     value: '',
     label: '',
   });
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+
+  // If the currently selected type becomes unavailable (just got added),
+  // auto-switch to the first available type.
+  useEffect(() => {
+    if (usedTypes.has(newContact.type)) {
+      const firstAvailable = availableTypes[0];
+      if (firstAvailable) {
+        setNewContact({ type: firstAvailable.type as Contact['type'], value: '', label: '' });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamMember.contacts]);
 
   const handleTypeChange = (type: Contact['type']) =>
     setNewContact({ type, value: '', label: '' });
@@ -172,6 +190,7 @@ export default function Contacts({
     contactTypes.find(ct => ct.type === type)?.icon || MessageCircle;
 
   const isWhatsApp = newContact.type === 'whatsapp';
+  const allUsed    = availableTypes.length === 0;
 
   return (
     <div className={styles.container}>
@@ -185,60 +204,66 @@ export default function Contacts({
       <div className={styles.addContactSection}>
         <h3 className={styles.subtitle}>Ajouter un réseau social</h3>
 
-        {/* Platform selector */}
-        <div className={styles.row}>
-          <select
-            value={newContact.type}
-            onChange={e => handleTypeChange(e.target.value as Contact['type'])}
-            className={styles.input}
-          >
-            {contactTypes.map(ct => (
-              <option key={ct.type} value={ct.type}>{ct.label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Value input */}
-        {isWhatsApp ? (
-          <div className={styles.phoneRow}>
-            <CountryPicker value={selectedCountry} onChange={setSelectedCountry} />
-            <input
-              type="tel"
-              inputMode="numeric"
-              value={newContact.value}
-              onChange={e =>
-                setNewContact(prev => ({ ...prev, value: e.target.value.replace(/[^0-9 \-]/g, '') }))
-              }
-              className={`${styles.input} ${styles.phoneInput}`}
-              placeholder={`Ex : ${selectedCountry.example}`}
-            />
-          </div>
+        {allUsed ? (
+          <p className={styles.hint}>Tous les réseaux sociaux ont déjà été ajoutés.</p>
         ) : (
-          <div className={styles.row}>
-            <input
-              type={newContact.type === 'website' ? 'url' : 'text'}
-              inputMode={newContact.type === 'discord' ? 'numeric' : undefined}
-              value={newContact.value}
-              onChange={e => {
-                let val = e.target.value;
-                if (newContact.type === 'discord') val = val.replace(/\D/g, '');
-                setNewContact(prev => ({ ...prev, value: val }));
-              }}
-              className={styles.input}
-              placeholder={typePlaceholder[newContact.type] ?? ''}
-            />
-          </div>
+          <>
+            {/* Platform selector — only shows types not yet added */}
+            <div className={styles.row}>
+              <select
+                value={newContact.type}
+                onChange={e => handleTypeChange(e.target.value as Contact['type'])}
+                className={styles.input}
+              >
+                {availableTypes.map(ct => (
+                  <option key={ct.type} value={ct.type}>{ct.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Value input */}
+            {isWhatsApp ? (
+              <div className={styles.phoneRow}>
+                <CountryPicker value={selectedCountry} onChange={setSelectedCountry} />
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={newContact.value}
+                  onChange={e =>
+                    setNewContact(prev => ({ ...prev, value: e.target.value.replace(/[^0-9 \-]/g, '') }))
+                  }
+                  className={`${styles.input} ${styles.phoneInput}`}
+                  placeholder={`Ex : ${selectedCountry.example}`}
+                />
+              </div>
+            ) : (
+              <div className={styles.row}>
+                <input
+                  type={newContact.type === 'website' ? 'url' : 'text'}
+                  inputMode={newContact.type === 'discord' ? 'numeric' : undefined}
+                  value={newContact.value}
+                  onChange={e => {
+                    let val = e.target.value;
+                    if (newContact.type === 'discord') val = val.replace(/\D/g, '');
+                    setNewContact(prev => ({ ...prev, value: val }));
+                  }}
+                  className={styles.input}
+                  placeholder={typePlaceholder[newContact.type] ?? ''}
+                />
+              </div>
+            )}
+
+            {/* Add button */}
+            <div className={styles.row}>
+              <button onClick={handleAddContact} className={styles.addButton}>
+                <Plus size={16} />
+                Ajouter
+              </button>
+            </div>
+
+            <p className={styles.hint}>{typeHint[newContact.type]}</p>
+          </>
         )}
-
-        {/* Add button */}
-        <div className={styles.row}>
-          <button onClick={handleAddContact} className={styles.addButton}>
-            <Plus size={16} />
-            Ajouter
-          </button>
-        </div>
-
-        <p className={styles.hint}>{typeHint[newContact.type]}</p>
       </div>
 
       {/* Contacts list */}

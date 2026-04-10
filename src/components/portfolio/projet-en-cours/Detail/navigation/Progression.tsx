@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { subscribeToBoards } from "@/utils/kanban-projet-api";
 import type { KanbanBoard } from "@/utils/kanban-projet-api";
+import { useProjectProgress } from "@/utils/useProjectProgress";
 import ProgressionBoardList from "@/components/kanban/ProgressionBoardList";
 import KanbanViewer from "@/components/kanban/KanbanViewer";
 import styles from "./Progression.module.css";
@@ -12,6 +13,32 @@ interface ProgressionProps {
   projectTitle: string;
   currentUser?: any;
 }
+
+// ── Bandeau résumé ────────────────────────────────────────────────────────────
+
+const ProgressSummary: React.FC<{ projectId: string }> = ({ projectId }) => {
+  const { total, done, percent } = useProjectProgress(projectId);
+
+  if (total === 0) return null;
+
+  return (
+    <div className={styles.summary}>
+      <div className={styles.summaryTop}>
+        <span className={styles.summaryLabel}>Progression globale</span>
+        <span className={styles.summaryStats}>{done}/{total} tâches terminées</span>
+      </div>
+      <div className={styles.summaryBarTrack}>
+        <div
+          className={styles.summaryBarFill}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <span className={styles.summaryPercent}>{percent}%</span>
+    </div>
+  );
+};
+
+// ── Progression ───────────────────────────────────────────────────────────────
 
 export default function Progression({ projectId, projectTitle, currentUser }: ProgressionProps) {
   const [boards, setBoards] = useState<KanbanBoard[]>([]);
@@ -65,6 +92,9 @@ export default function Progression({ projectId, projectTitle, currentUser }: Pr
 
   return (
     <div className={styles.wrapper}>
+      {/* Bandeau de progression globale */}
+      <ProgressSummary projectId={projectId} />
+
       <ProgressionBoardList
         projectId={projectId}
         boards={boards}

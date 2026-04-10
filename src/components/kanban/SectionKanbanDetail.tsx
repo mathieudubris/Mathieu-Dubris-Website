@@ -3,7 +3,6 @@
 import React, { useState, useRef, type DragEvent } from "react";
 import { Plus } from "lucide-react";
 import {
-  createCard,
   moveCard
 } from "@/utils/kanban-projet-api";
 import type { KanbanColumn, KanbanCard } from "@/utils/kanban-projet-api";
@@ -15,8 +14,8 @@ import styles from "./SectionKanbanDetail.module.css";
 
 const DEFAULT_COLUMNS = [
   { id: "todo",       title: "À faire",      color: "#a3a3a3" },
-  { id: "inprogress", title: "En cours",      color: "#c7ff44" },
-  { id: "review",     title: "En révision",   color: "#f59e0b" },
+  { id: "inprogress", title: "En cours",      color: "#3b82f6" },
+  { id: "review",     title: "En révision",   color: "#8b5cf6" },
   { id: "blocked",    title: "Blocage",       color: "#ef4444" },
   { id: "done",       title: "Terminé",       color: "#22c55e" },
 ];
@@ -34,7 +33,7 @@ interface SectionKanbanDetailProps {
   cards: KanbanCard[];
   currentUser: any;
   projectId: string;
-  boardId: string;           // ← NOUVEAU : requis pour la nouvelle structure
+  boardId: string;
   onToast: (msg: string) => void;
   readOnly?: boolean;
   teamMembers?: TeamMemberForKanban[];
@@ -58,34 +57,12 @@ export default function SectionKanbanDetail({
   const [isDragOver, setIsDragOver] = useState<string | null>(null);
   const dragCardId = useRef<string | null>(null);
 
-  // Les cartes arrivent déjà filtrées depuis KanbanViewer (search + priority + myTasks)
   const getColumnCards = (columnId: string) =>
     cards.filter((c) => c.columnId === columnId).sort((a, b) => a.position - b.position);
 
   const handleAddCard = (columnId: string) => {
     if (readOnly) return;
     setAddingCardColumn(columnId);
-  };
-
-  const handleCreateCard = async (columnId: string, title: string, assignees: string[]) => {
-    if (readOnly || !title.trim() || !currentUser) return;
-    try {
-      const colCards = cards.filter((c) => c.columnId === columnId);
-      await createCard(
-        projectId,
-        boardId,
-        columnId,
-        title.trim(),
-        currentUser.uid,
-        colCards.length,
-        assignees,
-      );
-      setAddingCardColumn(null);
-      onToast("Tâche créée");
-    } catch (error) {
-      console.error("Error creating card:", error);
-      onToast("Erreur lors de la création");
-    }
   };
 
   const handleDragStart = (e: DragEvent, cardId: string) => {
@@ -135,10 +112,8 @@ export default function SectionKanbanDetail({
     }
   };
 
-  // Pour le détail/editeur des cartes, on doit passer boardId
   const columnsToDisplay = dbColumns.length > 0 ? dbColumns : DEFAULT_COLUMNS;
 
-  // Compute COLUMN_ACTIONS from actual columns
   const columnActions = dbColumns.length > 0
     ? dbColumns.map(col => ({ id: col.id!, label: col.title }))
     : COLUMN_ACTIONS;
@@ -195,14 +170,14 @@ export default function SectionKanbanDetail({
         </div>
       ))}
 
-      {/* Éditeur création */}
+      {/* Éditeur création — KanbanTaskEditor gère lui-même createCard + updateCard */}
       {!readOnly && addingCardColumn && (
         <KanbanTaskEditor
           isNew
           columnId={addingCardColumn}
           currentUser={currentUser}
           onClose={() => setAddingCardColumn(null)}
-          onSave={(title, assignees) => handleCreateCard(addingCardColumn, title, assignees)}
+          onSave={() => setAddingCardColumn(null)}
           onToast={onToast}
           projectId={projectId}
           boardId={boardId}

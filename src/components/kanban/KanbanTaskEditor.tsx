@@ -2,9 +2,17 @@
 
 import React, { useState, useRef } from "react";
 import { X, Plus, Flag, Calendar, Link2, Users, Image as ImageIcon, Upload, Loader, Check, ExternalLink } from "lucide-react";
-import { updateCard } from "@/utils/kanban-projet-api";
+import { createCard, updateCard } from "@/utils/kanban-projet-api";
 import type { KanbanCard, KanbanPriority } from "@/utils/kanban-projet-api";
+import {
+  getTaskNotificationStats,
+  editDiscordNotification,
+} from "@/utils/discord-notify-api";
 import styles from "./KanbanTaskEditor.module.css";
+
+const WEBHOOK_URL =
+  process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL ||
+  "https://discordapp.com/api/webhooks/1490967463184171078/shV29Ctm22383cUhRqNfWGtWzZ5SEpAnZh9nRUjnCTNK5-whCPq1eUpOZjkmNBZRBmD1";
 
 const CLOUDINARY_CLOUD  = "dhqqx2m3y";
 const CLOUDINARY_PRESET = "kanban-projet";
@@ -35,7 +43,7 @@ export interface TeamMemberForKanban {
   firstName?: string;
   lastName?: string;
   image?: string;
-  discordId?: string;  // ← AJOUTÉ
+  discordId?: string;
 }
 
 interface LinkEntry { id: string; name: string; url: string; }
@@ -46,7 +54,8 @@ interface KanbanTaskEditorProps {
   columnId?: string;
   currentUser: any;
   onClose: () => void;
-  onSave?: (title: string, assignees: string[]) => void;
+  /** Appelé uniquement après une création réussie (cardId retourné) */
+  onSave?: (cardId: string) => void;
   onToast: (msg: string) => void;
   columnActions?: { id: string; label: string }[];
   onMoveCard?: (cardId: string, targetColumnId: string) => void;
@@ -88,7 +97,6 @@ export default function KanbanTaskEditor({
   const [uploading, setUploading]     = useState<string[]>([]);
   const [dragOver, setDragOver]       = useState(false);
 
-  // ── Image URL input mode ──
   const [imgMode, setImgMode]         = useState<"upload" | "url">("upload");
   const [imgUrlInput, setImgUrlInput] = useState("");
   const [imgNameInput, setImgNameInput] = useState("");
@@ -100,7 +108,6 @@ export default function KanbanTaskEditor({
   const imageLinks = links.filter(l => isImg(l.url));
   const otherLinks = links.filter(l => !isImg(l.url));
 
-  // Compact name: "Jean D."
   const memberName = (m: TeamMemberForKanban) =>
     m.firstName && m.lastName
       ? `${m.firstName} ${m.lastName[0]}.`
@@ -140,7 +147,6 @@ export default function KanbanTaskEditor({
     if (results.length) { setLinks(p => [...p, ...results]); onToast(`${results.length} image(s) uploadée(s)`); }
   };
 
-  // ── Add image via URL ──
   const addImageUrl = () => {
     const url = imgUrlInput.trim();
     if (!url) return;
@@ -166,26 +172,105 @@ export default function KanbanTaskEditor({
     setNewLabelName(""); setShowLabelForm(false);
   };
 
+  // ─── SAVE ────────────────────────────────────────────────────────────────────
   const handleSave = async () => {
-    if (isNew && onSave) {
-      if (!title.trim()) return;
-      onSave(title.trim(), assignees);
-      onClose();
-      return;
-    }
-    if (!card) return;
+    if (!title.trim()) return;
     setSaving(true);
+
     try {
-      await updateCard(projectId, boardId, card.id!, {
-        title, description: description, priority, labels, assignees,
-        dueDate:     dueDate     ? new Date(dueDate)     : null,
-        startDate:   startDate   ? new Date(startDate)   : null,
-        attachments: links,
-      } as any);
-      if (onMoveCard && targetCol !== card.columnId) await onMoveCard(card.id!, targetCol);
-      onToast("Tâche mise à jour"); onClose();
-    } catch { onToast("Erreur sauvegarde"); }
-    finally { setSaving(false); }
+      if (isNew) {
+        // ── CRÉATION : createCard puis updateCard immédiat avec tous les champs ──
+        if (!columnId || !currentUser) return;
+
+        const colCards = 0; // position sera 0, le vrai count est géré côté serveur
+        const cardId = await createCard(
+          projectId,
+          boardId,
+          columnId,
+          title.trim(),
+          currentUser.uid,
+          colCards,
+          assignees,
+        );
+
+        // Mettre à jour immédiatement avec tous les champs supplémentaires
+        const extras: Record<string, any> = {
+          description,
+          priority,
+          labels,
+          attachments: links,
+        };
+        if (startDate) extras.startDate = new Date(startDate);
+        if (dueDate)   extras.dueDate   = new Date(dueDate);
+
+        await updateCard(projectId, boardId, cardId, extras as any);
+
+        onToast("Tâche créée");
+        if (onSave) onSave(cardId);
+        onClose();
+
+      } else {
+        // ── MODIFICATION ──
+        if (!card) return;
+
+        const newColumnId = (onMoveCard && targetCol !== card.columnId) ? targetCol : card.columnId;
+
+        await updateCard(projectId, boardId, card.id!, {
+          title,
+          description,
+          priority,
+          labels,
+          assignees,
+          dueDate:     dueDate   ? new Date(dueDate)   : null,
+          startDate:   startDate ? new Date(startDate) : null,
+          attachments: links,
+        } as any);
+
+        if (onMoveCard && targetCol !== card.columnId) {
+          await onMoveCard(card.id!, targetCol);
+        }
+
+        // ── Mise à jour du message Discord si existant ──────────────────────
+        try {
+          const stats = await getTaskNotificationStats(projectId, boardId, card.id!);
+          if (stats?.discordMessageId && stats?.webhookUrl) {
+            const discordIds = (teamMembers || [])
+              .filter(tm => assignees.includes(tm.userId) && tm.discordId)
+              .map(tm => tm.discordId!);
+
+            const fmtDate = (val: string | undefined) => {
+              if (!val) return undefined;
+              const d = new Date(val);
+              return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+            };
+
+            await editDiscordNotification(
+              stats.webhookUrl,
+              stats.discordMessageId,
+              title,
+              description,
+              discordIds,
+              newColumnId,
+              fmtDate(startDate),
+              fmtDate(dueDate),
+              `${window.location.origin}/portfolio/projet-en-cours?project=${projectId}`,
+              // Résoudre le titre lisible depuis columnActions si disponible
+              (columnActions || []).find((c: { id: string; label: string }) => c.id === newColumnId)?.label,
+            );
+          }
+        } catch (discordErr) {
+          console.warn("Discord sync error (non-bloquant):", discordErr);
+        }
+
+        onToast("Tâche mise à jour");
+        onClose();
+      }
+    } catch (err) {
+      console.error("handleSave error:", err);
+      onToast("Erreur lors de la sauvegarde");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -238,7 +323,7 @@ export default function KanbanTaskEditor({
             </div>
           </div>
 
-          {/* Move column */}
+          {/* Move column (édition uniquement) */}
           {!isNew && columnActions.length > 0 && (
             <div className={styles.section}>
               <span className={styles.sectionTitle}>Déplacer vers</span>
@@ -341,7 +426,6 @@ export default function KanbanTaskEditor({
           <div className={styles.section}>
             <span className={styles.sectionTitle}><ImageIcon size={11} /> Images</span>
 
-            {/* Mode toggle */}
             <div className={styles.imgModeTabs}>
               <button
                 type="button"
@@ -405,12 +489,10 @@ export default function KanbanTaskEditor({
               </div>
             )}
 
-            {/* Previews */}
             {imageLinks.length > 0 && (
               <div className={styles.imagePreviewGrid}>
                 {imageLinks.map(img => (
                   <div key={img.id} className={styles.imagePreviewItem}>
-                    {/* No external link — clicking handled in Detail viewer */}
                     <div className={styles.imagePreviewLink}>
                       <img src={img.url} alt={img.name} className={styles.imagePreviewThumb} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     </div>

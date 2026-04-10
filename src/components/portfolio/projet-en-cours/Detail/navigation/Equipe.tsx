@@ -76,7 +76,7 @@ const Membres: React.FC<MembresProps> = ({
             <ChevronRight size={16} />
           </button>
 
-          {isInTeam && (
+          {isInTeam && currentUser && (
             <div className={styles.profileActions}>
               {!userTeamProfile ? (
                 <button onClick={onCreateProfile} className={styles.createProfileButton}>

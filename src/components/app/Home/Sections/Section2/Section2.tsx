@@ -4,8 +4,85 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ExternalLink, Users, Tag, ArrowRight, Package } from 'lucide-react';
 import { getNouveautes, Nouveaute } from '@/utils/nouveautes-api';
+import { getProjectTeamMembers } from '@/utils/projet-api';
+import { useProjectProgress } from '@/utils/useProjectProgress';
 import { WHITE_LOGO_IDS } from '@/utils/software';
 import styles from './Section2.module.css';
+
+// ── Barre de progression Kanban réelle (identique à ProjectCard) ──────────────
+
+const KanbanProgressBar: React.FC<{ projectId: string }> = ({ projectId }) => {
+  const { total, done, percent } = useProjectProgress(projectId);
+  return (
+    <div className={styles.progressWrap}>
+      <div className={styles.progressBar}>
+        <div className={styles.progressFill} style={{ width: `${percent}%` }} />
+      </div>
+      <span className={styles.progressLabel}>
+        {percent}%{total > 0 ? ` · ${done}/${total} tâches` : ''}
+      </span>
+    </div>
+  );
+};
+
+// ── Avatars équipe avec profils réels ─────────────────────────────────────────
+
+interface TeamAvatarsProps {
+  projectId: string;
+  /** membres Google (fallback si pas de profil équipe) */
+  googleMembers: any[];
+}
+
+const TeamAvatars: React.FC<TeamAvatarsProps> = ({ projectId, googleMembers }) => {
+  const [teamProfiles, setTeamProfiles] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    getProjectTeamMembers(projectId)
+      .then(setTeamProfiles)
+      .catch(() => {});
+  }, [projectId]);
+
+  const members = googleMembers || [];
+  const visible = members.slice(0, 4);
+  const remaining = members.length - 4;
+
+  if (members.length === 0) return null;
+
+  return (
+    <div className={styles.membersRow}>
+      <Users size={12} />
+      <div className={styles.avatarStack}>
+        {visible.map((m: any, i: number) => {
+          const memberId = m.userId || m.uid;
+          const profile = teamProfiles.find(tp => tp.userId === memberId);
+          // Priorité : image profil équipe > photoURL Google
+          const src = (profile?.image && profile.image !== '')
+            ? profile.image
+            : m.photoURL;
+          const name = profile
+            ? `${profile.firstName} ${profile.lastName}`.trim()
+            : (m.displayName || 'Membre');
+          const initial = profile
+            ? (profile.firstName?.[0] || '').toUpperCase()
+            : (m.displayName?.[0] || 'M').toUpperCase();
+
+          return (
+            <div key={i} className={styles.avatar} title={name}>
+              {src
+                ? <img src={src} alt={name} />
+                : <span>{initial}</span>
+              }
+            </div>
+          );
+        })}
+        {remaining > 0 && (
+          <div className={styles.avatarMore}>+{remaining}</div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // ── Software icon (identique à ProjectCard) ───────────────────────────────────
 
@@ -215,32 +292,15 @@ const Section2: React.FC = () => {
 
                 {/* Membres (projets) */}
                 {item.type === 'project' && item.members && item.members.length > 0 && (
-                  <div className={styles.membersRow}>
-                    <Users size={12} />
-                    <div className={styles.avatarStack}>
-                      {item.members.slice(0, 4).map((m: any, i: number) => (
-                        <div key={i} className={styles.avatar} title={m.displayName || 'Membre'}>
-                          {m.photoURL
-                            ? <img src={m.photoURL} alt={m.displayName} />
-                            : <span>{m.displayName?.[0]?.toUpperCase() || 'M'}</span>
-                          }
-                        </div>
-                      ))}
-                      {item.members.length > 4 && (
-                        <div className={styles.avatarMore}>+{item.members.length - 4}</div>
-                      )}
-                    </div>
-                  </div>
+                  <TeamAvatars
+                    projectId={item.sourceId}
+                    googleMembers={item.members}
+                  />
                 )}
 
-                {/* Barre de progression (projets) */}
-                {item.type === 'project' && typeof item.progress === 'number' && (
-                  <div className={styles.progressWrap}>
-                    <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${item.progress}%` }} />
-                    </div>
-                    <span className={styles.progressLabel}>{item.progress}%</span>
-                  </div>
+                {/* Barre de progression Kanban réelle (projets) */}
+                {item.type === 'project' && (
+                  <KanbanProgressBar projectId={item.sourceId} />
                 )}
 
                 {/* CTA */}

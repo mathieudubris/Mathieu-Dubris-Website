@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Edit2, Trash2, Users, Lock, Package } from 'lucide-react';
 import { FullProject, ProjectTeamMember } from '@/utils/projet-api';
 import { WHITE_LOGO_IDS } from '@/utils/software';
+import { useProjectProgress } from '@/utils/useProjectProgress';
 import styles from './ProjectCard.module.css';
 
 type Project = FullProject;
@@ -43,7 +44,6 @@ const SoftwareIcon: React.FC<{ software: any }> = ({ software }) => {
 
   if (isUrl && !failed && imgSrc) {
     return (
-      // Wrapper interne qui clip l'image — séparé du conteneur externe (overflow:visible pour tooltip)
       <div className={styles.softwareIconInner} style={{ background: needsDarkBg ? 'rgba(0,0,0,0.55)' : 'transparent' }}>
         <img
           src={imgSrc}
@@ -97,6 +97,29 @@ const MemberAvatarItem: React.FC<MemberAvatarItemProps> = ({ src, fallbackLetter
       {hovered && label && (
         <div className={styles.avatarTooltip}>{label}</div>
       )}
+    </div>
+  );
+};
+
+// ── KanbanProgress (barre réelle) ─────────────────────────────────────────────
+
+const KanbanProgress: React.FC<{ projectId: string }> = ({ projectId }) => {
+  const { total, done, percent } = useProjectProgress(projectId);
+
+  return (
+    <div className={styles.kanbanProgressWrapper}>
+      <div className={styles.kanbanProgressHeader}>
+        <span className={styles.kanbanProgressPercent}>{percent}%</span>
+        {total > 0 && (
+          <span className={styles.kanbanProgressCount}>{done}/{total} tâches</span>
+        )}
+      </div>
+      <div className={styles.progressBar}>
+        <div
+          className={styles.progressFill}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
     </div>
   );
 };
@@ -165,13 +188,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     return (
       <div className={styles.memberAvatars}>
         {visible.map((member: any, i: number) => {
-          const teamProfile = teamProfiles.find(
-            (tp) => tp.userId === (member.userId || member.uid)
-          );
-          const avatarSrc = teamProfile?.image || member.photoURL || undefined;
+          const memberId = member.userId || member.uid;
+          const teamProfile = teamProfiles.find((tp) => tp.userId === memberId);
+
+          // Priorité : image du profil équipe > photoURL Google
+          const avatarSrc = (teamProfile?.image && teamProfile.image !== '')
+            ? teamProfile.image
+            : (member.photoURL || undefined);
+
           const displayName = teamProfile
             ? `${teamProfile.firstName} ${teamProfile.lastName}`.trim()
             : (member.displayName || '');
+
           const fallbackLetter = teamProfile
             ? (teamProfile.firstName?.[0] || '').toUpperCase()
             : (member.displayName?.[0] || 'M').toUpperCase();
@@ -297,9 +325,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             {project.description || 'Description du projet.'}
           </p>
           {renderSoftwareIcons()}
-          <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: `${project.progress || 0}%` }} />
-          </div>
+
+          {/* ── Barre de progression Kanban réelle ── */}
+          {project.id && <KanbanProgress projectId={project.id} />}
         </div>
 
         <div className={styles.cardFooter}>
