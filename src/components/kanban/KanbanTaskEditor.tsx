@@ -7,6 +7,8 @@ import type { KanbanCard, KanbanPriority } from "@/utils/kanban-projet-api";
 import {
   getTaskNotificationStats,
   editDiscordNotification,
+  sendDiscordNotification,
+  saveNotificationStats,
 } from "@/utils/discord-notify-api";
 import styles from "./KanbanTaskEditor.module.css";
 
@@ -204,6 +206,39 @@ export default function KanbanTaskEditor({
         if (dueDate)   extras.dueDate   = new Date(dueDate);
 
         await updateCard(projectId, boardId, cardId, extras as any);
+
+        // ── Auto-send Discord notification on creation ──────────────────
+        try {
+          const discordIds = (teamMembers || [])
+            .filter(tm => assignees.includes(tm.userId) && tm.discordId)
+            .map(tm => tm.discordId!);
+
+          if (discordIds.length > 0) {
+            const fmtDateStr = (val: string | undefined) => {
+              if (!val) return undefined;
+              const d = new Date(val);
+              return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+            };
+            const colLabel = (columnActions || []).find(c => c.id === columnId)?.label || columnId || "";
+            const taskLink = `${window.location.origin}/portfolio/projet-en-cours?project=${projectId}`;
+            const result = await sendDiscordNotification(
+              WEBHOOK_URL,
+              title.trim(),
+              description,
+              discordIds,
+              columnId!,
+              fmtDateStr(startDate),
+              fmtDateStr(dueDate),
+              taskLink,
+              colLabel,
+            );
+            if (result.success && result.messageId) {
+              await saveNotificationStats(projectId, boardId, cardId, currentUser?.uid || "unknown", result.messageId, WEBHOOK_URL);
+            }
+          }
+        } catch (discordErr) {
+          console.warn("Discord auto-notify error (non-bloquant):", discordErr);
+        }
 
         onToast("Tâche créée");
         if (onSave) onSave(cardId);

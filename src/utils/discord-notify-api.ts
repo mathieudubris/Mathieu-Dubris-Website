@@ -31,128 +31,142 @@ export interface TaskNotificationStats {
   webhookUrl?: string;
 }
 
+// ─── Codes ANSI texte uniquement (pas de background) ────────────────────────
+// [2;37m = blanc   → À faire
+// [2;34m = bleu    → En cours
+// [2;33m = jaune   → En révision
+// [2;31m = rouge   → Blocage
+// [2;32m = vert    → Terminé
+// [0m   = reset
+
+const ANSI_RESET = '\u001b[0m';
+
+const ANSI_COLOR: Record<string, string> = {
+  white:  '\u001b[2;37m',
+  blue:   '\u001b[2;34m',
+  yellow: '\u001b[2;33m',
+  red:    '\u001b[2;31m',
+  green:  '\u001b[2;32m',
+};
+
 // ─── Résolution du statut ────────────────────────────────────────────────────
-// Gère à la fois les IDs courts (todo, inprogress…) et les titres de colonnes
-// en français, pour couvrir le cas où columnId est un ID Firestore aléatoire
-// et où on passe le titre à la place.
 
 interface StatusInfo {
   label: string;
-  color: number;   // couleur de la barre latérale Discord (embed color)
-  emoji: string;
+  color: number;      // couleur de la barre latérale Discord (embed color)
+  ansiColor: string;  // code ANSI couleur texte
 }
 
 const STATUS_BY_KEY: Record<string, StatusInfo> = {
-  // IDs courts
-  todo:       { label: 'À faire',     color: 0xffffff, emoji: '⬜' },
-  inprogress: { label: 'En cours',    color: 0x3b82f6, emoji: '🔵' },
-  review:     { label: 'En révision', color: 0x8b5cf6, emoji: '🟣' },
-  blocked:    { label: 'Blocage',     color: 0xef4444, emoji: '🔴' },
-  done:       { label: 'Terminé',     color: 0x22c55e, emoji: '🟢' },
+  todo:       { label: 'À faire',     color: 0xaaaaaa, ansiColor: ANSI_COLOR.white  },
+  inprogress: { label: 'En cours',    color: 0x3b82f6, ansiColor: ANSI_COLOR.blue   },
+  review:     { label: 'En révision', color: 0xf59e0b, ansiColor: ANSI_COLOR.yellow },
+  blocked:    { label: 'Blocage',     color: 0xef4444, ansiColor: ANSI_COLOR.red    },
+  done:       { label: 'Terminé',     color: 0x22c55e, ansiColor: ANSI_COLOR.green  },
 };
 
-// Correspondances par titre de colonne (français, insensible à la casse)
 const STATUS_BY_TITLE: Array<{ match: RegExp; key: string }> = [
-  { match: /faire|todo/i,         key: 'todo'       },
-  { match: /cours|progress/i,     key: 'inprogress' },
-  { match: /révis|review/i,       key: 'review'     },
-  { match: /bloc|block/i,         key: 'blocked'    },
-  { match: /termin|done|fini/i,   key: 'done'       },
+  { match: /faire|todo/i,       key: 'todo'       },
+  { match: /cours|progress/i,   key: 'inprogress' },
+  { match: /révis|review/i,     key: 'review'     },
+  { match: /bloc|block/i,       key: 'blocked'    },
+  { match: /termin|done|fini/i, key: 'done'       },
 ];
 
 function resolveStatus(columnId: string, columnTitle?: string): StatusInfo {
-  // 1. Essai par ID court exact
+  // 1. Exact key match (todo, inprogress, review, blocked, done)
   if (STATUS_BY_KEY[columnId]) return STATUS_BY_KEY[columnId];
-
-  // 2. Essai par titre de colonne passé en paramètre
+  // 2. Regex on columnTitle
   if (columnTitle) {
     for (const { match, key } of STATUS_BY_TITLE) {
       if (match.test(columnTitle)) return STATUS_BY_KEY[key];
     }
-    // 3. Si le titre ne matche rien, utiliser le titre tel quel avec couleur neutre
-    return { label: columnTitle, color: 0xaaaaaa, emoji: '⬜' };
   }
-
-  // 4. Fallback neutre (ne jamais retourner le bleu Discord par défaut)
-  return { label: columnId, color: 0xaaaaaa, emoji: '⬜' };
+  // 3. Regex on columnId as fallback (handles Firestore IDs that might contain keywords)
+  for (const { match, key } of STATUS_BY_TITLE) {
+    if (match.test(columnId)) return STATUS_BY_KEY[key];
+  }
+  // 4. Use columnTitle as label with neutral color
+  return { label: columnTitle || columnId, color: 0xaaaaaa, ansiColor: ANSI_COLOR.white };
 }
 
-// ─── Helpers de formatage ────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Titre : max ~10 caractères affichables + ellipse */
-function truncateTitle(text: string, maxChars = 10): string {
-  if (!text) return '(Sans titre)';
-  return text.length > maxChars ? text.slice(0, maxChars) + '…' : text;
-}
-
-/** Description : max ~40 caractères + ellipse */
-function truncateDescription(text: string, maxChars = 40): string {
+function truncate(text: string, maxChars = 40): string {
   if (!text) return '';
-  // Aplatir les sauts de ligne en espaces pour rester sur 1 "bloc"
   const flat = text.replace(/\n+/g, ' ').trim();
   return flat.length > maxChars ? flat.slice(0, maxChars) + '…' : flat;
 }
 
-/** Mentions : max 4 lignes de 5 mentions, ellipse si dépassement */
-function truncateMentions(mentions: string[], maxLines = 4, perLine = 5): string {
-  if (mentions.length === 0) return '_Aucun assigné_';
-  const lines: string[] = [];
-  for (let i = 0; i < mentions.length; i += perLine) {
-    lines.push(mentions.slice(i, i + perLine).join(' '));
-  }
-  if (lines.length <= maxLines) return lines.join('\n');
-  return lines.slice(0, maxLines).join('\n') + ' …';
+/**
+ * Entoure chaque ligne non-vide avec le code ANSI couleur + reset.
+ * Les lignes vides restent vides (séparateurs visuels propres).
+ */
+function colorizeLines(lines: string[], ansiColor: string): string {
+  return lines
+    .map(line => line === '' ? '' : `${ansiColor}${line}${ANSI_RESET}`)
+    .join('\n');
 }
 
-// ─── Construction du payload Discord ────────────────────────────────────────
+// ─── Construction du payload Discord ─────────────────────────────────────────
 
 interface EmbedOptions {
   title: string;
   description: string;
   columnId: string;
-  columnTitle?: string;   // titre lisible de la colonne (optionnel mais recommandé)
-  discordIds: string[];
+  columnTitle?: string;
+  discordIds: string[];          // IDs Discord pour le ping réel (<@id>)
+  discordUsernames?: string[];   // Usernames affichés en dehors du bloc
   startDate?: string;
   dueDate?: string;
   taskLink?: string;
 }
 
 function buildDiscordPayload(opts: EmbedOptions) {
-  const { title, description, columnId, columnTitle, discordIds, startDate, dueDate, taskLink } = opts;
+  const { title, description, columnId, columnTitle, discordIds, discordUsernames = [], startDate, dueDate, taskLink } = opts;
 
   const status = resolveStatus(columnId, columnTitle);
-  const mentions = discordIds.map(id => `<@${id}>`);
 
-  // Footer : uniquement début et fin, sans heure d'envoi
-  const footerParts: string[] = [];
-  if (startDate) footerParts.push(`Début : ${startDate}`);
-  if (dueDate)   footerParts.push(`Échéance : ${dueDate}`);
-  const footerText = footerParts.length > 0 ? footerParts.join('   |   ') : 'Aucune date définie';
+  // ── Bloc ansi coloré : tout le contenu de la tâche ──
+  const lines: string[] = [];
+  lines.push(truncate(title, 40));
+
+  const taskDesc = truncate(description || '', 40);
+  if (taskDesc) lines.push(taskDesc);
+
+  lines.push('');
+  lines.push(`Statut : ${status.label}`);
+
+  const dateParts: string[] = [];
+  if (startDate) dateParts.push(`Début : ${startDate}`);
+  if (dueDate)   dateParts.push(`Échéance : ${dueDate}`);
+  if (dateParts.length > 0) lines.push(dateParts.join('  |  '));
+
+  const coloredBlock = `\`\`\`ansi\n${colorizeLines(lines, status.ansiColor)}\n\`\`\``;
+
+  // ── Mentions hors bloc ──
+  // On affiche les @username en texte lisible ET on ping via <@id> dans allowed_mentions.
+  // Les deux sont dans le `content` du message (au-dessus de l'embed) :
+  //   - si on a les usernames : "@mathieu @sarah" (texte lisible)
+  //   - sinon : "<@123456> <@789012>" (ping brut)
+  let mentionContent: string | undefined;
+  if (discordIds.length > 0) {
+    if (discordUsernames.length > 0) {
+      // Affiche @username et ping via <@id> simultanément :
+      // le `content` contient les <@id> pour le ping, mais on les masque derrière les usernames
+      // Discord ne permet pas de faire ça nativement — on choisit donc :
+      // • content = "@username1 @username2 ..." (lisible, pas de ping)
+      // • allowed_mentions.users = [...ids]  (ping effectif silencieux si Discord le supporte)
+      mentionContent = discordUsernames.map(u => `@${u}`).join(' ');
+    } else {
+      // Fallback : ping brut <@id>
+      mentionContent = discordIds.map(id => `<@${id}>`).join(' ');
+    }
+  }
 
   const embed: Record<string, any> = {
-    // Titre tronqué à ~10 caractères
-    title: truncateTitle(title, 10),
-    // Description tronquée à ~40 caractères
-    description: truncateDescription(description || '', 40),
-    // Couleur selon statut — garantit que la barre latérale reflète le bon statut
+    description: coloredBlock,
     color: status.color,
-    fields: [
-      {
-        name: 'Assignés',
-        value: truncateMentions(mentions, 4),
-        inline: false,
-      },
-      {
-        // Statut lisible avec emoji coloré pour renforcer visuellement
-        name: 'Statut',
-        value: `${status.emoji} ${status.label}`,
-        inline: true,
-      },
-    ],
-    footer: {
-      text: footerText,
-    },
-    // Pas de `timestamp` : on ne veut pas afficher l'heure d'envoi Discord
   };
 
   if (taskLink) embed.url = taskLink;
@@ -160,9 +174,10 @@ function buildDiscordPayload(opts: EmbedOptions) {
   return {
     username: 'Kanban Task Manager',
     avatar_url: 'https://mathieu-dubris.fr/logo.png',
+    content: mentionContent,
     embeds: [embed],
-    // Aucune mention dans le `content` — uniquement dans le champ "Assignés"
-    allowed_mentions: { parse: [] },
+    // Ping effectif sur les IDs même si le content affiche les usernames
+    allowed_mentions: { parse: [], users: discordIds },
   };
 }
 
@@ -178,9 +193,14 @@ export async function sendDiscordNotification(
   dueDate?: string,
   taskLink?: string,
   columnTitle?: string,
+  discordUsernames?: string[],
 ): Promise<{ success: boolean; messageId?: string; failedMentions: string[] }> {
   try {
-    const payload = buildDiscordPayload({ title, description, columnId, columnTitle, discordIds, startDate, dueDate, taskLink });
+    const payload = buildDiscordPayload({
+      title, description, columnId, columnTitle,
+      discordIds, discordUsernames,
+      startDate, dueDate, taskLink,
+    });
     const response = await fetch(webhookUrl + '?wait=true', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -211,9 +231,14 @@ export async function editDiscordNotification(
   dueDate?: string,
   taskLink?: string,
   columnTitle?: string,
+  discordUsernames?: string[],
 ): Promise<boolean> {
   try {
-    const payload = buildDiscordPayload({ title, description, columnId, columnTitle, discordIds, startDate, dueDate, taskLink });
+    const payload = buildDiscordPayload({
+      title, description, columnId, columnTitle,
+      discordIds, discordUsernames,
+      startDate, dueDate, taskLink,
+    });
     const response = await fetch(`${webhookUrl}/messages/${messageId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

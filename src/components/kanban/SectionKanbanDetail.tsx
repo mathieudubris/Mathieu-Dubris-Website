@@ -10,6 +10,10 @@ import KanbanTask from "@/components/kanban/KanbanTask";
 import KanbanTaskEditor from "@/components/kanban/KanbanTaskEditor";
 import type { TeamMemberForKanban } from "@/components/kanban/KanbanTaskEditor";
 import KanbanTaskDetail from "@/components/kanban/KanbanTaskDetail";
+import {
+  getTaskNotificationStats,
+  editDiscordNotification,
+} from "@/utils/discord-notify-api";
 import styles from "./SectionKanbanDetail.module.css";
 
 const DEFAULT_COLUMNS = [
@@ -18,14 +22,6 @@ const DEFAULT_COLUMNS = [
   { id: "review",     title: "En révision",   color: "#8b5cf6" },
   { id: "blocked",    title: "Blocage",       color: "#ef4444" },
   { id: "done",       title: "Terminé",       color: "#22c55e" },
-];
-
-const COLUMN_ACTIONS = [
-  { id: "todo",       label: "À faire"      },
-  { id: "inprogress", label: "En cours"     },
-  { id: "review",     label: "En révision"  },
-  { id: "blocked",    label: "Blocage"      },
-  { id: "done",       label: "Terminé"      },
 ];
 
 interface SectionKanbanDetailProps {
@@ -80,6 +76,41 @@ export default function SectionKanbanDetail({
 
   const handleDragLeave = () => setIsDragOver(null);
 
+  // Sync Discord after a column move
+  const syncDiscordAfterMove = async (card: KanbanCard, targetColumnId: string, columnActions: { id: string; label: string }[]) => {
+    try {
+      const stats = await getTaskNotificationStats(projectId, boardId, card.id!);
+      if (!stats?.discordMessageId || !stats?.webhookUrl) return;
+
+      const discordIds = teamMembers
+        .filter(tm => card.assignees?.includes(tm.userId) && tm.discordId)
+        .map(tm => tm.discordId!);
+
+      const fmtTs = (ts: any) => {
+        if (!ts) return undefined;
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+      };
+
+      const columnTitle = columnActions.find(c => c.id === targetColumnId)?.label || targetColumnId;
+
+      await editDiscordNotification(
+        stats.webhookUrl,
+        stats.discordMessageId,
+        card.title,
+        card.description || "",
+        discordIds,
+        targetColumnId,
+        fmtTs((card as any).startDate),
+        fmtTs(card.dueDate),
+        `${window.location.origin}/portfolio/projet-en-cours?project=${projectId}`,
+        columnTitle,
+      );
+    } catch (e) {
+      console.warn("Discord drag-drop sync error (non-blocking):", e);
+    }
+  };
+
   const handleDrop = async (e: DragEvent, targetColumnId: string) => {
     if (readOnly) return;
     e.preventDefault();
@@ -88,9 +119,14 @@ export default function SectionKanbanDetail({
     if (!cardId) return;
     const card = cards.find((c) => c.id === cardId);
     if (!card || card.columnId === targetColumnId) return;
+
+    const columnActions = columnsToDisplay.map(col => ({ id: col.id!, label: col.title }));
+
     try {
       const colCards = cards.filter((c) => c.columnId === targetColumnId);
       await moveCard(projectId, boardId, cardId, targetColumnId, colCards.length);
+      // Auto-update Discord message
+      await syncDiscordAfterMove(card, targetColumnId, columnActions);
       onToast("Tâche déplacée");
     } catch {
       onToast("Erreur lors du déplacement");
@@ -103,9 +139,14 @@ export default function SectionKanbanDetail({
     if (readOnly) return;
     const card = cards.find((c) => c.id === cardId);
     if (!card || card.columnId === targetColumnId) return;
+
+    const columnActions = columnsToDisplay.map(col => ({ id: col.id!, label: col.title }));
+
     try {
       const colCards = cards.filter((c) => c.columnId === targetColumnId);
       await moveCard(projectId, boardId, cardId, targetColumnId, colCards.length);
+      // Auto-update Discord message
+      await syncDiscordAfterMove(card, targetColumnId, columnActions);
       onToast("Tâche déplacée");
     } catch {
       onToast("Erreur lors du déplacement");
@@ -114,9 +155,7 @@ export default function SectionKanbanDetail({
 
   const columnsToDisplay = dbColumns.length > 0 ? dbColumns : DEFAULT_COLUMNS;
 
-  const columnActions = dbColumns.length > 0
-    ? dbColumns.map(col => ({ id: col.id!, label: col.title }))
-    : COLUMN_ACTIONS;
+  const columnActions = columnsToDisplay.map(col => ({ id: col.id!, label: col.title }));
 
   return (
     <div className={styles.boardScroll}>
@@ -170,7 +209,7 @@ export default function SectionKanbanDetail({
         </div>
       ))}
 
-      {/* Éditeur création — KanbanTaskEditor gère lui-même createCard + updateCard */}
+      {/* Éditeur création */}
       {!readOnly && addingCardColumn && (
         <KanbanTaskEditor
           isNew
@@ -182,6 +221,7 @@ export default function SectionKanbanDetail({
           projectId={projectId}
           boardId={boardId}
           teamMembers={teamMembers}
+          columnActions={columnActions}
         />
       )}
 

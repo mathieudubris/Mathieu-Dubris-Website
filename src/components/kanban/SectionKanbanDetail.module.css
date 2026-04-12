@@ -130,3 +130,18 @@
   text-align: center;
   font-style: italic;
 }
+/* ── Responsive mobile ── */
+@media (max-width: 600px) {
+  .boardScroll {
+    padding: 0.6rem 0.75rem 1rem;
+    gap: 0.55rem;
+  }
+
+  .column {
+    flex: 0 0 240px;
+  }
+
+  .columnTitle {
+    font-size: 0.72rem;
+  }
+}

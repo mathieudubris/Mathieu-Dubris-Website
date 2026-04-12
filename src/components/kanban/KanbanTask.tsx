@@ -5,6 +5,11 @@ import { Clock, Edit2, Trash2 } from "lucide-react";
 import { deleteCard } from "@/utils/kanban-projet-api";
 import type { KanbanCard } from "@/utils/kanban-projet-api";
 import type { TeamMemberForKanban } from "@/components/kanban/KanbanTaskEditor";
+import {
+  deleteDiscordNotification,
+  deleteNotificationStats,
+  getTaskNotificationStats,
+} from "@/utils/discord-notify-api";
 import styles from "./KanbanTask.module.css";
 
 interface KanbanTaskProps {
@@ -17,7 +22,7 @@ interface KanbanTaskProps {
   teamMembers?: TeamMemberForKanban[];
 }
 
-// ── Avatar carrousel (carré arrondi, sans nom) ───────────────────
+// ── Avatar carrousel ─────────────────────────────────────────────
 const AvatarCarousel: React.FC<{ uids: string[]; teamMembers: TeamMemberForKanban[] }> = ({ uids, teamMembers }) => {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -91,7 +96,7 @@ const LabelsCarousel: React.FC<{ labels: KanbanCard["labels"] }> = ({ labels }) 
   );
 };
 
-// ── Date formatter avec année ────────────────────────────────────
+// ── Date formatter ────────────────────────────────────────────────
 const formatDate = (ts: any) => {
   if (!ts) return null;
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -108,6 +113,24 @@ export default function KanbanTask({
 
   const startDate = formatDate((card as any).startDate);
   const dueDate   = formatDate(card.dueDate);
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Supprimer cette tâche ?")) return;
+
+    // Also delete Discord message if one exists
+    try {
+      const stats = await getTaskNotificationStats(card.projectId, boardId, card.id!);
+      if (stats?.discordMessageId && stats?.webhookUrl) {
+        await deleteDiscordNotification(stats.webhookUrl, stats.discordMessageId);
+        await deleteNotificationStats(card.projectId, boardId, card.id!);
+      }
+    } catch (e) {
+      console.warn("Discord delete error (non-blocking):", e);
+    }
+
+    await deleteCard(card.projectId, boardId, card.id!);
+  };
 
   return (
     <div
@@ -140,10 +163,7 @@ export default function KanbanTask({
           </button>
           <button
             className={styles.actionBtn}
-            onClick={async e => {
-              e.stopPropagation();
-              if (confirm("Supprimer cette tâche ?")) await deleteCard(card.projectId, boardId, card.id!);
-            }}
+            onClick={handleDelete}
             title="Supprimer"
           >
             <Trash2 size={11} />
@@ -165,7 +185,7 @@ export default function KanbanTask({
       {/* Ligne 2 : Labels carrousel */}
       <LabelsCarousel labels={card.labels || []} />
 
-      {/* Ligne 3 : Dates — sans priorityDot */}
+      {/* Ligne 3 : Dates */}
       <div className={styles.datesRow}>
         {startDate ? (
           <span className={styles.dateBadge}>

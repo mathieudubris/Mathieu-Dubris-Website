@@ -1,16 +1,14 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { X, Flag, Calendar, MessageCircle, Link2, Edit2, Trash2, Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw, Bell, Loader } from "lucide-react";
+import { X, Flag, Calendar, MessageCircle, Link2, Edit2, Trash2, Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw, Loader } from "lucide-react";
 import { deleteCard } from "@/utils/kanban-projet-api";
 import type { KanbanCard } from "@/utils/kanban-projet-api";
 import type { TeamMemberForKanban } from "@/components/kanban/KanbanTaskEditor";
 import {
-  sendDiscordNotification,
   editDiscordNotification,
   deleteDiscordNotification,
   getTaskNotificationStats,
-  saveNotificationStats,
   deleteNotificationStats,
 } from "@/utils/discord-notify-api";
 import styles from "./KanbanTaskDetail.module.css";
@@ -22,7 +20,6 @@ const PRIORITIES: Record<string, { label: string; color: string; bg: string }> =
   critical: { label: "Critique", color: "var(--red)",    bg: "color-mix(in srgb, var(--red) 12%, transparent)"    },
 };
 
-// Couleurs mises à jour : todo=gris, inprogress=bleu, review=violet, blocked=rouge, done=vert
 const COL_STYLES: Record<string, { label: string; color: string }> = {
   todo:       { label: "À faire",     color: "var(--gray)"   },
   inprogress: { label: "En cours",    color: "#3b82f6"       },
@@ -30,10 +27,6 @@ const COL_STYLES: Record<string, { label: string; color: string }> = {
   blocked:    { label: "Blocage",     color: "var(--red)"    },
   done:       { label: "Terminé",     color: "var(--green)"  },
 };
-
-const WEBHOOK_URL =
-  process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL ||
-  "https://discordapp.com/api/webhooks/1490967463184171078/shV29Ctm22383cUhRqNfWGtWzZ5SEpAnZh9nRUjnCTNK5-whCPq1eUpOZjkmNBZRBmD1";
 
 const IMAGE_EXTS = /\.(png|jpe?g|gif|webp|svg|bmp|avif)(\?.*)?$/i;
 const isImage = (url: string) => IMAGE_EXTS.test(url.split("?")[0]);
@@ -89,7 +82,7 @@ function Lightbox({ images, initialIndex, onClose }: LightboxProps) {
   const handleMouseUp = () => { setDragging(false); dragStart.current = null; };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", overflow: "hidden" }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", overflow: "hidden" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.65rem 1.2rem", background: "#0a0a0a", borderBottom: "1px solid #1a1a1a", flexShrink: 0 }}>
         <span style={{ fontSize: "0.78rem", color: "#aaa", fontWeight: 600, maxWidth: "60%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -154,15 +147,6 @@ export default function KanbanTaskDetail({
   columnActions = [], onMoveCard, readOnly = false, projectId, boardId, teamMembers = [],
 }: KanbanTaskDetailProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [notificationStats, setNotificationStats] = useState<{ discordMessageId?: string; webhookUrl?: string } | null>(null);
-  const [sendingNotif, setSendingNotif] = useState(false);
-
-  // Charger les stats au montage (pour savoir si un message existe déjà)
-  useEffect(() => {
-    if (card?.id && projectId && boardId) {
-      getTaskNotificationStats(projectId, boardId, card.id!).then(setNotificationStats);
-    }
-  }, [card?.id, projectId, boardId]);
 
   const getMember = (uid: string) => {
     const m = teamMembers.find(t => t.userId === uid);
@@ -185,9 +169,14 @@ export default function KanbanTaskDetail({
     if (!confirm("Supprimer cette tâche ?")) return;
 
     // Supprimer le message Discord si un message existe
-    if (notificationStats?.discordMessageId && notificationStats?.webhookUrl) {
-      await deleteDiscordNotification(notificationStats.webhookUrl, notificationStats.discordMessageId);
-      await deleteNotificationStats(projectId, boardId, card.id!);
+    try {
+      const stats = await getTaskNotificationStats(projectId, boardId, card.id!);
+      if (stats?.discordMessageId && stats?.webhookUrl) {
+        await deleteDiscordNotification(stats.webhookUrl, stats.discordMessageId);
+        await deleteNotificationStats(projectId, boardId, card.id!);
+      }
+    } catch (e) {
+      console.warn("Discord delete error:", e);
     }
 
     await deleteCard(projectId, boardId, card.id!);
@@ -198,81 +187,34 @@ export default function KanbanTaskDetail({
   const handleMove = async (targetId: string) => {
     if (readOnly || !onMoveCard) return;
     await onMoveCard(card.id!, targetId);
+
+    // Auto-update Discord message after column move
+    try {
+      const stats = await getTaskNotificationStats(projectId, boardId, card.id!);
+      if (stats?.discordMessageId && stats?.webhookUrl) {
+        const discordIds = (teamMembers || [])
+          .filter(tm => card.assignees?.includes(tm.userId) && tm.discordId)
+          .map(tm => tm.discordId!);
+        const columnTitle = columnActions.find(c => c.id === targetId)?.label || targetId;
+        await editDiscordNotification(
+          stats.webhookUrl,
+          stats.discordMessageId,
+          card.title,
+          card.description || "",
+          discordIds,
+          targetId,
+          formatDate((card as any).startDate),
+          formatDate(card.dueDate),
+          `${window.location.origin}/portfolio/projet-en-cours?project=${projectId}`,
+          columnTitle,
+        );
+      }
+    } catch (e) {
+      console.warn("Discord move sync error:", e);
+    }
+
     onToast(`Déplacé vers ${columnActions.find(c => c.id === targetId)?.label}`);
     onClose();
-  };
-
-  // Construire les données communes pour Discord
-  const buildDiscordData = () => {
-    const assigneesWithDiscord = teamMembers.filter(tm =>
-      card.assignees?.includes(tm.userId) && tm.discordId
-    );
-    const discordIds = assigneesWithDiscord.map(tm => tm.discordId!).filter(Boolean);
-    const startDate = formatDate((card as any).startDate);
-    const dueDate = formatDate(card.dueDate);
-    const taskLink = `${window.location.origin}/portfolio/projet-en-cours?project=${projectId}`;
-    // Titre lisible de la colonne — priorité au label de columnActions, puis COL_STYLES
-    const columnTitle = columnActions.find(c => c.id === card.columnId)?.label
-      || COL_STYLES[card.columnId]?.label
-      || card.columnId;
-    return { discordIds, startDate, dueDate, taskLink, columnTitle };
-  };
-
-  const handleSendDiscordNotification = async () => {
-    if (!card || sendingNotif) return;
-    const { discordIds, startDate, dueDate, taskLink, columnTitle } = buildDiscordData();
-
-    if (discordIds.length === 0) {
-      onToast("⚠️ Aucun membre assigné n'a d'ID Discord configuré");
-      return;
-    }
-
-    setSendingNotif(true);
-    try {
-      // Si un message existe déjà → PATCH (edit)
-      if (notificationStats?.discordMessageId && notificationStats?.webhookUrl) {
-        const ok = await editDiscordNotification(
-          notificationStats.webhookUrl,
-          notificationStats.discordMessageId,
-          card.title,
-          card.description || "",
-          discordIds,
-          card.columnId,
-          startDate,
-          dueDate,
-          taskLink,
-          columnTitle,
-        );
-        onToast(ok ? "✅ Message Discord mis à jour" : "❌ Erreur lors de la mise à jour");
-      } else {
-        // Sinon → POST (envoi initial)
-        const result = await sendDiscordNotification(
-          WEBHOOK_URL,
-          card.title,
-          card.description || "",
-          discordIds,
-          card.columnId,
-          startDate,
-          dueDate,
-          taskLink,
-          columnTitle,
-        );
-
-        if (result.success && result.messageId) {
-          await saveNotificationStats(projectId, boardId, card.id!, currentUser?.uid || "unknown", result.messageId, WEBHOOK_URL);
-          const newStats = await getTaskNotificationStats(projectId, boardId, card.id!);
-          setNotificationStats(newStats);
-          onToast(`✅ Notification envoyée à ${discordIds.length} personne(s) sur Discord`);
-        } else {
-          onToast("❌ Erreur lors de l'envoi de la notification");
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      onToast("❌ Erreur lors de l'envoi");
-    } finally {
-      setSendingNotif(false);
-    }
   };
 
   const colStyle      = COL_STYLES[card.columnId] || { label: card.columnId, color: "var(--line)" };
@@ -282,10 +224,10 @@ export default function KanbanTaskDetail({
   const otherLinks    = attachments.filter(a => !isImage(a.url));
   const startDate     = formatDate((card as any).startDate);
   const dueDate       = formatDate(card.dueDate);
-  const hasDiscordMsg = !!(notificationStats?.discordMessageId);
 
   return (
     <>
+      {/* Full-screen overlay — same pattern as KanbanTaskEditor */}
       <div className={styles.overlay}>
         <div className={styles.modal}>
 
@@ -306,21 +248,7 @@ export default function KanbanTaskDetail({
                 </div>
               </div>
               <div className={styles.headerActions}>
-                {!readOnly && (
-                  <>
-                    <button className={styles.iconBtn} onClick={onEdit} title="Modifier"><Edit2 size={15} /></button>
-                    <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} onClick={handleDelete} title="Supprimer"><Trash2 size={15} /></button>
-                    {/* Bouton notification — sans badge numérique. Couleur différente si message existant */}
-                    <button
-                      className={`${styles.iconBtn} ${styles.notifBtn} ${hasDiscordMsg ? styles.notifBtnActive : ""}`}
-                      onClick={handleSendDiscordNotification}
-                      title={hasDiscordMsg ? "Mettre à jour le message Discord" : "Notifier sur Discord"}
-                      disabled={sendingNotif}
-                    >
-                      {sendingNotif ? <Loader size={15} className={styles.spinIcon} /> : <Bell size={15} />}
-                    </button>
-                  </>
-                )}
+                {/* Only close button — edit/delete are on the card itself */}
                 <button className={styles.iconBtn} onClick={onClose} title="Fermer"><X size={16} /></button>
               </div>
             </div>
@@ -383,6 +311,18 @@ export default function KanbanTaskDetail({
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Edit / Delete actions — bottom of main col */}
+              {!readOnly && (
+                <div className={styles.section} style={{ display: "flex", gap: "0.5rem", borderTop: "1px solid var(--line)", paddingTop: "1rem", marginTop: "0.5rem" }}>
+                  <button className={styles.actionBtnPrimary} onClick={onEdit}>
+                    <Edit2 size={13} /> Modifier
+                  </button>
+                  <button className={`${styles.actionBtnGhost} ${styles.danger}`} onClick={handleDelete}>
+                    <Trash2 size={13} /> Supprimer
+                  </button>
                 </div>
               )}
             </div>
